@@ -11,3 +11,5 @@ sphinx          # BSD-3-Clause
 coverage        # MIT
 flake8          # MIT
 python-dotenv   # BSD-3-Clause
+tqdm
+requests
