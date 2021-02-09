@@ -13,3 +13,4 @@ flake8          # MIT
 python-dotenv   # BSD-3-Clause
 tqdm
 requests
+black
