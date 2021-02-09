@@ -14,3 +14,6 @@ python-dotenv   # BSD-3-Clause
 tqdm
 requests
 black
+matplotlib
+torchvision
+torch
