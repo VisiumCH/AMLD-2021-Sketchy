@@ -16,7 +16,9 @@ dataset_folder = "Sketchy"
 
 
 def Sketchy_Extended(args, transform="None"):
-
+    '''
+    Creates all the data loader for Sketchy dataset
+    '''
     # Getting the classes
     class_directories = glob(
         os.path.join(args.data_path, dataset_folder, "extended_photo/*/")
@@ -67,6 +69,9 @@ def Sketchy_Extended(args, transform="None"):
 
 
 class Sketchy_Extended_valid_test(data.Dataset):
+    '''
+    Custom dataset for Stetchy's validation and testing
+    '''
     def __init__(
         self,
         args,
@@ -109,6 +114,9 @@ class Sketchy_Extended_valid_test(data.Dataset):
 
 
 class Sketchy_Extended_train(data.Dataset):
+    '''
+    Custom dataset for Stetchy's training
+    '''
     def __init__(self, args, train_class, dicts_class, transform=None):
 
         self.transform = transform
