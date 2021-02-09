@@ -43,20 +43,6 @@ def Sketchy_Extended(args, transform="None"):
     train_class = shuffled_list_class[: int(0.9 * len(shuffled_list_class))]
     valid_class = shuffled_list_class[int(0.9 * len(shuffled_list_class)):]
 
-    # if args.exp_idf is not None:
-    #     if args.save is None:
-    #         args.save = os.path.join("./checkpoint", args.exp_idf)
-    #     with open(os.path.join(args.save, "train.txt"), "w") as fp:
-    #         for item in train_class:
-    #             fp.write("%s\n" % item)
-    #     with open(os.path.join(args.save, "valid.txt"), "w") as fp:
-    #         for item in valid_class:
-    #             fp.write("%s\n" % item)
-
-    #     if args.plot is False:
-    #         with open(os.path.join(args.save, "valid.txt"), "r") as fp:
-    #             valid_class = fp.read().splitlines()
-
     # Data Loaders
     train_loader = Sketchy_Extended_train(args, train_class, dicts_class, transform)
     valid_sk_loader = Sketchy_Extended_valid_test(
@@ -90,7 +76,6 @@ class Sketchy_Extended_valid_test(data.Dataset):
         type_skim="images",
     ):
         self.transform = transform
-        self.plot = args.plot
         self.set_class = set_class
         self.dicts_class = dicts_class
 

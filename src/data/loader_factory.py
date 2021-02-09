@@ -21,9 +21,8 @@ def load_data(args, transform=None):
     """
     if args.dataset == "sketchy_extend":
         return Sketchy_Extended(args, transform)
-    elif args.dataset == "tuberlin_extend":
+    # elif args.dataset == "tuberlin_extend":
         # TODO PML-09.02.2021
-        return Sketchy_Extended(args, transform)
         # return TUBerlin_Extended(args, transform)
     else:
         sys.exit()
