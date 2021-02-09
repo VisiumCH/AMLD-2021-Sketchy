@@ -57,6 +57,6 @@ if __name__ == "__main__":
 
     print("\n--- Test Data ---")
     print("\t* Length Sketch: {}".format(len(test_sk_loader)))
-    print("\t* Length mage: {}".format(len(test_im_loader)))
+    print("\t* Length Image: {}".format(len(test_im_loader)))
     print("\t* Classes: {}".format(test_sk_loader.get_class_dict()))
     print("\t* Num Classes. {}".format(len(test_sk_loader.get_class_dict())))
