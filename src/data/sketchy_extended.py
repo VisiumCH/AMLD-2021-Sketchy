@@ -99,6 +99,9 @@ class Sketchy_Extended_valid_test(data.Dataset):
         self.loader = default_image_loader
 
     def __getitem__(self, index):
+        '''
+        Get a photo, its path and label based on its index
+        '''
         label = self.cls[index]
         fname = os.path.join(self.dir_file, label, self.fnames[index])
         photo = self.transform(self.loader(fname))
@@ -107,9 +110,11 @@ class Sketchy_Extended_valid_test(data.Dataset):
         return photo, fname, lbl
 
     def __len__(self):
+        # Number of sketches in the dataset
         return len(self.fnames)
 
     def get_class_dict(self):
+        # Dictionnary of categories of the dataset
         return self.set_class
 
 
@@ -133,6 +138,17 @@ class Sketchy_Extended_train(data.Dataset):
         self.loader = default_image_loader
 
     def __getitem__(self, index):
+        '''
+        Get training data based on sketch index
+        Args:
+            - index: index of the sketch
+        Return:
+            - sketch: sketch image
+            - image_pos: image of same category of sketch
+            - image_neg: image of different category of sketch
+            - lbl_pos: category of sketch and image_pos
+            - lbl_neg: category of image_neg
+        '''
         # Read sketch
         fname = os.path.join(
             self.dir_sketch,
@@ -161,7 +177,9 @@ class Sketchy_Extended_train(data.Dataset):
         return sketch, image_pos, image_neg, lbl_pos, lbl_neg
 
     def __len__(self):
+        # Number of sketches in the dataset
         return len(self.fnames_sketch)
 
     def get_class_dict(self):
+        # Dictionnary of categories of the dataset
         return self.train_class
