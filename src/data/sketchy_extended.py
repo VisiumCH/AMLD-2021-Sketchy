@@ -15,12 +15,14 @@ from scipy.spatial.distance import cdist
 
 from utils import *
 
+dataset_folder = "Sketchy"
+
 
 def Sketchy_Extended(args, transform="None"):
 
     # Getting the classes
     class_directories = glob(
-        os.path.join(args.data_path, "Sketchy", "extended_photo/*/")
+        os.path.join(args.data_path, dataset_folder, "extended_photo/*/")
     )
     list_class = [class_path.split("/")[-2] for class_path in class_directories]
     dicts_class = create_dict_texts(list_class)
@@ -30,7 +32,7 @@ def Sketchy_Extended(args, transform="None"):
 
     # Read test classes
     with open(
-        os.path.join(args.data_path, "Sketchy", "zeroshot_classes_sketchy.txt")
+        os.path.join(args.data_path, dataset_folder, "zeroshot_classes_sketchy.txt")
     ) as fp:  # zeroshot_classes.txt
         test_class = fp.read().splitlines()
 
@@ -96,10 +98,13 @@ class Sketchy_Extended_valid_test(data.Dataset):
         self.dicts_class = dicts_class
 
         if type_skim == "images":
-            self.dir_file = os.path.join(args.data_path, "Sketchy", "extended_photo")
+            self.dir_file = os.path.join(
+                args.data_path, dataset_folder, "extended_photo"
+            )
         elif type_skim == "sketch":
-            sub_dir = "tx_000000000000"
-            self.dir_file = os.path.join(args.data_path, "Sketchy", "sketch", sub_dir)
+            self.dir_file = os.path.join(
+                args.data_path, dataset_folder, "sketch", "tx_000000000000"
+            )
         else:
             NameError(type_skim + " not implemented!")
 
@@ -128,18 +133,9 @@ class Sketchy_Extended_train(data.Dataset):
         self.train_class = train_class
         self.dicts_class = dicts_class
 
-        self.sub_dirs = [
-            "tx_000000000000",
-            "tx_000100000000",
-            "tx_000000000010",
-            "tx_000000000110",
-            "tx_000000001110",
-            "tx_000000001010",
-        ]
-
-        self.dir_image = os.path.join(args.data_path, "Sketchy", "extended_photo")
+        self.dir_image = os.path.join(args.data_path, dataset_folder, "extended_photo")
         self.dir_sketch = os.path.join(
-            args.data_path, "Sketchy", "sketch", "tx_000000000000"
+            args.data_path, dataset_folder, "sketch", "tx_000000000000"
         )
         self.fnames_sketch, self.cls_sketch = get_file_list(
             self.dir_sketch, self.train_class, "sketch"
@@ -158,23 +154,21 @@ class Sketchy_Extended_train(data.Dataset):
 
         # Target
         label = self.cls_sketch[index]
-        lbl = self.dicts_class.get(label)
+        lbl_pos = self.dicts_class.get(label)
 
         # Positive image
         # The constraint according to the ECCV 2018
-        # fname = os.path.join(self.dir_image, label, (fname.split('/')[-1].split('-')[0]+'.jpg'))
         fname = get_random_file_from_path(os.path.join(self.dir_image, label))
         image_pos = self.transform(self.loader(fname))
 
         # Negative class
-        # Hard negative
         possible_classes = [x for x in self.train_class if x != label]
         label_neg = np.random.choice(possible_classes, 1)[0]
         fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
         image_neg = self.transform(self.loader(fname))
         lbl_neg = self.dicts_class.get(label_neg)
 
-        return sketch, image_pos, image_neg, lbl, lbl_neg
+        return sketch, image_pos, image_neg, lbl_pos, lbl_neg
 
     def __len__(self):
         return len(self.fnames_sketch)

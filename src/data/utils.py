@@ -40,5 +40,5 @@ def default_image_loader(path):
 
 def get_random_file_from_path(file_path):
     _ext = "*.jpg"
-    f_list = glob.glob(os.path.join(file_path, _ext))
+    f_list = glob(os.path.join(file_path, _ext))
     return np.random.choice(f_list, 1)[0]
