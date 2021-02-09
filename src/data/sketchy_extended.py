@@ -1,19 +1,16 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-import torch
-import torch.utils.data as data
-
 import os
-import pickle
 import random
-import sys
 from glob import glob
 
 import numpy as np
-from scipy.spatial.distance import cdist
+import torch.utils.data as data
 
-from utils import *
+from utils import (
+    create_dict_texts,
+    get_file_list,
+    default_image_loader,
+    get_random_file_from_path,
+)
 
 dataset_folder = "Sketchy"
 
@@ -44,7 +41,7 @@ def Sketchy_Extended(args, transform="None"):
 
     # Dividing the classes
     train_class = shuffled_list_class[: int(0.9 * len(shuffled_list_class))]
-    valid_class = shuffled_list_class[int(0.9 * len(shuffled_list_class)) :]
+    valid_class = shuffled_list_class[int(0.9 * len(shuffled_list_class)):]
 
     # if args.exp_idf is not None:
     #     if args.save is None:

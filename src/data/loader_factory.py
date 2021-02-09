@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 
 from sketchy_extended import Sketchy_Extended
@@ -38,7 +40,8 @@ if __name__ == "__main__":
     from torchvision import transforms
 
     # find key (class name) based on value
-    dict_by_value = lambda dic, value: list(dic.keys())[list(dic.values()).index(value)]
+    def dict_by_value(dic, value):
+        return list(dic.keys())[list(dic.values()).index(value)]
 
     # Parse options
     args = Options().parse()
