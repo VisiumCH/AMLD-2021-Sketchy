@@ -2,7 +2,7 @@
 Guide for usage:
 In your terminal, run the command:
 python download_gdrive.py GoogleFileID /path/for/this/file/to/download/file.type
-Credited to 
+Credited to
 https://stackoverflow.com/questions/25010369/wget-curl-large-file-from-google-drive
 author: https://stackoverflow.com/users/1475331/user115202
 """
@@ -46,7 +46,7 @@ def download_file_from_google_drive(id, destination):
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) is not 3:
+    if len(sys.argv) != 3:
         print("Usage: python google_drive.py drive_file_id destination_file_path")
     else:
         # TAKE ID FROM SHAREABLE LINK
