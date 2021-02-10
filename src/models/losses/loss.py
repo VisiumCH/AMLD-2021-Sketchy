@@ -1,16 +1,25 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .decoder import MetricNN, LinearNN, GraphNN
-from .layers import grad_reverse
 
 
-def mse_loss(input, target):
-    return torch.sum((input - target)**2) / input.data.nelement()
+class GradReverse(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x, lambd=0.5):
+        # ctx is a context object that can be used to stash information
+        # for backward computation
+        ctx.lambd = lambd
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        # We return as many input gradients as there were arguments.
+        # Gradients of non-Tensor arguments to forward must be None.
+        return ctx.lambd * grad_output.neg(), None
 
 
-def l1_loss(input, target):
-    return torch.sum(torch.abs(input - target)) / input.data.nelement()
+def grad_reverse(x, lambd=0.5):
+    return GradReverse.apply(x, lambd)
 
 
 class DomainLoss(nn.Module):

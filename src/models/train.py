@@ -17,7 +17,6 @@ from test import test
 from src.models.networks.encoder import EncoderCNN
 from src.data.loader_factory import load_data
 from src.models.losses.loss import DetangledJoinDomainLoss
-import json
 
 
 def adjust_learning_rate(optimizer, epoch):
@@ -162,7 +161,6 @@ def main():
             epoch=checkpoint['epoch'], mean_ap=checkpoint['best_map']))
 
     print('***Train***')
-
     for epoch in range(start_epoch, args.epochs):
         # Update learning rate
         adjust_learning_rate(optimizer, epoch)
@@ -245,13 +243,12 @@ def main():
     # print('Test mAP@200 {map_200}%'.format(map_200=map_200))
     # print('Test Precision@200 {prec_200}%'.format(prec_200=precision_200))
 
-    if args.exp_idf is not None:
-        with open(os.path.join(args.log, 'results.txt'), 'w') as fp:
-            print('Epoch: {best_epoch:.3f}'.format(best_epoch=best_epoch), file=fp)
-            print('Valid: {mean_ap:.3f}'.format(mean_ap=best_map), file=fp)
-            print('Test mAP: {mean_ap:.3f}'.format(mean_ap=map_test), file=fp)
-            # print('Test mAP@200: {map_200:.3f}'.format(map_200=map_200), file=fp)
-            # print('Test Precision@200: {prec_200:.3f}'.format(prec_200=precision_200), file=fp)
+    with open(os.path.join(args.save, 'results.txt'), 'w') as fp:
+        print('Epoch: {best_epoch:.3f}'.format(best_epoch=best_epoch), file=fp)
+        print('Valid: {mean_ap:.3f}'.format(mean_ap=best_map), file=fp)
+        print('Test mAP: {mean_ap:.3f}'.format(mean_ap=map_test), file=fp)
+        # print('Test mAP@200: {map_200:.3f}'.format(map_200=map_200), file=fp)
+        # print('Test Precision@200: {prec_200:.3f}'.format(prec_200=precision_200), file=fp)
 
 
 if __name__ == '__main__':
@@ -267,16 +264,10 @@ if __name__ == '__main__':
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
 
-    if args.exp_idf is not None:
-        if not os.path.isdir(os.path.join('./checkpoint', args.exp_idf)):
-            os.makedirs(os.path.join('./checkpoint', args.exp_idf))
-        args.save = os.path.join('./checkpoint', args.exp_idf)
-        args.log = os.path.join('./checkpoint', args.exp_idf)+'/'
-
     if args.log is not None:
         print('Initialize logger')
-        log_dir = args.log + '{}_run-batchSize_{}/' \
-            .format(len(glob.glob(args.log + '*_run-batchSize_{}'.format(args.batch_size))), args.batch_size)
+        log_dir = args.log + '{}_run-batch_size_{}/' \
+            .format(len(glob.glob(args.log + '*_run-batch_size_{}'.format(args.batch_size))), args.batch_size)
 
         args.save = log_dir
         # Create logger

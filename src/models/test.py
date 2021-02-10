@@ -1,14 +1,11 @@
 import torch
-from torch.autograd.variable import Variable
 from torchvision import transforms
 from torch.utils.data import DataLoader
 import torch.nn as nn
 
-import os
 import numpy as np
 import time
 from sklearn.metrics import average_precision_score
-import math
 import multiprocessing
 from joblib import Parallel, delayed
 import pickle
@@ -161,12 +158,8 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
 def main():
     print('Prepare data')
     transform = transforms.Compose([transforms.ToTensor()])
-    _, [valid_sk_data, valid_im_data], [test_sk_data, test_im_data], dict_class = load_data(args, transform)
+    _, [_, _], [test_sk_data, test_im_data], dict_class = load_data(args, transform)
 
-    valid_sk_loader = DataLoader(valid_sk_data, batch_size=3 * args.batch_size, num_workers=args.prefetch,
-                                 pin_memory=True)
-    valid_im_loader = DataLoader(valid_im_data, batch_size=3 * args.batch_size, num_workers=args.prefetch,
-                                 pin_memory=True)
     test_sk_loader = DataLoader(test_sk_data, batch_size=3 * args.batch_size, num_workers=args.prefetch,
                                 pin_memory=True)
     test_im_loader = DataLoader(test_im_data, batch_size=3 * args.batch_size, num_workers=args.prefetch,
@@ -194,7 +187,7 @@ def main():
                                                                     mean_ap=checkpoint['best_map']))
 
     print('***Valid***')
-    #map_valid = test(valid_im_loader, valid_sk_loader, [im_net, sk_net], args, dict_class)
+    # map_valid = test(valid_im_loader, valid_sk_loader, [im_net, sk_net], args, dict_class)
     print('***Test***')
     map_test = test(test_im_loader, test_sk_loader, [im_net, sk_net], args, dict_class)
 
