@@ -5,7 +5,7 @@ from glob import glob
 import numpy as np
 import torch.utils.data as data
 
-from utils import (
+from src.data.utils import (
     create_dict_texts,
     get_file_list,
     default_image_loader,
@@ -72,6 +72,7 @@ class Sketchy_Extended_valid_test(data.Dataset):
     '''
     Custom dataset for Stetchy's validation and testing
     '''
+
     def __init__(
         self,
         args,
@@ -122,6 +123,7 @@ class Sketchy_Extended_train(data.Dataset):
     '''
     Custom dataset for Stetchy's training
     '''
+
     def __init__(self, args, train_class, dicts_class, transform=None):
 
         self.transform = transform

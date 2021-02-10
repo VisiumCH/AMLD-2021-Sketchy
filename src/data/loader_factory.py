@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 
-from sketchy_extended import Sketchy_Extended
+from src.data.sketchy_extended import Sketchy_Extended
 
 
 def load_data(args, transform=None):

@@ -19,3 +19,6 @@ torchvision
 torch
 opencv-python
 scipy
+tensorboardX
+joblib
+scikit-learn
