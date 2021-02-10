@@ -6,13 +6,11 @@ import torch.nn as nn
 import numpy as np
 import time
 import multiprocessing
-from joblib import Parallel, delayed
-import pickle
 
 # Own modules
 from src.options import Options
-from src.models.utils import load_checkpoint
-from src.models.metrics import recall, precak
+from src.models.utils import load_checkpoint, save_qualitative_results
+from src.models.metrics import get_similarity, precak, get_map_200, get_map_all
 from src.models.networks.encoder import EncoderCNN
 from src.data.loader_factory import load_data
 
@@ -25,7 +23,7 @@ def get_test_data(data_loader, model):
         - model: encoder from images (or sketches) to embeddings
     Return:
         - acc_fnames: list of the path to the images (or sketches)
-        - acc_embeddings: list of the associated embeddings 
+        - acc_embeddings: list of the associated embeddings
         - acc_class: list of the associated target classes
     '''
     acc_fnames = []
@@ -63,49 +61,33 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
     acc_fnames_im, acc_im_em, acc_cls_im = get_test_data(im_loader, im_net)
     acc_fnames_sk, acc_sk_em, acc_cls_sk = get_test_data(sk_loader, sk_net)
 
+    sim, str_sim = get_similarity(acc_sk_em, acc_im_em, acc_cls_im, acc_cls_sk)
+
+    # Precision and recall for top k
+    mpreck, reck = precak(sim, str_sim, k=5)
+
     num_cores = min(multiprocessing.cpu_count(), 32)
-
-    mpreck, reck = get_precision_and_recall(acc_sk_em, acc_im_em, num_cores)
-
-    aps = Parallel(n_jobs=num_cores)(delayed(average_precision_score)(str_sim[iq], sim[iq]) for iq in range(nq))
-    map_ = np.mean(aps)
+    map_200, precision_200 = get_map_200(sim, str_sim, num_cores)
+    ap_all, map_all = get_map_all(sim, str_sim, num_cores)
 
     if dict_class is not None:
         dict_class = {v: k for k, v in dict_class.items()}
         diff_class = set(acc_cls_sk)
         for d_class in diff_class:
             ind = acc_cls_sk == d_class
-            print('mAP {} class {}'.format(str(np.array(aps)[ind].mean()), dict_class[d_class]))
+            print('mAP {} class {}'.format(str(np.array(ap_all)[ind].mean()), dict_class[d_class]))
             print('Recall {} class {}'.format(str(np.array(reck)[ind].mean()), dict_class[d_class]))
 
     if args.plot:
-        # Qualitative Results
-        flatten_acc_fnames_sk = [item for sublist in acc_fnames_sk for item in sublist]
-        flatten_acc_fnames_im = [item for sublist in acc_fnames_im for item in sublist]
-
-        retrieved_im_fnames = []
-        # Just a try
-        retrieved_im_true_false = []
-        for i in range(0, sim.shape[0]):
-            sorted_indx = np.argsort(sim[i, :])[::-1]
-            retrieved_im_fnames.append(list(np.array(flatten_acc_fnames_im)[sorted_indx][:args.num_retrieval]))
-            # Just a try
-            retrieved_im_true_false.append(list(np.array(str_sim[i])[sorted_indx][:args.num_retrieval]))
-
-        with open('src/visualisation/sketches.pkl', 'wb') as f:
-            pickle.dump([flatten_acc_fnames_sk], f)
-
-        with open('src/visualisation/retrieved_im_fnames.pkl', 'wb') as f:
-            pickle.dump([retrieved_im_fnames], f)
-
-        with open('src/visualisation/retrieved_im_true_false.pkl', 'wb') as f:
-            pickle.dump([retrieved_im_true_false], f)
+        save_qualitative_results(sim, str_sim, acc_fnames_sk, acc_fnames_im, args)
 
     # Measure elapsed time
     batch_time = time.time() - end
 
-    print('* mAP {mean_ap:.3f}; Avg Time x Batch {b_time:.3f}'.format(mean_ap=map_, b_time=batch_time))
-    return map_  # , map_200, precision_200
+    print('* mAP {mean_ap:.3f}; Avg Time x Batch {b_time:.3f}'.format(mean_ap=map_all, b_time=batch_time))
+    print('* mAP@200 {mean_ap_200:.3f}; Avg Time x Batch {b_time:.3f}'.format(mean_ap_200=map_200, b_time=batch_time))
+    print(
+        '* Precision@200 {precision_200:.3f}; Avg Time x Batch {b_time:.3f}'.format(precision_200=precision_200, b_time=batch_time))
 
 
 def main():
@@ -140,7 +122,7 @@ def main():
                                                                     mean_ap=checkpoint['best_map']))
 
     print('***Test***')
-    map_test = test(test_im_loader, test_sk_loader, [im_net, sk_net], args, dict_class)
+    test(test_im_loader, test_sk_loader, [im_net, sk_net], args, dict_class)
 
 
 if __name__ == '__main__':

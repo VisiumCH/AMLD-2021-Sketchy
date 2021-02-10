@@ -1,6 +1,4 @@
-import torch
-import os
-import errno
+import math
 import numpy as np
 
 import multiprocessing
@@ -46,17 +44,13 @@ def precak(sim, str_sim, k=None):
     return np.mean(preck), reck
 
 
-def sort_by_similarity(acc_sk_em, acc_im_em, acc_cls_im, acc_cls_sk):
+def get_similarity(acc_sk_em, acc_im_em, acc_cls_im, acc_cls_sk):
     '''
     Sort images by similarity (closest to sketch) in the feature space
     The distance is computed as the euclidean distance (or cosine distance)
     To later compute the precision, we need the probabilitity estimate of a class.
     It has reverse interpretation than the distance (closer is more similar and pobable)
     Hence Similarity = 1 - distance (or 1/(1+distance))
-
-    We then sort in decreasing order (-Similarity) as in similarity means 0= un-similar 1= very-similar
-    Args:
-
     '''
     # Distance Measure
     distance = cdist(acc_sk_em, acc_im_em, 'euclidean')  # L1 same as Manhattan, Cityblock
@@ -70,6 +64,10 @@ def sort_by_similarity(acc_sk_em, acc_im_em, acc_cls_im, acc_cls_sk):
     # 1 if the image and sketch belong to the same class and 0 otherwise
     str_sim = (np.expand_dims(acc_cls_sk, axis=1) == np.expand_dims(acc_cls_im, axis=0)) * 1
 
+    return sim, str_sim
+
+
+def sort_by_similarity(sim, str_sim):
     # Sort in decreasing similarity
     arg_sort_sim = (-sim).argsort()
     sort_sim = []  # list of similarity values ordered by similarity (most to least similar)
@@ -81,10 +79,12 @@ def sort_by_similarity(acc_sk_em, acc_im_em, acc_cls_im, acc_cls_sk):
     sort_sim = np.array(sort_sim)
     sort_str_sim = np.array(sort_lst)
 
-    return sim, sort_sim, sort_str_sim
+    return sort_sim, sort_str_sim
 
 
-def get_precision_and_recall(sim, sort_sim, sort_str_sim):
+def get_map_prec_200(sim, str_sim, num_cores):
+
+    sort_sim, sort_str_sim = sort_by_similarity(sim, str_sim)
 
     nq = str_sim.shape[0]
     aps_200 = Parallel(n_jobs=num_cores)(delayed(average_precision_score)(sort_str_sim[iq, 0:200], sort_sim[iq, 0:200])
@@ -95,6 +95,13 @@ def get_precision_and_recall(sim, sort_sim, sort_str_sim):
     # Precision@200 means at the place 200th
     precision_200 = np.mean(sort_str_sim[:, 200])
 
-    mpreck, reck = precak(sim, str_sim, k=5)
+    return map_200, precision_200
 
-    return mpreck, reck
+
+def get_map_all(sim, str_sim, num_cores):
+
+    nq = str_sim.shape[0]
+    ap_all = Parallel(n_jobs=num_cores)(delayed(average_precision_score)(str_sim[iq], sim[iq]) for iq in range(nq))
+    map_all = np.mean(ap_all)
+
+    return ap_all, map_all
