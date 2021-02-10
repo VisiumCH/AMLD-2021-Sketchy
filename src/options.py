@@ -18,7 +18,7 @@ class Options():
         parser.add_argument('--grl_lambda', type=float, default=0.5, help='Lambda used to normalize the GRL layer.')
         parser.add_argument('--nopretrain', action='store_false', help='Loads a pretrained model (Default: True).')
         # Optimization options
-        parser.add_argument('--epochs', '-e', type=int, default=10, help='Number of epochs to train.')
+        parser.add_argument('--epochs', '-e', type=int, default=2, help='Number of epochs to train.')
         parser.add_argument('--batch_size', '-b', type=int, default=20, help='Batch size.')
         parser.add_argument('--learning_rate', '-lr', type=float, default=1e-4, help='The Learning Rate.')
         parser.add_argument('--momentum', '-m', type=float, default=0.9, help='Momentum.')
@@ -37,7 +37,7 @@ class Options():
         parser.add_argument('--prefetch', type=int, default=2, help='Pre-fetching threads.')
         # i/o
         parser.add_argument('--log', type=str, default='io/models/', help='Log folder.')
-        parser.add_argument('--log-interval', type=int, default=2, metavar='N',
+        parser.add_argument('--log-interval', type=int, default=1, metavar='N',
                             help='How many batches to wait before logging training status')
         parser.add_argument('--attn', action='store_true', help='Attention module (Default: False).')
         parser.add_argument('--plot', action='store_true', help='Qualitative results (Default: False).')

@@ -10,12 +10,12 @@ import multiprocessing
 # Own modules
 from src.options import Options
 from src.models.utils import load_checkpoint, save_qualitative_results
-from src.models.metrics import get_similarity, precak, get_map_200, get_map_all
+from src.models.metrics import get_similarity, precak, get_map_prec_200, get_map_all
 from src.models.networks.encoder import EncoderCNN
 from src.data.loader_factory import load_data
 
 
-def get_test_data(data_loader, model):
+def get_test_data(data_loader, model, args):
     '''
     Get features, paths and target class of all images (or sketches) of data loader
     Args:
@@ -45,6 +45,9 @@ def get_test_data(data_loader, model):
             acc_embeddings = np.concatenate((acc_embeddings, out_features.cpu().data.numpy()), axis=0)
             acc_class = np.concatenate((acc_class, target.cpu().data.numpy()), axis=0)
 
+        if i > 1:
+            break
+
     return acc_fnames, acc_embeddings, acc_class
 
 
@@ -58,8 +61,8 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
     sk_net.eval()
     torch.set_grad_enabled(False)
 
-    acc_fnames_im, acc_im_em, acc_cls_im = get_test_data(im_loader, im_net)
-    acc_fnames_sk, acc_sk_em, acc_cls_sk = get_test_data(sk_loader, sk_net)
+    acc_fnames_im, acc_im_em, acc_cls_im = get_test_data(im_loader, im_net, args)
+    acc_fnames_sk, acc_sk_em, acc_cls_sk = get_test_data(sk_loader, sk_net, args)
 
     sim, str_sim = get_similarity(acc_sk_em, acc_im_em, acc_cls_im, acc_cls_sk)
 
@@ -67,7 +70,7 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
     mpreck, reck = precak(sim, str_sim, k=5)
 
     num_cores = min(multiprocessing.cpu_count(), 32)
-    map_200, precision_200 = get_map_200(sim, str_sim, num_cores)
+    map_200, prec_200 = get_map_prec_200(sim, str_sim, num_cores)
     ap_all, map_all = get_map_all(sim, str_sim, num_cores)
 
     if dict_class is not None:
@@ -86,8 +89,8 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
 
     print('* mAP {mean_ap:.3f}; Avg Time x Batch {b_time:.3f}'.format(mean_ap=map_all, b_time=batch_time))
     print('* mAP@200 {mean_ap_200:.3f}; Avg Time x Batch {b_time:.3f}'.format(mean_ap_200=map_200, b_time=batch_time))
-    print(
-        '* Precision@200 {precision_200:.3f}; Avg Time x Batch {b_time:.3f}'.format(precision_200=precision_200, b_time=batch_time))
+    print('* Precision@200 {prec_200:.3f}; Avg Time x Batch {b_time:.3f}'.format(prec_200=prec_200, b_time=batch_time))
+    return map_all, map_200, prec_200
 
 
 def main():
@@ -122,7 +125,7 @@ def main():
                                                                     mean_ap=checkpoint['best_map']))
 
     print('***Test***')
-    test(test_im_loader, test_sk_loader, [im_net, sk_net], args, dict_class)
+    _, _, _ = test(test_im_loader, test_sk_loader, [im_net, sk_net], args, dict_class)
 
 
 if __name__ == '__main__':

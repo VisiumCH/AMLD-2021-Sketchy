@@ -11,7 +11,7 @@ import os
 
 # Own modules
 from src.options import Options
-from src.models.logger import log_metric
+from src.models.logger import logs
 from utils import save_checkpoint, load_checkpoint
 from test import test
 from src.models.networks.encoder import EncoderCNN
@@ -30,10 +30,10 @@ def adjust_learning_rate(optimizer, epoch):
 
 
 def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
-    batch_time = log_metric.AverageMeter()
-    losses_dom = log_metric.AverageMeter()
-    losses_spa = log_metric.AverageMeter()
-    losses = log_metric.AverageMeter()
+    batch_time = logs.AverageMeter()
+    losses_dom = logs.AverageMeter()
+    losses_spa = logs.AverageMeter()
+    losses = logs.AverageMeter()
 
     # switch to train mode
     im_net, sk_net = model
@@ -77,8 +77,12 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
         if log_int > 0 and i % log_int == 0:
             print('Epoch: [{0}]({1}/{2}) Average Loss {loss.avg:.3f} ( Dom: {loss_dom.avg} + Spa: {loss_spa.avg}); Avg Time x Batch {b_time.avg:.3f}'
                   .format(epoch, i, len(data_loader), loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
+
+        if i > 1:
+            break
     print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_dom.avg} + {loss_spa.avg} ); Avg Time x Batch {b_time.avg:.3f}'
           .format(epoch, loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
+
     return losses, losses_dom, losses_spa
 
 
@@ -101,24 +105,7 @@ def main():
         elif not args.attn:
             pass
         else:
-            # Save some images to plot attention
-            rand_samples_sk = np.random.randint(0, high=len(valid_sk_data), size=5)
-            rand_samples_im = np.random.randint(0, high=len(valid_im_data), size=5)
-            for i in range(len(rand_samples_sk)):
-                sk, _, lbl_sk = valid_sk_data[rand_samples_sk[i]]
-                im, _, lbl_im = valid_im_data[rand_samples_im[i]]
-                if args.cuda:
-                    sk, im = sk.cuda(), im.cuda()
-                if i == 0:
-                    sk_log = sk.unsqueeze(0)
-                    im_log = im.unsqueeze(0)
-                    sk_lbl_log = [lbl_sk]
-                    im_lbl_log = [lbl_im]
-                else:
-                    sk_log = torch.cat((sk_log, sk.unsqueeze(0)), dim=0)
-                    im_log = torch.cat((im_log, im.unsqueeze(0)), dim=0)
-                    sk_lbl_log.append(lbl_sk)
-                    im_lbl_log.append(lbl_im)
+            sk_log, im_log, sk_lbl_log, im_lbl_log = logs.get_images_to_plot_attention(valid_sk_data, valid_im_data)
 
     print('Create trainable model')
     if args.nopretrain:
@@ -167,7 +154,7 @@ def main():
 
         loss_train, loss_dom, loss_spa = train(
             train_loader, [im_net, sk_net], optimizer, args.cuda, criterion, epoch, args.log_interval)
-        map_valid = test(valid_im_loader, valid_sk_loader, [im_net, sk_net], args)
+        map_valid, map_valid_200, prec_valid_200 = test(valid_im_loader, valid_sk_loader, [im_net, sk_net], args)
 
         # Logger
         if args.log:
@@ -179,35 +166,15 @@ def main():
                 pass
             else:
                 with torch.set_grad_enabled(False):
-                    # Images
-                    _, attn_im = im_net(im_log)
-                    attn_im = nn.Upsample(size=(im_log[0].size(1), im_log[0].size(2)),
-                                          mode='bilinear', align_corners=False)(attn_im)
-                    attn_im = attn_im - attn_im.view((attn_im.size(0), -1)
-                                                     ).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-                    attn_im = 1 - attn_im/attn_im.view((attn_im.size(0), -1)
-                                                       ).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-
-                    _, attn_sk = sk_net(sk_log)
-                    attn_sk = nn.Upsample(size=(sk_log[0].size(1), sk_log[0].size(2)),
-                                          mode='bilinear', align_corners=False)(attn_sk)
-                    attn_sk = attn_sk - attn_sk.view((attn_sk.size(0), -1)
-                                                     ).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-                    attn_sk = attn_sk/attn_sk.view((attn_sk.size(0), -1)
-                                                   ).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-                    for i in range(im_log.size(0)):
-                        plt_im = torch.cat([im_log[i], attn_im[i]], dim=0)
-                        nam = list(dict_class.keys())[list(dict_class.values()).index(im_lbl_log[i])]
-                        logger.add_image('im{}_{}'.format(i, nam), plt_im)
-                        nam = list(dict_class.keys())[list(dict_class.values()).index(sk_lbl_log[i])]
-                        plt_im = sk_log[i]*attn_sk[i]
-                        logger.add_image('sk{}_{}'.format(i, nam), plt_im)
+                    logs.plot_attention(sk_log, im_log, sk_lbl_log, im_lbl_log, im_net, sk_net)
 
             # Scalars
             logger.add_scalar('loss_train', loss_train.avg)
             logger.add_scalar('loss_dom', loss_dom.avg)
             logger.add_scalar('loss_spa', loss_spa.avg)
             logger.add_scalar('map_valid', map_valid)
+            logger.add_scalar('map_valid_200', map_valid_200)
+            logger.add_scalar('prec_valid_200', prec_valid_200)
             logger.add_scalar('learning_rate', args.learning_rate)
             logger.step()
 
@@ -237,18 +204,17 @@ def main():
             epoch=checkpoint['epoch'], mean_ap=checkpoint['best_map']))
 
     print('***Test***')
-
-    map_test = test(test_im_loader, test_sk_loader, [im_net, sk_net], args)
+    map_test, map_200, prec_200 = test(test_im_loader, test_sk_loader, [im_net, sk_net], args)
     print('Test mAP {mean_ap}%'.format(mean_ap=map_test))
-    # print('Test mAP@200 {map_200}%'.format(map_200=map_200))
-    # print('Test Precision@200 {prec_200}%'.format(prec_200=precision_200))
+    print('Test mAP@200 {map_200}%'.format(map_200=map_200))
+    print('Test Precision@200 {prec_200}%'.format(prec_200=prec_200))
 
     with open(os.path.join(args.save, 'results.txt'), 'w') as fp:
         print('Epoch: {best_epoch:.3f}'.format(best_epoch=best_epoch), file=fp)
         print('Valid: {mean_ap:.3f}'.format(mean_ap=best_map), file=fp)
         print('Test mAP: {mean_ap:.3f}'.format(mean_ap=map_test), file=fp)
-        # print('Test mAP@200: {map_200:.3f}'.format(map_200=map_200), file=fp)
-        # print('Test Precision@200: {prec_200:.3f}'.format(prec_200=precision_200), file=fp)
+        print('Test mAP@200: {map_200:.3f}'.format(map_200=map_200), file=fp)
+        print('Test Precision@200: {prec_200:.3f}'.format(prec_200=prec_200), file=fp)
 
 
 if __name__ == '__main__':
@@ -272,7 +238,7 @@ if __name__ == '__main__':
         args.save = log_dir
         # Create logger
         print('Log dir:\t' + log_dir)
-        logger = log_metric.Logger(log_dir, force=True)
+        logger = logs.Logger(log_dir, force=True)
         with open(os.path.join(args.save, 'params.txt'), 'w') as fp:
             for key, val in vars(args).items():
                 fp.write('{} {}\n'.format(key, val))

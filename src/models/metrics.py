@@ -93,9 +93,9 @@ def get_map_prec_200(sim, str_sim, num_cores):
     map_200 = np.mean(aps_200_actual)
 
     # Precision@200 means at the place 200th
-    precision_200 = np.mean(sort_str_sim[:, 200])
+    prec_200 = np.mean(sort_str_sim[:, 100])  # TODO replace with 200
 
-    return map_200, precision_200
+    return map_200, prec_200
 
 
 def get_map_all(sim, str_sim, num_cores):
