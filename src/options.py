@@ -25,7 +25,6 @@ class Options():
         parser.add_argument('--decay', '-d', type=float, default=0.0005, help='Weight decay (L2 penalty).')
         parser.add_argument('--schedule', type=int, nargs='+', default=[],
                             help='Decrease learning rate at these epochs.')
-        parser.add_argument('--w_semantic', type=float, default=1, help='Semantic loss Weight.')
         parser.add_argument('--w_domain', type=float, default=1, help='Domain loss Weight.')
         parser.add_argument('--w_triplet', type=float, default=1, help='Triplet loss Weight.')
         parser.add_argument('--gamma', type=float, default=0.1, help='LR is multiplied by gamma on schedule.')

@@ -32,7 +32,6 @@ def adjust_learning_rate(optimizer, epoch):
 
 def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
     batch_time = log_metric.AverageMeter()
-    losses_sem = log_metric.AverageMeter()
     losses_dom = log_metric.AverageMeter()
     losses_spa = log_metric.AverageMeter()
     losses = log_metric.AverageMeter()
@@ -44,10 +43,10 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
     torch.set_grad_enabled(True)
 
     end = time.time()
-    for i, (sk, im, im_neg, w2v, _, _) in enumerate(data_loader):
+    for i, (sk, im, im_neg, _, _) in enumerate(data_loader):
         # Prepare input data
         if cuda:
-            im, im_neg, sk, w2v = im.cuda(), im_neg.cuda(), sk.cuda(), w2v.cuda()
+            im, im_neg, sk = im.cuda(), im_neg.cuda(), sk.cuda()
 
         optimizer.zero_grad()
         bs = im.size(0)
@@ -63,14 +62,13 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
         sk_feat, _ = sk_net(sk)  # Sketch encoding and projection to semantic space
 
         # LOSS
-        loss, loss_sem, loss_dom, loss_spa = criterion(im_feat, sk_feat, w2v, im_feat_neg, i)
+        loss, loss_dom, loss_spa = criterion(im_feat, sk_feat, im_feat_neg, i)
 
         # Gradiensts and update
         loss.backward()
         optimizer.step()
 
         # Save values
-        losses_sem.update(loss_sem.item(), bs)
         losses_dom.update(loss_dom.item(), bs)
         losses_spa.update(loss_spa.item(), bs)
         losses.update(loss.item(), bs)
@@ -78,11 +76,11 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
         end = time.time()
 
         if log_int > 0 and i % log_int == 0:
-            print('Epoch: [{0}]({1}/{2}) Average Loss {loss.avg:.3f} ( Sem: {loss_sem.avg} + Dom: {loss_dom.avg} + Spa: {loss_spa.avg}); Avg Time x Batch {b_time.avg:.3f}'
-                  .format(epoch, i, len(data_loader), loss=losses, loss_sem=losses_sem, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
-    print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_sem.avg} + {loss_dom.avg} + {loss_spa.avg} ); Avg Time x Batch {b_time.avg:.3f}'
-          .format(epoch, loss=losses, loss_sem=losses_sem, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
-    return losses, losses_sem, losses_dom, losses_spa
+            print('Epoch: [{0}]({1}/{2}) Average Loss {loss.avg:.3f} ( Dom: {loss_dom.avg} + Spa: {loss_spa.avg}); Avg Time x Batch {b_time.avg:.3f}'
+                  .format(epoch, i, len(data_loader), loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
+    print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_dom.avg} + {loss_spa.avg} ); Avg Time x Batch {b_time.avg:.3f}'
+          .format(epoch, loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
+    return losses, losses_dom, losses_spa
 
 
 def main():
@@ -131,8 +129,8 @@ def main():
     sk_net = EncoderCNN(out_size=args.emb_size, pretrained=args.nopretrain, attention=args.attn)
 
     print('Loss, Optimizer & Evaluation')
-    criterion = DetangledJoinDomainLoss(emb_size=args.emb_size, w_sem=args.w_semantic,
-                                        w_dom=args.w_domain, w_spa=args.w_triplet, lambd=args.grl_lambda)
+    criterion = DetangledJoinDomainLoss(emb_size=args.emb_size, w_dom=args.w_domain,
+                                        w_spa=args.w_triplet, lambd=args.grl_lambda)
     criterion.train()
     optimizer = torch.optim.SGD(list(im_net.parameters()) + list(sk_net.parameters()) + list(criterion.parameters()),
                                 args.learning_rate, momentum=args.momentum, weight_decay=args.decay, nesterov=True)
@@ -169,7 +167,7 @@ def main():
         # Update learning rate
         adjust_learning_rate(optimizer, epoch)
 
-        loss_train, loss_sem, loss_dom, loss_spa = train(
+        loss_train, loss_dom, loss_spa = train(
             train_loader, [im_net, sk_net], optimizer, args.cuda, criterion, epoch, args.log_interval)
         map_valid = test(valid_im_loader, valid_sk_loader, [im_net, sk_net], args)
 
@@ -209,7 +207,6 @@ def main():
 
             # Scalars
             logger.add_scalar('loss_train', loss_train.avg)
-            logger.add_scalar('loss_sem', loss_sem.avg)
             logger.add_scalar('loss_dom', loss_dom.avg)
             logger.add_scalar('loss_spa', loss_spa.avg)
             logger.add_scalar('map_valid', map_valid)
@@ -284,7 +281,7 @@ if __name__ == '__main__':
         args.save = log_dir
         # Create logger
         print('Log dir:\t' + log_dir)
-        logger = LogMetric.Logger(log_dir, force=True)
+        logger = log_metric.Logger(log_dir, force=True)
         with open(os.path.join(args.save, 'params.txt'), 'w') as fp:
             for key, val in vars(args).items():
                 fp.write('{} {}\n'.format(key, val))

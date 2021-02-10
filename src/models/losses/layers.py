@@ -123,7 +123,7 @@ class Wcompute(nn.Module):
             W_new = torch.transpose(W_new, 2, 3)
 
         elif self.activation == 'sigmoid':
-            W_new = F.sigmoid(W_new)
+            W_new = torch.sigmoid(W_new)
             W_new *= (1 - W_id)
         elif self.activation == 'none':
             W_new *= (1 - W_id)
