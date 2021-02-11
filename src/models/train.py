@@ -75,9 +75,6 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
         batch_time.update(time.time() - end, bs)
         end = time.time()
 
-        if i > 1:
-            break
-
         if log_int > 0 and i % log_int == 0:
             print('Epoch: [{0}]({1}/{2}) Average Loss {loss.avg:.3f} \
                  ( Dom: {loss_dom.avg} + Spa: {loss_spa.avg}); Avg Time x Batch {b_time.avg:.3f}'
@@ -146,7 +143,7 @@ def main():
     early_stop_counter = 0
     if args.load is not None:
         print('Loading model')
-        im_net, sk_net, criterion, start_epoch, best_map = load_model(args.load)
+        im_net, sk_net, criterion, start_epoch, best_map = load_model(args.load, im_net, sk_net, criterion)
 
     print('***Train***')
     for epoch in range(start_epoch, args.epochs):
@@ -200,7 +197,7 @@ def main():
     if args.save is not None:
         print('Loading best  model')
         best_model_file = os.path.join(args.save, 'checkpoint.pth')
-        im_net, sk_net, criterion, best_epoch, best_map = load_model(best_model_file)
+        im_net, sk_net, criterion, best_epoch, best_map = load_model(best_model_file, im_net, sk_net, criterion)
 
     print('***Test***')
     map_test, map_200, prec_200 = test(test_im_loader, test_sk_loader, [im_net, sk_net], args)

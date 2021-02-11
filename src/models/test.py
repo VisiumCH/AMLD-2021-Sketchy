@@ -1,4 +1,3 @@
-
 import numpy as np
 import time
 import multiprocessing
@@ -11,7 +10,7 @@ import torch.nn as nn
 from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
-from src.models.metrics import get_similarity, compare_classes, precak, get_map_prec_200, get_map_all
+from src.models.metrics import get_similarity, compare_classes, preca_k, get_map_prec_200, get_map_all
 from src.models.utils import load_model, save_qualitative_results
 
 
@@ -22,11 +21,11 @@ def get_test_data(data_loader, model, args):
         - data_loader: loader of the validation or test set
         - model: encoder from images (or sketches) to embeddings
     Return:
-        - acc_fnames: list of the path to the images (or sketches)
-        - acc_embeddings: list of the associated embeddings
-        - acc_class: list of the associated target classes
+        - fnames: list of the path to the images (or sketches)
+        - embeddings: list of the associated embeddings
+        - classes: list of the associated target classes
     '''
-    acc_fnames = []
+    fnames = []
     for i, (image, fname, target) in enumerate(data_loader):
         # Data to Variable
         if args.cuda:
@@ -36,18 +35,16 @@ def get_test_data(data_loader, model, args):
         out_features, _ = model(image)
 
         # Filename of the images for qualitative
-        acc_fnames.append(fname)
+        fnames.append(fname)
 
         if i == 0:
-            acc_embeddings = out_features.cpu().data.numpy()
-            acc_class = target.cpu().data.numpy()
+            embeddings = out_features.cpu().data.numpy()
+            classes = target.cpu().data.numpy()
         else:
-            acc_embeddings = np.concatenate((acc_embeddings, out_features.cpu().data.numpy()), axis=0)
-            acc_class = np.concatenate((acc_class, target.cpu().data.numpy()), axis=0)
-        if i > 1:
-            break
+            embeddings = np.concatenate((embeddings, out_features.cpu().data.numpy()), axis=0)
+            classes = np.concatenate((classes, target.cpu().data.numpy()), axis=0)
 
-    return acc_fnames, acc_embeddings, acc_class
+    return fnames, embeddings, classes
 
 
 def test(im_loader, sk_loader, model, args, dict_class=None):
@@ -63,32 +60,32 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
     sk_net.eval()
     torch.set_grad_enabled(False)
 
-    acc_fnames_im, acc_im_em, acc_cls_im = get_test_data(im_loader, im_net, args)
-    acc_fnames_sk, acc_sk_em, acc_cls_sk = get_test_data(sk_loader, sk_net, args)
+    im_fnames, im_embeddings, im_class = get_test_data(im_loader, im_net, args)
+    sk_fnames, sk_embeddings, sk_class = get_test_data(sk_loader, sk_net, args)
 
     # Similarity
-    sim = get_similarity(acc_sk_em, acc_im_em)
-    str_sim = compare_classes(acc_cls_im, acc_cls_sk)
+    similarity = get_similarity(sk_embeddings, im_embeddings)
+    class_matches = compare_classes(im_class, sk_class)
 
     # Precision and recall for top k
-    mpreck, reck = precak(sim, str_sim, k=5)
+    mprec_k, rec_k = preca_k(similarity, class_matches, k=5)
 
     # Mean average precision
     num_cores = min(multiprocessing.cpu_count(), 32)
-    map_200, prec_200 = get_map_prec_200(sim, str_sim, num_cores)
-    ap_all, map_all = get_map_all(sim, str_sim, num_cores)
+    map_200, prec_200 = get_map_prec_200(similarity, class_matches, num_cores)
+    ap_all, map_all = get_map_all(similarity, class_matches, num_cores)
 
     # Metrics for each class
     if dict_class is not None:
         dict_class = {v: k for k, v in dict_class.items()}
-        diff_class = set(acc_cls_sk)
+        diff_class = set(sk_class)
         for d_class in diff_class:
-            ind = acc_cls_sk == d_class
+            ind = (sk_class == d_class)
             print('mAP {} class {}'.format(str(np.array(ap_all)[ind].mean()), dict_class[d_class]))
-            print('Recall {} class {}'.format(str(np.array(reck)[ind].mean()), dict_class[d_class]))
+            print('Recall {} class {}'.format(str(np.array(rec_k)[ind].mean()), dict_class[d_class]))
 
     if args.plot:
-        save_qualitative_results(sim, str_sim, acc_fnames_sk, acc_fnames_im, args)
+        save_qualitative_results(similarity, class_matches, sk_fnames, im_fnames, args)
 
     # Measure elapsed time
     batch_time = time.time() - end
@@ -127,7 +124,7 @@ def main():
         im_net, sk_net = im_net.cuda(), sk_net.cuda()
 
     print('Loading model')
-    im_net, sk_net, _, _, _ = load_model(args.load)
+    im_net, sk_net = load_model(args.load, im_net, sk_net)
 
     print('***Test***')
     _, _, _ = test(test_im_loader, test_sk_loader, [im_net, sk_net], args, dict_class)
