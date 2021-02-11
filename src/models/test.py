@@ -12,7 +12,7 @@ from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
 from src.models.metrics import get_similarity, compare_classes, precak, get_map_prec_200, get_map_all
-from src.models.utils import load_checkpoint, save_qualitative_results
+from src.models.utils import load_model, save_qualitative_results
 
 
 def get_test_data(data_loader, model, args):
@@ -51,6 +51,9 @@ def get_test_data(data_loader, model, args):
 
 
 def test(im_loader, sk_loader, model, args, dict_class=None):
+    '''
+    Get data and computes metrics on the model
+    '''
     # Start counting time
     end = time.time()
 
@@ -63,16 +66,19 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
     acc_fnames_im, acc_im_em, acc_cls_im = get_test_data(im_loader, im_net, args)
     acc_fnames_sk, acc_sk_em, acc_cls_sk = get_test_data(sk_loader, sk_net, args)
 
+    # Similarity
     sim = get_similarity(acc_sk_em, acc_im_em)
     str_sim = compare_classes(acc_cls_im, acc_cls_sk)
 
     # Precision and recall for top k
     mpreck, reck = precak(sim, str_sim, k=5)
 
+    # Mean average precision
     num_cores = min(multiprocessing.cpu_count(), 32)
     map_200, prec_200 = get_map_prec_200(sim, str_sim, num_cores)
     ap_all, map_all = get_map_all(sim, str_sim, num_cores)
 
+    # Metrics for each class
     if dict_class is not None:
         dict_class = {v: k for k, v in dict_class.items()}
         diff_class = set(acc_cls_sk)
@@ -94,6 +100,9 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
 
 
 def main():
+    '''
+    Full testing pipeline
+    '''
     print('Prepare data')
     transform = transforms.Compose([transforms.ToTensor()])
     _, [_, _], [test_sk_data, test_im_data], dict_class = load_data(args, transform)
@@ -118,11 +127,7 @@ def main():
         im_net, sk_net = im_net.cuda(), sk_net.cuda()
 
     print('Loading model')
-    checkpoint = load_checkpoint(args.load)
-    im_net.load_state_dict(checkpoint['im_state'])
-    sk_net.load_state_dict(checkpoint['sk_state'])
-    print('Loaded model at epoch {epoch} and mAP {mean_ap}%'.format(epoch=checkpoint['epoch'],
-                                                                    mean_ap=checkpoint['best_map']))
+    im_net, sk_net, _, _, _ = load_model(args.load)
 
     print('***Test***')
     _, _, _ = test(test_im_loader, test_sk_loader, [im_net, sk_net], args, dict_class)

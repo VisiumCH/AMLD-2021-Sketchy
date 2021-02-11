@@ -13,7 +13,7 @@ from src.options import Options
 from src.models.encoder import EncoderCNN
 from src.models.logs import AverageMeter, ScalarLogger, AttentionLogger
 from src.models.loss import DetangledJoinDomainLoss
-from src.models.utils import save_checkpoint, load_checkpoint
+from src.models.utils import save_checkpoint, load_model
 from src.models.test import test
 
 
@@ -28,6 +28,9 @@ def adjust_learning_rate(optimizer, epoch):
 
 
 def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
+    '''
+    Train an epoch
+    '''
     batch_time = AverageMeter()
     losses_dom = AverageMeter()
     losses_spa = AverageMeter()
@@ -89,6 +92,9 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
 
 
 def main():
+    '''
+    Full training pipeline
+    '''
     print('Prepare data')
     transform = transforms.Compose([transforms.ToTensor()])
     train_data, [valid_sk_data, valid_im_data], [test_sk_data, test_im_data], dict_class = load_data(args, transform)
@@ -140,14 +146,7 @@ def main():
     early_stop_counter = 0
     if args.load is not None:
         print('Loading model')
-        checkpoint = load_checkpoint(args.load)
-        im_net.load_state_dict(checkpoint['im_state'])
-        sk_net.load_state_dict(checkpoint['sk_state'])
-        criterion.load_state_dict(checkpoint['criterion'])
-        start_epoch = checkpoint['epoch']
-        best_map = checkpoint['best_map']
-        print('Loaded model at epoch {epoch} and mAP {mean_ap}%'.format(
-            epoch=checkpoint['epoch'], mean_ap=checkpoint['best_map']))
+        im_net, sk_net, criterion, start_epoch, best_map = load_model(args.load)
 
     print('***Train***')
     for epoch in range(start_epoch, args.epochs):
@@ -201,13 +200,7 @@ def main():
     if args.save is not None:
         print('Loading best  model')
         best_model_file = os.path.join(args.save, 'checkpoint.pth')
-        checkpoint = load_checkpoint(best_model_file)
-        im_net.load_state_dict(checkpoint['im_state'])
-        sk_net.load_state_dict(checkpoint['sk_state'])
-        best_map = checkpoint['best_map']
-        best_epoch = checkpoint['epoch']
-        print('Best model at epoch {epoch} and mAP {mean_ap}%'.format(
-            epoch=checkpoint['epoch'], mean_ap=checkpoint['best_map']))
+        im_net, sk_net, criterion, best_epoch, best_map = load_model(best_model_file)
 
     print('***Test***')
     map_test, map_200, prec_200 = test(test_im_loader, test_sk_loader, [im_net, sk_net], args)

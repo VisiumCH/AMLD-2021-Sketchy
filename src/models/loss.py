@@ -7,8 +7,8 @@ class GradReverse(torch.autograd.Function):
     '''GRL Layer'''
     @staticmethod
     def forward(ctx, x, lambd=0.5):
-        '''lambd changes from 0 (only trains the classifier 
-        but does not update the encoder network) to 1 
+        '''lambd changes from 0 (only trains the classifier
+        but does not update the encoder network) to 1
         '''
         # ctx is a context object that can be used to stash information
         # for backward computation
@@ -52,8 +52,8 @@ class DomainLoss(nn.Module):
 class DetangledJoinDomainLoss(nn.Module):
     '''
     Weighted Joined Triplet loss and Domain loss
-    Triplet Loss: reduce the distance between embedded sketch and image 
-                  if they belong to the same class and 
+    Triplet Loss: reduce the distance between embedded sketch and image
+                  if they belong to the same class and
                   increase it if they belong to different classes.
     '''
 

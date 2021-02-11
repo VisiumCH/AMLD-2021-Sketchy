@@ -73,7 +73,7 @@ def compare_classes(acc_cls_im, acc_cls_sk):
     '''
     Compare classes of images and sketches
     Args:
-        - acc_cls_im: list of classes of the images [N] 
+        - acc_cls_im: list of classes of the images [N]
         - acc_cls_sk: list of classes of the sketches [N]
     Return:
         - array [NxN] of 1 where the image and sketch belong to the same class and 0 elsewhere
