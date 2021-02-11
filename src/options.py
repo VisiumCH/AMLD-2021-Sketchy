@@ -39,7 +39,7 @@ class Options():
         parser.add_argument('--log', type=str, default='io/models/', help='Log folder.')
         parser.add_argument('--log-interval', type=int, default=1, metavar='N',
                             help='How many batches to wait before logging training status')
-        parser.add_argument('--attn', action='store_true', help='Attention module (Default: False).')
+        parser.add_argument('--attn', action='store_false', help='Attention module (Default: True).')
         parser.add_argument('--plot', action='store_true', help='Qualitative results (Default: False).')
 
         # Test

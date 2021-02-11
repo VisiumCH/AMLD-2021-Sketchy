@@ -74,11 +74,17 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
         batch_time.update(time.time() - end, bs)
         end = time.time()
 
-        if log_int > 0 and i % log_int == 0:
-            print('Epoch: [{0}]({1}/{2}) Average Loss {loss.avg:.3f} ( Dom: {loss_dom.avg} + Spa: {loss_spa.avg}); Avg Time x Batch {b_time.avg:.3f}'
-                  .format(epoch, i, len(data_loader), loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
+        if i > 1:
+            break
 
-    print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_dom.avg} + {loss_spa.avg} ); Avg Time x Batch {b_time.avg:.3f}'
+        if log_int > 0 and i % log_int == 0:
+            print('Epoch: [{0}]({1}/{2}) Average Loss {loss.avg:.3f} \
+                 ( Dom: {loss_dom.avg} + Spa: {loss_spa.avg}); Avg Time x Batch {b_time.avg:.3f}'
+                  .format(epoch, i, len(data_loader), loss=losses,
+                          loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
+
+    print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_dom.avg} + {loss_spa.avg} ); \
+           Avg Time x Batch {b_time.avg:.3f}'
           .format(epoch, loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
 
     return losses, losses_dom, losses_spa
@@ -103,7 +109,7 @@ def main():
         elif not args.attn:
             pass
         else:
-            sk_log, im_log, sk_lbl_log, im_lbl_log = logs.get_images_to_plot_attention(valid_sk_data, valid_im_data)
+            attention_logger = logs.AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
 
     print('Create trainable model')
     if args.nopretrain:
@@ -164,7 +170,7 @@ def main():
                 pass
             else:
                 with torch.set_grad_enabled(False):
-                    logs.plot_attention(sk_log, im_log, sk_lbl_log, im_lbl_log, im_net, sk_net)
+                    attention_logger.plot_attention(im_net, sk_net)
 
             # Scalars
             logger.add_scalar('loss_train', loss_train.avg)
@@ -182,8 +188,12 @@ def main():
             best_epoch = epoch + 1
             early_stop_counter = 0
             if args.save is not None:
-                save_checkpoint({'epoch': epoch + 1, 'im_state': im_net.state_dict(), 'sk_state': sk_net.state_dict(),
-                                 'criterion': criterion.state_dict(), 'best_map': best_map}, directory=args.save, file_name='checkpoint')
+                save_checkpoint({'epoch': epoch + 1,
+                                 'im_state': im_net.state_dict(),
+                                 'sk_state': sk_net.state_dict(),
+                                 'criterion': criterion.state_dict(),
+                                 'best_map': best_map},
+                                directory=args.save, file_name='checkpoint')
         else:
             if early_stop_counter == args.early_stop:
                 break
@@ -236,7 +246,7 @@ if __name__ == '__main__':
         args.save = log_dir
         # Create logger
         print('Log dir:\t' + log_dir)
-        logger = logs.Logger(log_dir, force=True)
+        logger = logs.ScalarLogger(log_dir, force=True)
         with open(os.path.join(args.save, 'params.txt'), 'w') as fp:
             for key, val in vars(args).items():
                 fp.write('{} {}\n'.format(key, val))

@@ -44,6 +44,8 @@ def get_test_data(data_loader, model, args):
         else:
             acc_embeddings = np.concatenate((acc_embeddings, out_features.cpu().data.numpy()), axis=0)
             acc_class = np.concatenate((acc_class, target.cpu().data.numpy()), axis=0)
+        if i > 1:
+            break
 
     return acc_fnames, acc_embeddings, acc_class
 
