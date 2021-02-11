@@ -75,7 +75,7 @@ if __name__ == "__main__":
         axarr[2, i].set_title(dict_by_value(dict_class, lbl_neg))
         axarr[2, i].axis("off")
     plt.show()
-    plt.savefig("src/visualization/training_samples.png")
+    plt.savefig("src/visualization/training_samples_" + args.dataset + ".png")
 
     print("\n--- Valid Data ---")
     print("\t* Length Sketch: {}".format(len(valid_sk_loader)))
