@@ -3,6 +3,7 @@ import sys
 import numpy as np
 
 from src.data.sketchy_extended import Sketchy_Extended
+from src.data.tuberlin_extended import TUBerlin_Extended
 
 
 def load_data(args, transform=None):
@@ -21,9 +22,8 @@ def load_data(args, transform=None):
     """
     if args.dataset == "sketchy_extend":
         return Sketchy_Extended(args, transform)
-    # elif args.dataset == "tuberlin_extend":
-        # TODO PML-09.02.2021
-        # return TUBerlin_Extended(args, transform)
+    elif args.dataset == "tuberlin_extend":
+        return TUBerlin_Extended(args, transform)
     else:
         sys.exit()
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         axarr[2, i].set_title(dict_by_value(dict_class, lbl_neg))
         axarr[2, i].axis("off")
     plt.show()
-    plt.savefig("src/visualization/training_samples.png")
+    plt.savefig("src/visualization/training_samples_" + args.dataset + ".png")
 
     print("\n--- Valid Data ---")
     print("\t* Length Sketch: {}".format(len(valid_sk_loader)))
