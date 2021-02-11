@@ -1,6 +1,6 @@
 import math
-import numpy as np
 
+import numpy as np
 import multiprocessing
 from joblib import Parallel, delayed
 

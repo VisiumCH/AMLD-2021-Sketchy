@@ -26,6 +26,8 @@ class AverageMeter(object):
 
 
 class ScalarLogger(object):
+    '''Logs Scalars in tensorboard'''
+
     def __init__(self, log_dir, force=False):
         # clean previous logged data under the same directory name
         self._remove(log_dir, force)
@@ -66,6 +68,7 @@ class ScalarLogger(object):
 
 
 class AttentionLogger(object):
+    '''Logs some images to visulatise attenction module in tensorboard'''
 
     def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
         self.logger = logger
@@ -74,7 +77,7 @@ class AttentionLogger(object):
         self.select_images(valid_sk_data, valid_im_data)
 
     def select_images(self, valid_sk_data, valid_im_data):
-        # Save some images to plot attention
+        '''Save some random images to plot attention at defferent epochs'''
         rand_samples_sk = np.random.randint(0, high=len(valid_sk_data), size=5)
         rand_samples_im = np.random.randint(0, high=len(valid_im_data), size=5)
         for i in range(len(rand_samples_sk)):
@@ -99,7 +102,7 @@ class AttentionLogger(object):
         self.im_lbl_log = im_lbl_log
 
     def plot_attention(self, im_net, sk_net):
-        # Images
+        '''Log the attention images in tensorboard'''
         _, attn_im = im_net(self.im_log)
         attn_im = nn.Upsample(size=(self.im_log[0].size(1), self.im_log[0].size(2)),
                               mode='bilinear', align_corners=False)(attn_im)

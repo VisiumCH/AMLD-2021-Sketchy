@@ -1,22 +1,20 @@
-import torch
-from torch.utils.data import DataLoader
-from torchvision import transforms
-import torch.nn as nn
-
 import glob
 import numpy as np
 import time
 import os
 
+import torch
+from torch.utils.data import DataLoader
+from torchvision import transforms
+import torch.nn as nn
 
-# Own modules
-from src.options import Options
-from src.models.logger import logs
-from utils import save_checkpoint, load_checkpoint
-from test import test
-from src.models.networks.encoder import EncoderCNN
 from src.data.loader_factory import load_data
-from src.models.losses.loss import DetangledJoinDomainLoss
+from src.options import Options
+from src.models.encoder import EncoderCNN
+from src.models.logs import AverageMeter, ScalarLogger, AttentionLogger
+from src.models.loss import DetangledJoinDomainLoss
+from src.models.utils import save_checkpoint, load_checkpoint
+from src.models.test import test
 
 
 def adjust_learning_rate(optimizer, epoch):
@@ -30,10 +28,10 @@ def adjust_learning_rate(optimizer, epoch):
 
 
 def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
-    batch_time = logs.AverageMeter()
-    losses_dom = logs.AverageMeter()
-    losses_spa = logs.AverageMeter()
-    losses = logs.AverageMeter()
+    batch_time = AverageMeter()
+    losses_dom = AverageMeter()
+    losses_spa = AverageMeter()
+    losses = AverageMeter()
 
     # switch to train mode
     im_net, sk_net = model
@@ -109,7 +107,7 @@ def main():
         elif not args.attn:
             pass
         else:
-            attention_logger = logs.AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
+            attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
 
     print('Create trainable model')
     if args.nopretrain:
@@ -246,7 +244,7 @@ if __name__ == '__main__':
         args.save = log_dir
         # Create logger
         print('Log dir:\t' + log_dir)
-        logger = logs.ScalarLogger(log_dir, force=True)
+        logger = ScalarLogger(log_dir, force=True)
         with open(os.path.join(args.save, 'params.txt'), 'w') as fp:
             for key, val in vars(args).items():
                 fp.write('{} {}\n'.format(key, val))

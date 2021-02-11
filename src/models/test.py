@@ -1,18 +1,18 @@
-import torch
-from torchvision import transforms
-from torch.utils.data import DataLoader
-import torch.nn as nn
 
 import numpy as np
 import time
 import multiprocessing
 
-# Own modules
-from src.options import Options
-from src.models.utils import load_checkpoint, save_qualitative_results
-from src.models.metrics import get_similarity, precak, get_map_prec_200, get_map_all
-from src.models.networks.encoder import EncoderCNN
+import torch
+from torchvision import transforms
+from torch.utils.data import DataLoader
+import torch.nn as nn
+
 from src.data.loader_factory import load_data
+from src.options import Options
+from src.models.encoder import EncoderCNN
+from src.models.metrics import get_similarity, precak, get_map_prec_200, get_map_all
+from src.models.utils import load_checkpoint, save_qualitative_results
 
 
 def get_test_data(data_loader, model, args):

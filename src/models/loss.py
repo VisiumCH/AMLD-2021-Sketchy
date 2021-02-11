@@ -4,8 +4,12 @@ import torch.nn.functional as F
 
 
 class GradReverse(torch.autograd.Function):
+    '''GRL Layer'''
     @staticmethod
     def forward(ctx, x, lambd=0.5):
+        '''lambd changes from 0 (only trains the classifier 
+        but does not update the encoder network) to 1 
+        '''
         # ctx is a context object that can be used to stash information
         # for backward computation
         ctx.lambd = lambd
@@ -13,6 +17,7 @@ class GradReverse(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
+        '''Reverse sign of gradient'''
         # We return as many input gradients as there were arguments.
         # Gradients of non-Tensor arguments to forward must be None.
         return ctx.lambd * grad_output.neg(), None
@@ -23,6 +28,8 @@ def grad_reverse(x, lambd=0.5):
 
 
 class DomainLoss(nn.Module):
+    '''Ensures that embeddings belong to the same space'''
+
     def __init__(self, input_size=256, hidden_size=64):
         super(DomainLoss, self).__init__()
         self.input_size = input_size
@@ -43,6 +50,13 @@ class DomainLoss(nn.Module):
 
 
 class DetangledJoinDomainLoss(nn.Module):
+    '''
+    Weighted Joined Triplet loss and Domain loss
+    Triplet Loss: reduce the distance between embedded sketch and image 
+                  if they belong to the same class and 
+                  increase it if they belong to different classes.
+    '''
+
     def __init__(self, emb_size=256, w_dom=0.25, w_spa=0.25, lambd=0.5):
         super(DetangledJoinDomainLoss, self).__init__()
 
@@ -69,6 +83,7 @@ class DetangledJoinDomainLoss(nn.Module):
             targetSK = targetSK.cuda()
             targetIM = targetIM.cuda()
 
+        # lmb = 0 (only train classifier) to lmb = 1 (only train encoder)
         if epoch > 25:
             lmb = 1.0
         elif epoch < 5:
