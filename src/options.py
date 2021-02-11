@@ -29,6 +29,7 @@ class Options:
             help="Dataset root path.",
         )
         parser.add_argument("--seed", type=int, default=42, help="Random seed.")
+        parser.add_argument('--save', '-s', type=str, default='io/models', help='Folder to save checkpoints.')
 
         self.parser = parser
 

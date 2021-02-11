@@ -3,6 +3,7 @@ import sys
 import numpy as np
 
 from src.data.sketchy_extended import Sketchy_Extended
+from src.data.tuberlin_extended import TUBerlin_Extended
 
 
 def load_data(args, transform=None):
@@ -21,9 +22,8 @@ def load_data(args, transform=None):
     """
     if args.dataset == "sketchy_extend":
         return Sketchy_Extended(args, transform)
-    # elif args.dataset == "tuberlin_extend":
-        # TODO PML-09.02.2021
-        # return TUBerlin_Extended(args, transform)
+    elif args.dataset == "tuberlin_extend":
+        return TUBerlin_Extended(args, transform)
     else:
         sys.exit()
 

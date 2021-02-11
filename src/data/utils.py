@@ -38,6 +38,14 @@ def default_image_loader(path):
     return img
 
 
+def default_image_loader_tuberlin(path):
+
+    img = Image.fromarray(cv2.resize(np.array(Image.open(path).convert('RGB')), (224, 224)))
+    b, g, r = img.split()
+    img = Image.merge("RGB", (r, g, b))
+    return img
+
+
 def get_random_file_from_path(file_path):
     _ext = "*.jpg"
     f_list = glob(os.path.join(file_path, _ext))

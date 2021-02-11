@@ -9,20 +9,19 @@ from src.data.utils import (
     create_dict_texts,
     get_file_list,
     default_image_loader,
-    get_random_file_from_path,
+    get_random_file_from_path
 )
-
-dataset_folder = "Sketchy"
 
 
 def Sketchy_Extended(args, transform="None"):
     '''
     Creates all the data loader for Sketchy dataset
     '''
+    # Sketchy datapath
+    args.data_path = os.path.join(args.data_path, 'Sketchy')
+
     # Getting the classes
-    class_directories = glob(
-        os.path.join(args.data_path, dataset_folder, "extended_photo/*/")
-    )
+    class_directories = glob(os.path.join(args.data_path, "extended_photo/*/"))
     list_class = [class_path.split("/")[-2] for class_path in class_directories]
     dicts_class = create_dict_texts(list_class)
 
@@ -30,12 +29,10 @@ def Sketchy_Extended(args, transform="None"):
     np.random.seed(args.seed)
 
     # Read test classes
-    with open(
-        os.path.join(args.data_path, dataset_folder, "zeroshot_classes_sketchy.txt")
-    ) as fp:  # zeroshot_classes.txt
+    with open(os.path.join(args.data_path, "zeroshot_classes_sketchy.txt")) as fp:
         test_class = fp.read().splitlines()
-
     list_class = [x for x in list_class if x not in test_class]
+
     # Random Shuffle
     random.seed(args.seed)
     shuffled_list_class = list_class
@@ -46,7 +43,8 @@ def Sketchy_Extended(args, transform="None"):
     valid_class = shuffled_list_class[int(0.9 * len(shuffled_list_class)):]
 
     # Data Loaders
-    train_loader = Sketchy_Extended_train(args, train_class, dicts_class, transform)
+    train_loader = Sketchy_Extended_train(
+        args, train_class, dicts_class, transform)
     valid_sk_loader = Sketchy_Extended_valid_test(
         args, valid_class, dicts_class, transform, type_skim="sketch"
     )
@@ -86,13 +84,9 @@ class Sketchy_Extended_valid_test(data.Dataset):
         self.dicts_class = dicts_class
 
         if type_skim == "images":
-            self.dir_file = os.path.join(
-                args.data_path, dataset_folder, "extended_photo"
-            )
+            self.dir_file = os.path.join(args.data_path, "extended_photo")
         elif type_skim == "sketch":
-            self.dir_file = os.path.join(
-                args.data_path, dataset_folder, "sketch", "tx_000000000000"
-            )
+            self.dir_file = os.path.join(args.data_path, "sketch", "tx_000000000000")
         else:
             NameError(type_skim + " not implemented!")
 
@@ -130,13 +124,9 @@ class Sketchy_Extended_train(data.Dataset):
         self.train_class = train_class
         self.dicts_class = dicts_class
 
-        self.dir_image = os.path.join(args.data_path, dataset_folder, "extended_photo")
-        self.dir_sketch = os.path.join(
-            args.data_path, dataset_folder, "sketch", "tx_000000000000"
-        )
-        self.fnames_sketch, self.cls_sketch = get_file_list(
-            self.dir_sketch, self.train_class, "sketch"
-        )
+        self.dir_image = os.path.join(args.data_path, "extended_photo")
+        self.dir_sketch = os.path.join(args.data_path, "sketch", "tx_000000000000")
+        self.fnames_sketch, self.cls_sketch = get_file_list(self.dir_sketch, self.train_class, "sketch")
         self.loader = default_image_loader
 
     def __getitem__(self, index):
@@ -172,14 +162,15 @@ class Sketchy_Extended_train(data.Dataset):
         # Negative class
         possible_classes = [x for x in self.train_class if x != label]
         label_neg = np.random.choice(possible_classes, 1)[0]
+        lbl_neg = self.dicts_class.get(label_neg)
+
         fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
         image_neg = self.transform(self.loader(fname))
-        lbl_neg = self.dicts_class.get(label_neg)
 
         return sketch, image_pos, image_neg, lbl_pos, lbl_neg
 
     def __len__(self):
-        # Number of sketches in the dataset
+        # Number of sketches/images in the dataset
         return len(self.fnames_sketch)
 
     def get_class_dict(self):
