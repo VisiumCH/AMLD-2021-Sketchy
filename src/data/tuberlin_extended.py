@@ -71,9 +71,10 @@ def TUBerlin_Extended(args, transform='None'):
 
 
 class TUBerlin_Extended_valid_test(data.Dataset):
-        '''
+    '''
     Custom dataset for TU-Berlin's validation and testing
     '''
+
     def __init__(self, args, set_class, dicts_class, transform=None, type_skim='images'):
         self.transform = transform
         self.set_class = set_class
@@ -116,6 +117,7 @@ class TUBerlin_Extended_train(data.Dataset):
     '''
     Custom dataset for TU-Berlin's training
     '''
+
     def __init__(self, args, train_class, dicts_class, transform=None):
 
         self.transform = transform

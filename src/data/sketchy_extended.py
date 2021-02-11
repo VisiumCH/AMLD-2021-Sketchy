@@ -15,7 +15,7 @@ from src.data.utils import (
 
 def Sketchy_Extended(args, transform="None"):
     '''
-    Creates all the data loader for Sketchy dataset
+    Creates all the data loaders for Sketchy dataset
     '''
     # Sketchy datapath
     args.data_path = os.path.join(args.data_path, 'Sketchy')
