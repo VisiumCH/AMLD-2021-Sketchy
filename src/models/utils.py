@@ -27,17 +27,16 @@ def load_checkpoint(model_file):
 
 
 def save_qualitative_results(sim, str_sim, acc_fnames_sk, acc_fnames_im, args):
+    '''Save images with close embeddings'''
     # Qualitative Results
     flatten_acc_fnames_sk = [item for sublist in acc_fnames_sk for item in sublist]
     flatten_acc_fnames_im = [item for sublist in acc_fnames_im for item in sublist]
 
     retrieved_im_fnames = []
-    # Just a try
     retrieved_im_true_false = []
     for i in range(0, sim.shape[0]):
         sorted_indx = np.argsort(sim[i, :])[::-1]
         retrieved_im_fnames.append(list(np.array(flatten_acc_fnames_im)[sorted_indx][:args.num_retrieval]))
-        # Just a try
         retrieved_im_true_false.append(list(np.array(str_sim[i])[sorted_indx][:args.num_retrieval]))
 
     with open('src/visualisation/sketches.pkl', 'wb') as f:

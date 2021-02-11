@@ -11,7 +11,7 @@ import torch.nn as nn
 from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
-from src.models.metrics import get_similarity, precak, get_map_prec_200, get_map_all
+from src.models.metrics import get_similarity, compare_classes, precak, get_map_prec_200, get_map_all
 from src.models.utils import load_checkpoint, save_qualitative_results
 
 
@@ -63,7 +63,8 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
     acc_fnames_im, acc_im_em, acc_cls_im = get_test_data(im_loader, im_net, args)
     acc_fnames_sk, acc_sk_em, acc_cls_sk = get_test_data(sk_loader, sk_net, args)
 
-    sim, str_sim = get_similarity(acc_sk_em, acc_im_em, acc_cls_im, acc_cls_sk)
+    sim = get_similarity(acc_sk_em, acc_im_em)
+    str_sim = compare_classes(acc_cls_im, acc_cls_sk)
 
     # Precision and recall for top k
     mpreck, reck = precak(sim, str_sim, k=5)
