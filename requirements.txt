@@ -22,3 +22,6 @@ tensorboard==2.4.1
 tensorboardX==2.1
 joblib==1.0.1
 scikit-learn==0.24.1
+
+# package location
+--find-links https://download.pytorch.org/whl/torch_stable.html
