@@ -19,7 +19,7 @@ class Options():
         parser.add_argument('--nopretrain', action='store_true', help='Loads a pretrained model (Default: False).')
         # Optimization options
         parser.add_argument('--epochs', '-e', type=int, default=1000, help='Number of epochs to train.')
-        parser.add_argument('--batch_size', '-b', type=int, default=20, help='Batch size.')
+        parser.add_argument('--batch_size', '-b', type=int, default=10, help='Batch size.')
         parser.add_argument('--learning_rate', '-lr', type=float, default=1e-4, help='The Learning Rate.')
         parser.add_argument('--momentum', '-m', type=float, default=0.9, help='Momentum.')
         parser.add_argument('--decay', '-d', type=float, default=0.0005, help='Weight decay (L2 penalty).')
@@ -37,7 +37,7 @@ class Options():
         parser.add_argument('--prefetch', type=int, default=2, help='Pre-fetching threads.')
         # i/o
         parser.add_argument('--log', type=str, default='io/models/', help='Log folder.')
-        parser.add_argument('--log-interval', type=int, default=10, metavar='N',
+        parser.add_argument('--log-interval', type=int, default=50, metavar='N',
                             help='How many batches to wait before logging training status')
         parser.add_argument('--attn', action='store_false', help='Attention module (Default: True).')
         parser.add_argument('--plot', action='store_true', help='Qualitative results (Default: False).')
