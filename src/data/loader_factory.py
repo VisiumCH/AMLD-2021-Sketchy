@@ -24,10 +24,13 @@ def load_data(args, transform=None):
         return Sketchy_Extended(args, transform)
     elif args.dataset == "tuberlin_extend":
         return TUBerlin_Extended(args, transform)
+    elif args.dataset == "both":
+        import torch
+        sketchy = Sketchy_Extended(args, transform)
+        tuberlin = TUBerlin_Extended(args, transform)
+        return torch.utils.data.ConcatDataset([sketchy, tuberlin])
     else:
         sys.exit()
-
-    raise NameError(args.dataset + " not implemented!")
 
 
 if __name__ == "__main__":
