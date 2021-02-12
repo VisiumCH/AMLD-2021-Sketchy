@@ -31,13 +31,13 @@ def precision(actual, predicted, k):
     return pr
 
 
-def preca_k(sim, str_sim, k=None):
+def preca_k(similarity, class_matches, k=None):
     '''
-    Camputes precision and recall (of k samples)
+    Computes precision and recall (of k samples)
     '''
-    act_lists = [np.nonzero(s)[0] for s in str_sim]
+    act_lists = [np.nonzero(s)[0] for s in class_matches]
     nq = len(act_lists)
-    pred_lists = np.argsort(-sim, axis=1)
+    pred_lists = np.argsort(-similarity, axis=1)
 
     num_cores = min(multiprocessing.cpu_count(), 8)
     prec_k = Parallel(n_jobs=num_cores)(delayed(precision)(act_lists[iq], pred_lists[iq], k) for iq in range(nq))

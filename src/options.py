@@ -8,9 +8,7 @@ class Options():
         parser = argparse.ArgumentParser(description='Zero-shot Sketch Based Retrieval',
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         # Positional arguments
-        parser.add_argument('dataset', type=str,
-                            choices=['sketchy_extend', 'tuberlin_extend',
-                                     'quickdraw_extend'],
+        parser.add_argument('dataset', type=str, choices=['sketchy_extend', 'tuberlin_extend'],
                             help='Choose between (Sketchy).')
         # Model parameters
         parser.add_argument('--data_path', '-dp', type=str, default='io/data/raw', help='Dataset root path.')

@@ -96,21 +96,18 @@ def main():
     transform = transforms.Compose([transforms.ToTensor()])
     train_data, [valid_sk_data, valid_im_data], [test_sk_data, test_im_data], dict_class = load_data(args, transform)
     train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True,
-                              num_workers=args.prefetch, pin_memory=True)
+                              num_workers=args.prefetch, pin_memory=True, drop_last=True)
     valid_sk_loader = DataLoader(valid_sk_data, batch_size=3*args.batch_size,
-                                 num_workers=args.prefetch, pin_memory=True)
+                                 num_workers=args.prefetch, pin_memory=True, drop_last=True)
     valid_im_loader = DataLoader(valid_im_data, batch_size=3*args.batch_size,
-                                 num_workers=args.prefetch, pin_memory=True)
-    test_sk_loader = DataLoader(test_sk_data, batch_size=3*args.batch_size, num_workers=args.prefetch, pin_memory=True)
-    test_im_loader = DataLoader(test_im_data, batch_size=3*args.batch_size, num_workers=args.prefetch, pin_memory=True)
+                                 num_workers=args.prefetch, pin_memory=True, drop_last=True)
+    test_sk_loader = DataLoader(test_sk_data, batch_size=3*args.batch_size,
+                                num_workers=args.prefetch, pin_memory=True, drop_last=True)
+    test_im_loader = DataLoader(test_im_data, batch_size=3*args.batch_size,
+                                num_workers=args.prefetch, pin_memory=True, drop_last=True)
 
-    if args.log:
-        if args.dataset == 'quickdraw_extend':
-            pass
-        elif not args.attn:
-            pass
-        else:
-            attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
+    if (args.log and not args.attn):
+        attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
 
     print('Create trainable model')
     if args.nopretrain:
@@ -158,9 +155,7 @@ def main():
         if args.log:
             im_net.eval()
             sk_net.eval()
-            if args.dataset == 'quickdraw_extend':
-                pass
-            elif not args.attn:
+            if not args.attn:
                 pass
             else:
                 with torch.set_grad_enabled(False):
