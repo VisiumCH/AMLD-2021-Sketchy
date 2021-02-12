@@ -15,11 +15,14 @@ tqdm
 requests
 black
 matplotlib
-torchvision
-torch
+torchvision==0.8.2+cu101
+torch==1.7.1+cu101
 opencv-python
 scipy
 tensorboardX
 joblib
 scikit-learn
 tensorboard
+
+# package location
+--find-links https://download.pytorch.org/whl/torch_stable.html
