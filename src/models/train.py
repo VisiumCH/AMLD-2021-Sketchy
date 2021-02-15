@@ -106,7 +106,7 @@ def main():
     test_im_loader = DataLoader(test_im_data, batch_size=3*args.batch_size,
                                 num_workers=args.prefetch, pin_memory=True, drop_last=True)
 
-    if (args.log and not args.attn):
+    if (args.log and args.attn):
         attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
 
     print('Create trainable model')

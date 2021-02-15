@@ -68,7 +68,7 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
     class_matches = compare_classes(im_class, sk_class)
 
     # Precision and recall for top k
-    mprec_k, rec_k = preca_k(similarity, class_matches, k=5)
+    # mprec_k, rec_k = preca_k(similarity, class_matches, k=5)
 
     # Mean average precision
     num_cores = min(multiprocessing.cpu_count(), 32)
