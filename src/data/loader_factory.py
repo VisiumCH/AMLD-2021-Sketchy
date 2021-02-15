@@ -1,6 +1,7 @@
 import sys
 
 import numpy as np
+import torch
 
 from src.data.sketchy_extended import Sketchy_Extended
 from src.data.tuberlin_extended import TUBerlin_Extended
@@ -25,7 +26,6 @@ def load_data(args, transform=None):
     elif args.dataset == "tuberlin_extend":
         return TUBerlin_Extended(args, transform)
     elif args.dataset == "both":
-        import torch
         sketchy = Sketchy_Extended(args, transform)
         tuberlin = TUBerlin_Extended(args, transform)
         return torch.utils.data.ConcatDataset([sketchy, tuberlin])

@@ -176,3 +176,67 @@ class Sketchy_Extended_train(data.Dataset):
     def get_class_dict(self):
         # Dictionnary of categories of the dataset
         return self.train_class
+
+
+class Sketchy(data.Dataset):
+    '''
+    Custom dataset for Stetchy's training
+    '''
+
+    def __init__(self, args, set_class, dicts_class, transform=None):
+        self.transform = transform
+        self.set_class = set_class
+        self.dicts_class = dicts_class
+        self.loader = default_image_loader
+
+        self.dir_image = os.path.join(args.data_path, "extended_photo")
+        self.dir_sketch = os.path.join(args.data_path, "sketch", "tx_000000000000")
+
+        self.fnames_sketch, self.cls_sketch = get_file_list(self.dir_sketch, self.set_class, "sketch")
+        self.fnames_image, self.cls_image = get_file_list(self.dir_image, self.set_class, "images")
+
+    def __getitem__(self, index):
+        '''
+        Get training data based on sketch index
+        Args:
+            - index: index of the sketch
+        Return:
+            - sketch: sketch image
+            - image_pos: image of same category of sketch
+            - image_neg: image of different category of sketch
+            - lbl_pos: category of sketch and image_pos
+            - lbl_neg: category of image_neg
+        '''
+        # Read sketch
+        sketch_fname = os.path.join(
+            self.dir_sketch,
+            self.cls_sketch[index],
+            self.fnames_sketch[index],
+        )
+        sketch = self.loader(sketch_fname)
+        sketch = self.transform(sketch)
+
+        # Target
+        label = self.cls_sketch[index]
+        lbl_pos = self.dicts_class.get(label)
+
+        # Positive image
+        train_fname = get_random_file_from_path(os.path.join(self.dir_image, label))
+        image_pos = self.transform(self.loader(train_fname))
+
+        # Negative class
+        possible_classes = [x for x in self.set_class if x != label]
+        label_neg = np.random.choice(possible_classes, 1)[0]
+        lbl_neg = self.dicts_class.get(label_neg)
+        train_fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
+        image_neg = self.transform(self.loader(train_fname))
+
+        return sketch, image_pos, image_neg, lbl_pos, lbl_neg
+
+    def __len__(self):
+        # Number of sketches/images in the dataset
+        return len(self.fnames_sketch)
+
+    def get_class_dict(self):
+        # Dictionnary of categories of the dataset
+        return self.set_class
