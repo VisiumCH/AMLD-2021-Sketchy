@@ -1,6 +1,7 @@
 import sys
 
 import numpy as np
+import torch
 
 from src.data.sketchy_extended import Sketchy_Extended
 from src.data.tuberlin_extended import TUBerlin_Extended
@@ -24,10 +25,12 @@ def load_data(args, transform=None):
         return Sketchy_Extended(args, transform)
     elif args.dataset == "tuberlin_extend":
         return TUBerlin_Extended(args, transform)
+    elif args.dataset == "both":
+        sketchy = Sketchy_Extended(args, transform)
+        tuberlin = TUBerlin_Extended(args, transform)
+        return torch.utils.data.ConcatDataset([sketchy, tuberlin])
     else:
         sys.exit()
-
-    raise NameError(args.dataset + " not implemented!")
 
 
 if __name__ == "__main__":
@@ -53,6 +56,9 @@ if __name__ == "__main__":
         [test_sk_loader, test_im_loader],
         dict_class,
     ) = load_data(args, transform)
+
+    # test = load_data(args, transform)
+    # print(len(test))
 
     print("\n--- Train Data ---")
     print("\t* Length: {}".format(len(train_loader)))
