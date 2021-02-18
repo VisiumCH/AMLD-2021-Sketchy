@@ -17,7 +17,7 @@ class Options:
         parser.add_argument(
             "dataset",
             type=str,
-            choices=["sketchy_extend", "tuberlin_extend", "quickdraw_extend"],
+            choices=["sketchy_extend", "tuberlin_extend", "both"],
             help="Choose between (Sketchy).",
         )
         # Model parameters

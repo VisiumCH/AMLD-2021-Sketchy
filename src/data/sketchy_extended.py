@@ -17,11 +17,8 @@ def Sketchy_Extended(args, transform="None"):
     '''
     Creates all the data loaders for Sketchy dataset
     '''
-    # Sketchy datapath
-    args.data_path = os.path.join(args.data_path, 'Sketchy')
-
     # Getting the classes
-    class_directories = glob(os.path.join(args.data_path, "extended_photo/*/"))
+    class_directories = glob(os.path.join(args.data_path, "Sketchy/extended_photo/*/"))
     list_class = [class_path.split("/")[-2] for class_path in class_directories]
     dicts_class = create_dict_texts(list_class)
 
@@ -29,7 +26,7 @@ def Sketchy_Extended(args, transform="None"):
     np.random.seed(args.seed)
 
     # Read test classes
-    with open(os.path.join(args.data_path, "zeroshot_classes_sketchy.txt")) as fp:
+    with open(os.path.join(args.data_path, "Sketchy/zeroshot_classes_sketchy.txt")) as fp:
         test_class = fp.read().splitlines()
     list_class = [x for x in list_class if x not in test_class]
 
@@ -43,20 +40,11 @@ def Sketchy_Extended(args, transform="None"):
     valid_class = shuffled_list_class[int(0.9 * len(shuffled_list_class)):]
 
     # Data Loaders
-    train_loader = Sketchy_Extended_train(
-        args, train_class, dicts_class, transform)
-    valid_sk_loader = Sketchy_Extended_valid_test(
-        args, valid_class, dicts_class, transform, type_skim="sketch"
-    )
-    valid_im_loader = Sketchy_Extended_valid_test(
-        args, valid_class, dicts_class, transform, type_skim="images"
-    )
-    test_sk_loader = Sketchy_Extended_valid_test(
-        args, test_class, dicts_class, transform, type_skim="sketch"
-    )
-    test_im_loader = Sketchy_Extended_valid_test(
-        args, test_class, dicts_class, transform, type_skim="images"
-    )
+    train_loader = Sketchy(args, 'train', train_class, dicts_class, transform)
+    valid_sk_loader = Sketchy(args, 'valid', valid_class, dicts_class, transform, "sketch")
+    valid_im_loader = Sketchy(args, 'valid', valid_class, dicts_class, transform, "images")
+    test_sk_loader = Sketchy(args, 'test', test_class, dicts_class, transform, "sketch")
+    test_im_loader = Sketchy(args, 'test', test_class, dicts_class, transform, "images")
 
     return (
         train_loader,
@@ -66,131 +54,21 @@ def Sketchy_Extended(args, transform="None"):
     )
 
 
-class Sketchy_Extended_valid_test(data.Dataset):
-    '''
-    Custom dataset for Stetchy's validation and testing
-    '''
-
-    def __init__(
-        self,
-        args,
-        set_class,
-        dicts_class,
-        transform=None,
-        type_skim="images",
-    ):
-        self.transform = transform
-        self.set_class = set_class
-        self.dicts_class = dicts_class
-
-        if type_skim == "images":
-            self.dir_file = os.path.join(args.data_path, "extended_photo")
-        elif type_skim == "sketch":
-            self.dir_file = os.path.join(args.data_path, "sketch", "tx_000000000000")
-        else:
-            NameError(type_skim + " not implemented!")
-
-        self.fnames, self.cls = get_file_list(self.dir_file, self.set_class, type_skim)
-        self.loader = default_image_loader
-
-    def __getitem__(self, index):
-        '''
-        Get a photo, its path and label based on its index
-        '''
-        label = self.cls[index]
-        fname = os.path.join(self.dir_file, label, self.fnames[index])
-        photo = self.transform(self.loader(fname))
-        lbl = self.dicts_class.get(label)
-
-        return photo, fname, lbl
-
-    def __len__(self):
-        # Number of sketches in the dataset
-        return len(self.fnames)
-
-    def get_class_dict(self):
-        # Dictionnary of categories of the dataset
-        return self.set_class
-
-
-class Sketchy_Extended_train(data.Dataset):
-    '''
-    Custom dataset for Stetchy's training
-    '''
-
-    def __init__(self, args, train_class, dicts_class, transform=None):
-
-        self.transform = transform
-        self.train_class = train_class
-        self.dicts_class = dicts_class
-
-        self.dir_image = os.path.join(args.data_path, "extended_photo")
-        self.dir_sketch = os.path.join(args.data_path, "sketch", "tx_000000000000")
-        self.fnames_sketch, self.cls_sketch = get_file_list(self.dir_sketch, self.train_class, "sketch")
-        self.loader = default_image_loader
-
-    def __getitem__(self, index):
-        '''
-        Get training data based on sketch index
-        Args:
-            - index: index of the sketch
-        Return:
-            - sketch: sketch image
-            - image_pos: image of same category of sketch
-            - image_neg: image of different category of sketch
-            - lbl_pos: category of sketch and image_pos
-            - lbl_neg: category of image_neg
-        '''
-        # Read sketch
-        fname = os.path.join(
-            self.dir_sketch,
-            self.cls_sketch[index],
-            self.fnames_sketch[index],
-        )
-        sketch = self.loader(fname)
-        sketch = self.transform(sketch)
-
-        # Target
-        label = self.cls_sketch[index]
-        lbl_pos = self.dicts_class.get(label)
-
-        # Positive image
-        # The constraint according to the ECCV 2018
-        fname = get_random_file_from_path(os.path.join(self.dir_image, label))
-        image_pos = self.transform(self.loader(fname))
-
-        # Negative class
-        possible_classes = [x for x in self.train_class if x != label]
-        label_neg = np.random.choice(possible_classes, 1)[0]
-        lbl_neg = self.dicts_class.get(label_neg)
-
-        fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
-        image_neg = self.transform(self.loader(fname))
-
-        return sketch, image_pos, image_neg, lbl_pos, lbl_neg
-
-    def __len__(self):
-        # Number of sketches/images in the dataset
-        return len(self.fnames_sketch)
-
-    def get_class_dict(self):
-        # Dictionnary of categories of the dataset
-        return self.train_class
-
-
 class Sketchy(data.Dataset):
     '''
     Custom dataset for Stetchy's training
     '''
 
-    def __init__(self, args, set_class, dicts_class, transform=None):
+    def __init__(self, args, dataset_type, set_class, dicts_class, transform=None, image_type=None):
         self.transform = transform
+        self.dataset_type = dataset_type
         self.set_class = set_class
         self.dicts_class = dicts_class
         self.loader = default_image_loader
+        self.image_type = image_type
 
-        self.dir_image = os.path.join(args.data_path, "extended_photo")
-        self.dir_sketch = os.path.join(args.data_path, "sketch", "tx_000000000000")
+        self.dir_image = os.path.join(args.data_path, "Sketchy/extended_photo")
+        self.dir_sketch = os.path.join(args.data_path, "Sketchy/sketch", "tx_000000000000")
 
         self.fnames_sketch, self.cls_sketch = get_file_list(self.dir_sketch, self.set_class, "sketch")
         self.fnames_image, self.cls_image = get_file_list(self.dir_image, self.set_class, "images")
@@ -221,21 +99,33 @@ class Sketchy(data.Dataset):
         lbl_pos = self.dicts_class.get(label)
 
         # Positive image
-        train_fname = get_random_file_from_path(os.path.join(self.dir_image, label))
-        image_pos = self.transform(self.loader(train_fname))
+        im_pos_fname = get_random_file_from_path(os.path.join(self.dir_image, label))
+        image_pos = self.transform(self.loader(im_pos_fname))
 
         # Negative class
         possible_classes = [x for x in self.set_class if x != label]
         label_neg = np.random.choice(possible_classes, 1)[0]
         lbl_neg = self.dicts_class.get(label_neg)
-        train_fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
-        image_neg = self.transform(self.loader(train_fname))
 
-        return sketch, image_pos, image_neg, lbl_pos, lbl_neg
+        im_neg_fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
+        image_neg = self.transform(self.loader(im_neg_fname))
+
+        if self.dataset_type == 'train':
+            return sketch, image_pos, image_neg, lbl_pos, lbl_neg
+        else:
+            if self.image_type == 'images':
+                return image_pos, lbl_pos, im_pos_fname
+            elif self.image_type == 'sketch':
+                return sketch, lbl_pos, sketch_fname
+            else:
+                NameError("Image type" + type_skim + " not implemented!")
 
     def __len__(self):
         # Number of sketches/images in the dataset
-        return len(self.fnames_sketch)
+        if self.dataset_type == 'train' or self.image_type == 'sketch':
+            return len(self.fnames_sketch)
+        else:
+            return len(self.fnames_image)
 
     def get_class_dict(self):
         # Dictionnary of categories of the dataset

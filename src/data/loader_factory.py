@@ -27,6 +27,7 @@ def load_data(args, transform=None):
         return TUBerlin_Extended(args, transform)
     elif args.dataset == "both":
         sketchy = Sketchy_Extended(args, transform)
+        print("Sketchy done, Parameters:\t" + str(args))
         tuberlin = TUBerlin_Extended(args, transform)
         return torch.utils.data.ConcatDataset([sketchy, tuberlin])
     else:
@@ -56,6 +57,9 @@ if __name__ == "__main__":
         [test_sk_loader, test_im_loader],
         dict_class,
     ) = load_data(args, transform)
+
+    # test = load_data(args, transform)
+    # print(len(test))
 
     print("\n--- Train Data ---")
     print("\t* Length: {}".format(len(train_loader)))
