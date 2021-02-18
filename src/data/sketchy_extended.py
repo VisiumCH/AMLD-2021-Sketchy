@@ -117,8 +117,6 @@ class Sketchy(data.Dataset):
                 return image_pos, lbl_pos, im_pos_fname
             elif self.image_type == 'sketch':
                 return sketch, lbl_pos, sketch_fname
-            else:
-                NameError("Image type" + type_skim + " not implemented!")
 
     def __len__(self):
         # Number of sketches/images in the dataset

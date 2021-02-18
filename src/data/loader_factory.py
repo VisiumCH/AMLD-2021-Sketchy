@@ -27,7 +27,6 @@ def load_data(args, transform=None):
         return TUBerlin_Extended(args, transform)
     elif args.dataset == "both":
         sketchy = Sketchy_Extended(args, transform)
-        print("Sketchy done, Parameters:\t" + str(args))
         tuberlin = TUBerlin_Extended(args, transform)
         return torch.utils.data.ConcatDataset([sketchy, tuberlin])
     else:
