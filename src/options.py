@@ -12,8 +12,7 @@ class Options():
             "dataset",
             type=str,
             choices=["sketchy_extend", "tuberlin_extend", "both"],
-            help="Choose between (Sketchy).",
-        )
+            help="Choose between (Sketchy)."
         # Model parameters
         parser.add_argument('--data_path', '-dp', type=str, default='io/data/raw', help='Dataset root path.')
         parser.add_argument('--emb_size', type=int, default=256, help='Embedding Size.')
