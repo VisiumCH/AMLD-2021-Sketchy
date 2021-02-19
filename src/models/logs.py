@@ -124,6 +124,31 @@ class AttentionLogger(object):
             nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.im_lbl_log[i])]
             self.logger.add_image('im{}_{}'.format(i, nam), plt_im)
 
-            nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.sk_lbl_log[i])]
             plt_im = self.sk_log[i]*attn_sk[i]
+            nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.sk_lbl_log[i])]
             self.logger.add_image('sk{}_{}'.format(i, nam), plt_im)
+
+            # Experiments
+            import matplotlib.pyplot as plt
+            # Heatmap Image
+            heat_map_im = attn_im[i].squeeze().detach().numpy()
+            image_heat_map = plt.imshow(heat_map_im, cmap='hsv').get_array().data
+            image_heat_map = torch.tensor(image_heat_map)
+
+            # Heatmap Sketch
+            heat_map_sk = attn_sk[i].squeeze().detach().numpy()
+            sketch_heat_map = plt.imshow(heat_map_sk, cmap='hsv').get_array().data
+            sketch_heat_map = torch.tensor(sketch_heat_map)
+
+            image_with_attention = im_log[i]
+            image_with_attention[0, :, :] = im_log[i, 0, :, :] + image_heat_map
+
+            sketch_with_attention = im_log[i]
+            sketch_with_attention[0, :, :] = sk_log[i, 0, :, :] + sketch_heat_map
+
+            # Plot
+            nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.im_lbl_log[i])]
+            self.logger.add_image('im_test_{}_{}'.format(i, nam), image_with_attention)
+
+            nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.sk_lbl_log[i])]
+            self.logger.add_image('sk_test_{}_{}'.format(i, nam), sketch_with_attention)
