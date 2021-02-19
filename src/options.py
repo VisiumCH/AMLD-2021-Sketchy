@@ -51,3 +51,8 @@ class Options():
 
     def parse(self):
         return self.parser.parse_args()
+
+
+if __name__ == '__main__':
+    args = Options(test=True).parse()
+    print('Parameters:\t' + str(args))
