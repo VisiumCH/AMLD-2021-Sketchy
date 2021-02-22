@@ -44,18 +44,14 @@ def get_test_data(data_loader, model, args):
         if i == 0:
             embeddings = out_features
             classes = target
-            images = image
         else:
             embeddings = np.concatenate((embeddings, out_features), axis=0)
             classes = np.concatenate((classes, target), axis=0)
-            images = np.concatenate((images, image), axis=0)
 
-        if i > 10:
-            break
-    return fnames, embeddings, classes, images
+    return fnames, embeddings, classes
 
 
-def test(im_loader, sk_loader, model, logger, args, dict_class=None):
+def test(im_loader, sk_loader, model, args, dict_class=None):
     '''
     Get data and computes metrics on the model
     '''
@@ -68,14 +64,8 @@ def test(im_loader, sk_loader, model, logger, args, dict_class=None):
     sk_net.eval()
     torch.set_grad_enabled(False)
 
-    im_fnames, im_embeddings, im_class, images = get_test_data(im_loader, im_net, args)
-    sk_fnames, sk_embeddings, sk_class, sketches = get_test_data(sk_loader, sk_net, args)
-
-    print('Embedding Logger')
-    all_embeddings = np.concatenate((im_embeddings, sk_embeddings), axis=0)
-    all_classes = np.concatenate((im_class, sk_class), axis=0)
-    all_images = np.concatenate((images, sketches), axis=0)
-    logger.add_embedding(all_embeddings, all_classes, all_images)
+    im_fnames, im_embeddings, im_class = get_test_data(im_loader, im_net, args)
+    sk_fnames, sk_embeddings, sk_class = get_test_data(sk_loader, sk_net, args)
 
     # Similarity
     similarity = get_similarity(sk_embeddings, im_embeddings)

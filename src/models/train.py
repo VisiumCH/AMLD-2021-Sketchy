@@ -11,7 +11,7 @@ import torch.nn as nn
 from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
-from src.models.logs import AverageMeter, Logger, AttentionLogger
+from src.models.logs import AverageMeter, Logger, AttentionLogger, EmbeddingLogger
 from src.models.loss import DetangledJoinDomainLoss
 from src.models.utils import save_checkpoint, load_model
 from src.models.test import test
@@ -82,9 +82,6 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
                   .format(epoch, i, len(data_loader), loss=losses,
                           loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
 
-        if i > 2:
-            break
-
     print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_dom.avg} + {loss_spa.avg} ); \
            Avg Time x Batch {b_time.avg:.3f}'
           .format(epoch, loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
@@ -99,8 +96,6 @@ def main():
     print('Prepare data')
     transform = transforms.Compose([transforms.ToTensor()])
     train_data, [valid_sk_data, valid_im_data], [test_sk_data, test_im_data], dict_class = load_data(args, transform)
-
-    print(dict_class)
 
     if args.cuda:
         pin_memory = True
@@ -119,6 +114,7 @@ def main():
 
     if (args.log and args.attn):
         attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
+        embedding_logger = EmbeddingLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
 
     print('Create trainable model')
     if args.nopretrain:
@@ -161,7 +157,7 @@ def main():
         loss_train, loss_dom, loss_spa = train(
             train_loader, [im_net, sk_net], optimizer, args.cuda, criterion, epoch, args.log_interval)
         map_valid, map_valid_200, prec_valid_200 = test(
-            valid_im_loader, valid_sk_loader, [im_net, sk_net], logger, args)
+            valid_im_loader, valid_sk_loader, [im_net, sk_net], args)
 
         # Logger
         if args.log:
@@ -171,11 +167,10 @@ def main():
                 pass
             else:
                 with torch.set_grad_enabled(False):
-                    print('Attention Logger')
                     attention_logger.plot_attention(im_net, sk_net)
+                    embedding_logger.plot_embeddings(im_net, sk_net)
 
             # Scalars
-            print('Scalar Logger')
             logger.add_scalar('loss_train', loss_train.avg)
             logger.add_scalar('loss_dom', loss_dom.avg)
             logger.add_scalar('loss_spa', loss_spa.avg)

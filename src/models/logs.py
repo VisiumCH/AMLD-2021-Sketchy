@@ -50,11 +50,6 @@ class Logger(object):
         self._writer.add_image(name, img_tensor, self.global_step)
 
     def add_embedding(self, embedding, metadata, label_img):
-        '''
-        embedding=(torch.Tensor or numpy.array) – A matrix which each row is the feature vector of the data point
-        metadata=(list) – A list of labels, each element will be convert to string
-        label_img=(torch.Tensor) – Images correspond to each data point
-        '''
         self._writer.add_embedding(embedding, metadata=metadata, label_img=label_img,
                                    global_step=self.global_step)
 
@@ -77,6 +72,35 @@ class Logger(object):
             sys.exit(0)
 
 
+class EmbeddingLogger(object):
+    '''Logs the images in the latent space'''
+
+    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
+        self.logger = logger
+        self.dict_class = dict_class
+        self.args = args
+        self.select_embedding_images(valid_sk_data, valid_im_data, args.embedding_number, args)
+
+    def select_embedding_images(self, valid_sk_data, valid_im_data, number_images, args):
+        '''Save some random images to plot attention at defferent epochs'''
+        sk_log, im_log, sk_lbl_log, im_lbl_log = select_images(valid_sk_data, valid_im_data, number_images, args)
+
+        self.sk_log = sk_log
+        self.im_log = im_log
+
+        # Convert class number to class name
+        lbl_values = np.concatenate((im_lbl_log, sk_lbl_log), axis=0)
+        self.lbl = [list(self.dict_class.keys())[list(self.dict_class.values()).index(value)] for value in lbl_values]
+
+    def plot_embeddings(self, im_net, sk_net):
+        im_embedding, _ = im_net(self.im_log)
+        sk_embedding, _ = sk_net(self.sk_log)
+
+        all_embeddings = np.concatenate((im_embedding, sk_embedding), axis=0)
+        all_images = np.concatenate((self.im_log, self.sk_log), axis=0)
+        self.logger.add_embedding(all_embeddings, self.lbl, all_images)
+
+
 class AttentionLogger(object):
     '''Logs some images to visulatise attenction module in tensorboard'''
 
@@ -84,27 +108,11 @@ class AttentionLogger(object):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        self.select_images(valid_sk_data, valid_im_data)
+        self.select_attn_images(valid_sk_data, valid_im_data, args.attn_number, args)
 
-    def select_images(self, valid_sk_data, valid_im_data):
+    def select_attn_images(self, valid_sk_data, valid_im_data, number_images, args):
         '''Save some random images to plot attention at defferent epochs'''
-        rand_samples_sk = np.random.randint(0, high=len(valid_sk_data), size=5)
-        rand_samples_im = np.random.randint(0, high=len(valid_im_data), size=5)
-        for i in range(len(rand_samples_sk)):
-            sk, _, lbl_sk = valid_sk_data[rand_samples_sk[i]]
-            im, _, lbl_im = valid_im_data[rand_samples_im[i]]
-            if self.args.cuda:
-                sk, im = sk.cuda(), im.cuda()
-            if i == 0:
-                sk_log = sk.unsqueeze(0)
-                im_log = im.unsqueeze(0)
-                sk_lbl_log = [lbl_sk]
-                im_lbl_log = [lbl_im]
-            else:
-                sk_log = torch.cat((sk_log, sk.unsqueeze(0)), dim=0)
-                im_log = torch.cat((im_log, im.unsqueeze(0)), dim=0)
-                sk_lbl_log.append(lbl_sk)
-                im_lbl_log.append(lbl_im)
+        sk_log, im_log, sk_lbl_log, im_lbl_log = select_images(valid_sk_data, valid_im_data, number_images, args)
 
         self.sk_log = sk_log
         self.im_log = im_log
@@ -114,43 +122,64 @@ class AttentionLogger(object):
     def plot_attention(self, im_net, sk_net):
         '''Log the attention images in tensorboard'''
 
-        attn_im = process_attention(im_net, self.im_log)
-        attn_sk = process_attention(sk_net, self.sk_log)
+        attn_im = self.process_attention(im_net, self.im_log)
+        attn_sk = self.process_attention(sk_net, self.sk_log)
 
         for i in range(self.im_log.size(0)):  # for each image-sketch pair
 
-            plt_im = add_heatmap_on_image(self.im_log[i], attn_im[i])
+            plt_im = self.add_heatmap_on_image(self.im_log[i], attn_im[i])
             nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.im_lbl_log[i])]
             self.logger.add_image('im{}_{}'.format(i, nam), plt_im)
 
-            plt_im = add_heatmap_on_image(self.sk_log[i], attn_sk[i])
+            plt_im = self.add_heatmap_on_image(self.sk_log[i], attn_sk[i])
             nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.sk_lbl_log[i])]
             self.logger.add_image('sk{}_{}'.format(i, nam), plt_im)
 
+    def process_attention(self, net, im):
+        _, attn = net(im)
+        attn = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn)
+        min_attn = attn.view((attn.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+        max_attn = attn.view((attn.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+        return (attn - min_attn) / (max_attn - min_attn)
 
-def process_attention(net, im):
-    _, attn = net(im)
-    attn = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn)
-    min_attn = attn.view((attn.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    max_attn = attn.view((attn.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    return (attn - min_attn) / (max_attn - min_attn)
+    def add_heatmap_on_image(self, im, attn):
+        # Get to numpy format
+        heat_map = attn.squeeze().detach().numpy()
+        im = im.detach().numpy()
+        im = np.transpose(im, (1, 2, 0))
+
+        # Heatmap + Image on figure
+        fig, ax = plt.subplots()
+        ax.imshow(im)
+        ax.imshow(255 * heat_map, alpha=0.8, cmap='Spectral_r')
+        ax.axis('off')
+
+        # Get value from canvas to pytorch tensor format
+        fig.canvas.draw()
+        image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+        image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        image_from_plot = np.transpose(image_from_plot, (2, 0, 1))
+        return torch.tensor(image_from_plot.copy())
 
 
-def add_heatmap_on_image(im, attn):
-    # Get to numpy format
-    heat_map = attn.squeeze().detach().numpy()
-    im = im.detach().numpy()
-    im = np.transpose(im, (1, 2, 0))
+def select_images(valid_sk_data, valid_im_data, number_images, args):
+    '''Save some random images to plot attention at defferent epochs'''
+    rand_samples_sk = np.random.randint(0, high=len(valid_sk_data), size=number_images)
+    rand_samples_im = np.random.randint(0, high=len(valid_im_data), size=number_images)
+    for i in range(len(rand_samples_sk)):
+        sk, _, lbl_sk = valid_sk_data[rand_samples_sk[i]]
+        im, _, lbl_im = valid_im_data[rand_samples_im[i]]
+        if args.cuda:
+            sk, im = sk.cuda(), im.cuda()
+        if i == 0:
+            sk_log = sk.unsqueeze(0)
+            im_log = im.unsqueeze(0)
+            sk_lbl_log = [lbl_sk]
+            im_lbl_log = [lbl_im]
+        else:
+            sk_log = torch.cat((sk_log, sk.unsqueeze(0)), dim=0)
+            im_log = torch.cat((im_log, im.unsqueeze(0)), dim=0)
+            sk_lbl_log.append(lbl_sk)
+            im_lbl_log.append(lbl_im)
 
-    # Heatmap + Image on figure
-    fig, ax = plt.subplots()
-    ax.imshow(im)
-    ax.imshow(255 * heat_map, alpha=0.8, cmap='Spectral_r')
-    ax.axis('off')
-
-    # Get value from canvas to pytorch tensor format
-    fig.canvas.draw()
-    image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-    image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-    image_from_plot = np.transpose(image_from_plot, (2, 0, 1))
-    return torch.tensor(image_from_plot.copy())
+    return sk_log, im_log, sk_lbl_log, im_lbl_log

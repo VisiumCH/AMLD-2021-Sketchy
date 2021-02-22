@@ -43,7 +43,10 @@ class Options():
                             help='How many batches to wait before logging training status')
         parser.add_argument('--attn', action='store_false', help='Attention module (Default: True).')
         parser.add_argument('--plot', action='store_true', help='Qualitative results (Default: False).')
-
+        parser.add_argument('--attn_number', type=int, default=5,
+                            help='Number of images and sketch to plot attention on tensorboard.')
+        parser.add_argument('--embedding_number', type=int, default=100,
+                            help='Number of embedding images and sketch to plot in latent space on tensorboard.')
         # Test
         if test:
             parser.add_argument('--num_retrieval', type=int, default=10, help='Number of images to be retrieved')
