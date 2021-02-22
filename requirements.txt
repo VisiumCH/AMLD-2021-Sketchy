@@ -15,6 +15,7 @@ tqdm==4.56.0
 requests==2.25.1
 black==20.8b1
 matplotlib==3.3.4
+pandas==1.2.2
 torchvision==0.8.2+cu101
 torch==1.7.1+cu101
 tensorboard==2.4.1

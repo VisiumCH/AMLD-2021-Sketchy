@@ -5,58 +5,25 @@ import torch
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
-
 from src.data.loader_factory import load_data
-from src.data.utils import default_image_loader
-from src.models.encoder import EncoderCNN
-from src.models.utils import load_checkpoint
+from src.data.utils import default_image_loader, get_model
 from src.models.test import get_test_data
 from src.models.metrics import get_similarity
 
 
-def get_model(args, best_checkpoint):
-    im_net = EncoderCNN(out_size=args.emb_size, attention=True)
-    sk_net = EncoderCNN(out_size=args.emb_size, attention=True)
-
-    if args.cuda:
-        checkpoint = torch.load(best_checkpoint)
-    else:
-        checkpoint = torch.load(best_checkpoint, map_location='cpu')
-
-    im_net.load_state_dict(checkpoint['im_state'])
-    sk_net.load_state_dict(checkpoint['sk_state'])
-
-    if args.cuda and args.ngpu > 1:
-        print('\t* Data Parallel **NOT TESTED**')
-        im_net = nn.DataParallel(im_net, device_ids=list(range(args.ngpu)))
-        sk_net = nn.DataParallel(sk_net, device_ids=list(range(args.ngpu)))
-
-    if args.cuda:
-        print('\t* CUDA')
-        im_net, sk_net = im_net.cuda(), sk_net.cuda()
-
-    return im_net, sk_net
-
-
 class Inference():
 
-    def __init__(self, model_path):
+    def __init__(self, model_path, embedding_path):
 
         self.transform = transforms.Compose([transforms.ToTensor()])
         self.loader = default_image_loader
 
         self.im_net, self.sk_net = get_model(args, model_path)
-        self.prepare_image_embeddings()
 
-    def prepare_image_embeddings(self):
-        '''Get all images and compute their embeddings'''
-
-        _, [_, _], [_, test_im_data], dict_class = load_data(args, self.transform)
-        print("Length Image: {}".format(len(test_im_data)))
-        print("Classes: {}".format(test_sk_data.get_class_dict()))
-
-        test_im_loader = DataLoader(test_im_data, batch_size=1)
-        self.images_fnames, self.images_embeddings, self.images_classes = get_test_data(test_im_loader, im_net, args)
+        df = pd.read_csv(embedding_path, sep=' ', header=True)
+        self.images_fnames = df['fnames'].values
+        self.images_embeddings = df['embeddings'].values
+        self.images_classes = df['classes'].values
 
     def inference_sketch(self, sketch_fname, plot=True):
         ''' For now just process a sketch but TODO decide how to proceed later'''
@@ -95,7 +62,7 @@ class Inference():
 
 def main():
     # TODO:modify when better idea of process
-    inference = Inference(args.load)
+    inference = Inference(args.load, args.load_embeddings)
 
     sketch_fname = '../io/data/raw/Sketchy/sketch/tx_000000000000/bat/n02139199_1332-1.png'
     closest_images = inference.inference_sketch(sketch_fname, plot=True)
