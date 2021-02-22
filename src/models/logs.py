@@ -117,7 +117,7 @@ class AttentionLogger(object):
 
         for i in range(self.im_log.size(0)):  # for each image-sketch pair
 
-            plt_im = self.add_heatmap_on_image(self.im_log[i], attn_im[i])
+            plt_im = add_heatmap_on_image(self.im_log[i], attn_im[i])
             nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.im_lbl_log[i])]
             self.logger.add_image('im{}_{}'.format(i, nam), plt_im)
 
@@ -125,20 +125,21 @@ class AttentionLogger(object):
             nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.sk_lbl_log[i])]
             self.logger.add_image('sk{}_{}'.format(i, nam), plt_im)
 
-    def add_heatmap_on_image(self, im, attn):
-        heat_map = attn.squeeze().detach().numpy()
-        im = im.detach().numpy()
-        im = np.transpose(im, (1, 2, 0))
 
-        # Heatmap + Image on figure
-        fig, ax = plt.subplots()
-        ax.imshow(im)
-        ax.imshow(255 * heat_map, alpha=0.8, cmap=colormap)
-        ax.axis('off')
+def add_heatmap_on_image(self, im, attn):
+    heat_map = attn.squeeze().detach().numpy()
+    im = im.detach().numpy()
+    im = np.transpose(im, (1, 2, 0))
 
-        # Get value from canvas
-        fig.canvas.draw()
-        image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        image_from_plot = np.transpose(image_from_plot, (2, 0, 1))
-        return torch.tensor(image_from_plot.copy())
+    # Heatmap + Image on figure
+    fig, ax = plt.subplots()
+    ax.imshow(im)
+    ax.imshow(255 * heat_map, alpha=0.8, cmap=colormap)
+    ax.axis('off')
+
+    # Get value from canvas
+    fig.canvas.draw()
+    image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+    image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    image_from_plot = np.transpose(image_from_plot, (2, 0, 1))
+    return torch.tensor(image_from_plot.copy())
