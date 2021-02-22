@@ -1,9 +1,10 @@
-import torch
-from tensorboardX import SummaryWriter
 import os
 
-import torch.nn as nn
 import numpy as np
+import matplotlib.pyplot as plt
+from tensorboardX import SummaryWriter
+import torch
+import torch.nn as nn
 
 
 class AverageMeter(object):
@@ -103,52 +104,41 @@ class AttentionLogger(object):
 
     def plot_attention(self, im_net, sk_net):
         '''Log the attention images in tensorboard'''
-        _, attn_im = im_net(self.im_log)
-        attn_im = nn.Upsample(size=(self.im_log[0].size(1), self.im_log[0].size(2)),
-                              mode='bilinear', align_corners=False)(attn_im)
-        attn_im = attn_im - attn_im.view((attn_im.size(0), -1)
-                                         ).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-        attn_im = 1 - attn_im/attn_im.view((attn_im.size(0), -1)
-                                           ).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
 
-        _, attn_sk = sk_net(self.sk_log)
-        attn_sk = nn.Upsample(size=(self.sk_log[0].size(1), self.sk_log[0].size(2)),
-                              mode='bilinear', align_corners=False)(attn_sk)
-        attn_sk = attn_sk - attn_sk.view((attn_sk.size(0), -1)
-                                         ).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-        attn_sk = attn_sk/attn_sk.view((attn_sk.size(0), -1)
-                                       ).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+        def process_attention(net, im):
+            _, attn_im = net(im)
+            attn_im = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn_im)
+            min_attn_im = attn_im.view((attn_im.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+            max_attn_im = attn_im.view((attn_im.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+            return (attn_im - min_attn_im) / (max_attn_im - min_attn_im)
 
-        for i in range(self.im_log.size(0)):
-            plt_im = torch.cat([self.im_log[i], attn_im[i]], dim=0)
+        attn_im = process_attention(im_net, im_log)
+        attn_sk = process_attention(sk_net, sk_log)
+
+        for i in range(self.im_log.size(0)):  # for each image-sketch pair
+
+            plt_im = self.add_heatmap_on_image(self.im_log[i], attn_im[i])
             nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.im_lbl_log[i])]
             self.logger.add_image('im{}_{}'.format(i, nam), plt_im)
 
-            plt_im = self.sk_log[i]*attn_sk[i]
+            plt_im = self.add_heatmap_on_image(self.sk_log[i], attn_sk[i])
             nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.sk_lbl_log[i])]
             self.logger.add_image('sk{}_{}'.format(i, nam), plt_im)
 
-            # Experiments
-            import matplotlib.pyplot as plt
-            # Heatmap Image
-            heat_map_im = attn_im[i].squeeze().detach().numpy()
-            image_heat_map = plt.imshow(heat_map_im, cmap='hsv').get_array().data
-            image_heat_map = torch.tensor(image_heat_map)
+    def add_heatmap_on_image(self, im, attn):
+        heat_map = attn.squeeze().detach().numpy()
+        im = im.detach().numpy()
+        im = np.transpose(im, (1, 2, 0))
 
-            # Heatmap Sketch
-            heat_map_sk = attn_sk[i].squeeze().detach().numpy()
-            sketch_heat_map = plt.imshow(heat_map_sk, cmap='hsv').get_array().data
-            sketch_heat_map = torch.tensor(sketch_heat_map)
+        # Heatmap + Image on figure
+        fig, ax = plt.subplots()
+        ax.imshow(im)
+        ax.imshow(255 * heat_map, alpha=0.8, cmap=colormap)
+        ax.axis('off')
 
-            image_with_attention = im_log[i]
-            image_with_attention[0, :, :] = im_log[i, 0, :, :] + image_heat_map
-
-            sketch_with_attention = im_log[i]
-            sketch_with_attention[0, :, :] = sk_log[i, 0, :, :] + sketch_heat_map
-
-            # Plot
-            nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.im_lbl_log[i])]
-            self.logger.add_image('im_test_{}_{}'.format(i, nam), image_with_attention)
-
-            nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.sk_lbl_log[i])]
-            self.logger.add_image('sk_test_{}_{}'.format(i, nam), sketch_with_attention)
+        # Get value from canvas
+        fig.canvas.draw()
+        image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+        image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        image_from_plot = np.transpose(image_from_plot, (2, 0, 1))
+        return torch.tensor(image_from_plot.copy())
