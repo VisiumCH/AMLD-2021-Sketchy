@@ -7,7 +7,6 @@ import torch.nn as nn
 import numpy as np
 
 from src.models.encoder import EncoderCNN
-from src.models.utils import load_checkpoint
 
 
 def save_checkpoint(state, directory, file_name):

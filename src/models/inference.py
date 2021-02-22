@@ -1,14 +1,14 @@
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import numpy as np
 import torch
 from torchvision import transforms
-from torch.utils.data import DataLoader
 
-from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_model
-from src.models.test import get_test_data
+from src.options import Options
 from src.models.metrics import get_similarity
+
+NUM_CLOSEST = 4
 
 
 class Inference():
@@ -65,19 +65,19 @@ def main():
     inference = Inference(args.load, args.load_embeddings)
 
     sketch_fname = '../io/data/raw/Sketchy/sketch/tx_000000000000/bat/n02139199_1332-1.png'
-    closest_images = inference.inference_sketch(sketch_fname, plot=True)
+    inference.inference_sketch(sketch_fname, plot=True)
 
     sketch_fname = '../io/data/raw/Sketchy/sketch/tx_000000000000/door/n03222176_681-1.png'
-    closest_images = inference.inference_sketch(sketch_fname, plot=True)
+    inference.inference_sketch(sketch_fname, plot=True)
 
     sketch_fname = '../io/data/raw/Sketchy/sketch/tx_000000000000/giraffe/n02439033_67-1.png'
-    closest_images = inference.inference_sketch(sketch_fname, plot=True)
+    inference.inference_sketch(sketch_fname, plot=True)
 
     sketch_fname = '../io/data/raw/Sketchy/sketch/tx_000000000000skyscraper/n04233124_498-1.png'
-    closest_images = inference.inference_sketch(sketch_fname, plot=True)
+    inference.inference_sketch(sketch_fname, plot=True)
 
     sketch_fname = '../io/data/raw/Sketchy/sketch/tx_000000000000/wheelchair/n04576002_150-2.png'
-    closest_images = inference.inference_sketch(sketch_fname, plot=True)
+    inference.inference_sketch(sketch_fname, plot=True)
 
 
 if __name__ == '__main__':
