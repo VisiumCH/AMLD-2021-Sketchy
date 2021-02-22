@@ -21,7 +21,7 @@ class Options():
         parser.add_argument('--nopretrain', action='store_true', help='Loads a pretrained model (Default: False).')
         # Optimization options
         parser.add_argument('--epochs', '-e', type=int, default=1000, help='Number of epochs to train.')
-        parser.add_argument('--batch_size', '-b', type=int, default=10, help='Batch size.')
+        parser.add_argument('--batch_size', '-b', type=int, default=5, help='Batch size.')
         parser.add_argument('--learning_rate', '-lr', type=float, default=1e-4, help='The Learning Rate.')
         parser.add_argument('--momentum', '-m', type=float, default=0.9, help='Momentum.')
         parser.add_argument('--decay', '-d', type=float, default=0.0005, help='Weight decay (L2 penalty).')

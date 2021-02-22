@@ -11,7 +11,7 @@ import torch.nn as nn
 from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
-from src.models.logs import AverageMeter, ScalarLogger, AttentionLogger
+from src.models.logs import AverageMeter, Logger, AttentionLogger
 from src.models.loss import DetangledJoinDomainLoss
 from src.models.utils import save_checkpoint, load_model
 from src.models.test import test
@@ -42,6 +42,7 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
     sk_net.train()
     torch.set_grad_enabled(True)
 
+    embeddings = []
     end = time.time()
     for i, (sk, im, im_neg, _, _) in enumerate(data_loader):
         # Prepare input data
@@ -81,6 +82,9 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
                   .format(epoch, i, len(data_loader), loss=losses,
                           loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
 
+        if i > 2:
+            break
+
     print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_dom.avg} + {loss_spa.avg} ); \
            Avg Time x Batch {b_time.avg:.3f}'
           .format(epoch, loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
@@ -95,16 +99,23 @@ def main():
     print('Prepare data')
     transform = transforms.Compose([transforms.ToTensor()])
     train_data, [valid_sk_data, valid_im_data], [test_sk_data, test_im_data], dict_class = load_data(args, transform)
+
+    print(dict_class)
+
+    if args.cuda:
+        pin_memory = True
+    else:
+        pin_memory = False
     train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True,
-                              num_workers=args.prefetch, pin_memory=True, drop_last=True)
+                              num_workers=args.prefetch, pin_memory=pin_memory, drop_last=True)
     valid_sk_loader = DataLoader(valid_sk_data, batch_size=3*args.batch_size,
-                                 num_workers=args.prefetch, pin_memory=True, drop_last=True)
+                                 num_workers=args.prefetch, pin_memory=pin_memory, drop_last=True)
     valid_im_loader = DataLoader(valid_im_data, batch_size=3*args.batch_size,
-                                 num_workers=args.prefetch, pin_memory=True, drop_last=True)
+                                 num_workers=args.prefetch, pin_memory=pin_memory, drop_last=True)
     test_sk_loader = DataLoader(test_sk_data, batch_size=3*args.batch_size,
-                                num_workers=args.prefetch, pin_memory=True, drop_last=True)
+                                num_workers=args.prefetch, pin_memory=pin_memory, drop_last=True)
     test_im_loader = DataLoader(test_im_data, batch_size=3*args.batch_size,
-                                num_workers=args.prefetch, pin_memory=True, drop_last=True)
+                                num_workers=args.prefetch, pin_memory=pin_memory, drop_last=True)
 
     if (args.log and args.attn):
         attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
@@ -149,7 +160,8 @@ def main():
 
         loss_train, loss_dom, loss_spa = train(
             train_loader, [im_net, sk_net], optimizer, args.cuda, criterion, epoch, args.log_interval)
-        map_valid, map_valid_200, prec_valid_200 = test(valid_im_loader, valid_sk_loader, [im_net, sk_net], args)
+        map_valid, map_valid_200, prec_valid_200 = test(
+            valid_im_loader, valid_sk_loader, [im_net, sk_net], logger, args)
 
         # Logger
         if args.log:
@@ -159,9 +171,11 @@ def main():
                 pass
             else:
                 with torch.set_grad_enabled(False):
+                    print('Attention Logger')
                     attention_logger.plot_attention(im_net, sk_net)
 
             # Scalars
+            print('Scalar Logger')
             logger.add_scalar('loss_train', loss_train.avg)
             logger.add_scalar('loss_dom', loss_dom.avg)
             logger.add_scalar('loss_spa', loss_spa.avg)
@@ -215,6 +229,7 @@ if __name__ == '__main__':
 
     # Check cuda & Set random seed
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
+    print('Cuda:\t' + str(args.cuda))
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -229,7 +244,7 @@ if __name__ == '__main__':
         args.save = log_dir
         # Create logger
         print('Log dir:\t' + log_dir)
-        logger = ScalarLogger(log_dir, force=True)
+        logger = Logger(log_dir, force=True)
         with open(os.path.join(args.save, 'params.txt'), 'w') as fp:
             for key, val in vars(args).items():
                 fp.write('{} {}\n'.format(key, val))

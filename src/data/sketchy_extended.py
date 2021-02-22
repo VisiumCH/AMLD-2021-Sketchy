@@ -114,9 +114,9 @@ class Sketchy(data.Dataset):
             return sketch, image_pos, image_neg, lbl_pos, lbl_neg
         else:
             if self.image_type == 'images':
-                return image_pos, lbl_pos, im_pos_fname
+                return image_pos, im_pos_fname, lbl_pos
             elif self.image_type == 'sketch':
-                return sketch, lbl_pos, sketch_fname
+                return sketch, sketch_fname, lbl_pos
 
     def __len__(self):
         # Number of sketches/images in the dataset

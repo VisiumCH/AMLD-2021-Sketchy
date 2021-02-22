@@ -26,7 +26,7 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-class ScalarLogger(object):
+class Logger(object):
     '''Logs Scalars in tensorboard'''
 
     def __init__(self, log_dir, force=False):
@@ -48,6 +48,15 @@ class ScalarLogger(object):
     def add_image(self, name, img_tensor):
         assert isinstance(img_tensor, torch.Tensor), type(img_tensor)
         self._writer.add_image(name, img_tensor, self.global_step)
+
+    def add_embedding(self, embedding, metadata, label_img):
+        '''
+        embedding=(torch.Tensor or numpy.array) – A matrix which each row is the feature vector of the data point
+        metadata=(list) – A list of labels, each element will be convert to string
+        label_img=(torch.Tensor) – Images correspond to each data point
+        '''
+        self._writer.add_embedding(embedding, metadata=metadata, label_img=label_img,
+                                   global_step=self.global_step)
 
     def step(self):
         self.global_step += 1
@@ -105,15 +114,8 @@ class AttentionLogger(object):
     def plot_attention(self, im_net, sk_net):
         '''Log the attention images in tensorboard'''
 
-        def process_attention(net, im):
-            _, attn_im = net(im)
-            attn_im = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn_im)
-            min_attn_im = attn_im.view((attn_im.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-            max_attn_im = attn_im.view((attn_im.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-            return (attn_im - min_attn_im) / (max_attn_im - min_attn_im)
-
-        attn_im = process_attention(im_net, im_log)
-        attn_sk = process_attention(sk_net, sk_log)
+        attn_im = process_attention(im_net, self.im_log)
+        attn_sk = process_attention(sk_net, self.sk_log)
 
         for i in range(self.im_log.size(0)):  # for each image-sketch pair
 
@@ -121,12 +123,21 @@ class AttentionLogger(object):
             nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.im_lbl_log[i])]
             self.logger.add_image('im{}_{}'.format(i, nam), plt_im)
 
-            plt_im = self.add_heatmap_on_image(self.sk_log[i], attn_sk[i])
+            plt_im = add_heatmap_on_image(self.sk_log[i], attn_sk[i])
             nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.sk_lbl_log[i])]
             self.logger.add_image('sk{}_{}'.format(i, nam), plt_im)
 
 
-def add_heatmap_on_image(self, im, attn):
+def process_attention(net, im):
+    _, attn = net(im)
+    attn = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn)
+    min_attn = attn.view((attn.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+    max_attn = attn.view((attn.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+    return (attn - min_attn) / (max_attn - min_attn)
+
+
+def add_heatmap_on_image(im, attn):
+    # Get to numpy format
     heat_map = attn.squeeze().detach().numpy()
     im = im.detach().numpy()
     im = np.transpose(im, (1, 2, 0))
@@ -134,10 +145,10 @@ def add_heatmap_on_image(self, im, attn):
     # Heatmap + Image on figure
     fig, ax = plt.subplots()
     ax.imshow(im)
-    ax.imshow(255 * heat_map, alpha=0.8, cmap=colormap)
+    ax.imshow(255 * heat_map, alpha=0.8, cmap='Spectral_r')
     ax.axis('off')
 
-    # Get value from canvas
+    # Get value from canvas to pytorch tensor format
     fig.canvas.draw()
     image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
     image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
