@@ -6,11 +6,18 @@
 virtualenv
 
 # external requirements
-click           # BSD-3-Clause
-sphinx          # BSD-3-Clause 
-coverage        # MIT
-flake8          # MIT
-python-dotenv   # BSD-3-Clause
-tqdm
-requests
-black
+click==7.1.2    # BSD-3-Clause
+sphinx==3.4.3   # BSD-3-Clause 
+coverage==5.4   # MIT
+flake8==3.8.4   # MIT
+python-dotenv==0.15.0 # BSD-3-Clause
+tqdm==4.56.0
+requests==2.25.1
+black==20.8b1
+matplotlib==3.3.4
+torchvision==0.8.2+cu101
+torch==1.7.1+cu101
+scipy==1.6.0
+
+# package location
+--find-links https://download.pytorch.org/whl/torch_stable.html
