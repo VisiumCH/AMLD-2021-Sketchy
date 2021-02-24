@@ -85,38 +85,46 @@ class Sketchy(data.Dataset):
             - lbl_pos: category of sketch and image_pos
             - lbl_neg: category of image_neg
         '''
-        # Read sketch
-        sketch_fname = os.path.join(
-            self.dir_sketch,
-            self.cls_sketch[index],
-            self.fnames_sketch[index],
-        )
-        sketch = self.loader(sketch_fname)
-        sketch = self.transform(sketch)
-
-        # Target
-        label = self.cls_sketch[index]
-        lbl_pos = self.dicts_class.get(label)
-
-        # Positive image
-        im_pos_fname = get_random_file_from_path(os.path.join(self.dir_image, label))
-        image_pos = self.transform(self.loader(im_pos_fname))
-
-        # Negative class
-        possible_classes = [x for x in self.set_class if x != label]
-        label_neg = np.random.choice(possible_classes, 1)[0]
-        lbl_neg = self.dicts_class.get(label_neg)
-
-        im_neg_fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
-        image_neg = self.transform(self.loader(im_neg_fname))
-
         if self.dataset_type == 'train':
+            # Read sketch
+            sketch_fname = os.path.join(
+                self.dir_sketch,
+                self.cls_sketch[index],
+                self.fnames_sketch[index],
+            )
+            sketch = self.loader(sketch_fname)
+            sketch = self.transform(sketch)
+
+            # Target
+            label = self.cls_sketch[index]
+            lbl_pos = self.dicts_class.get(label)
+
+            # Positive image
+            im_pos_fname = get_random_file_from_path(os.path.join(self.dir_image, label))
+            image_pos = self.transform(self.loader(im_pos_fname))
+
+            # Negative class
+            possible_classes = [x for x in self.set_class if x != label]
+            label_neg = np.random.choice(possible_classes, 1)[0]
+            lbl_neg = self.dicts_class.get(label_neg)
+
+            im_neg_fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
+            image_neg = self.transform(self.loader(im_neg_fname))
+
             return sketch, image_pos, image_neg, lbl_pos, lbl_neg
+
         else:
             if self.image_type == 'images':
-                return image_pos, im_pos_fname, lbl_pos
+                label = self.cls_image[index]
+                fname = os.path.join(self.dir_image, label, self.fnames_image[index])
+                photo = self.transform(self.loader(fname))
+
             elif self.image_type == 'sketch':
-                return sketch, sketch_fname, lbl_pos
+                label = self.cls_sketch[index]
+                fname = os.path.join(self.dir_sketch, label, self.fnames_sketch[index])
+
+            lbl = self.dicts_class.get(label)
+            return photo, fname, lbl
 
     def __len__(self):
         # Number of sketches/images in the dataset
