@@ -12,8 +12,7 @@ class Options():
             "dataset",
             type=str,
             choices=["sketchy_extend", "tuberlin_extend", "both"],
-            help="Choose between (Sketchy).",
-        )
+            help="Choose between (Sketchy).")
         # Model parameters
         parser.add_argument('--data_path', '-dp', type=str, default='io/data/raw', help='Dataset root path.')
         parser.add_argument('--emb_size', type=int, default=256, help='Embedding Size.')
@@ -32,7 +31,7 @@ class Options():
         parser.add_argument('--gamma', type=float, default=0.1, help='LR is multiplied by gamma on schedule.')
         parser.add_argument('--seed', type=int, default=42, help='Random seed.')
         parser.add_argument('--save', '-s', type=str, default='io/models', help='Folder to save checkpoints.')
-        parser.add_argument('--load', '-l', type=str, default=None, help='Checkpoint path to resume / test.')
+        parser.add_argument('--load', '-l', type=str, default='', help='path to the best saved model')
         parser.add_argument('--early_stop', '-es', type=int, default=20, help='Early stopping epochs.')
         # Acceleration
         parser.add_argument('--ngpu', type=int, default=1, help='0 = CPU, 1 = CUDA, 1 < DataParallel')
@@ -47,6 +46,9 @@ class Options():
                             help='Number of images and sketch to plot attention on tensorboard.')
         parser.add_argument('--embedding_number', type=int, default=100,
                             help='Number of embedding images and sketch to plot in latent space on tensorboard.')
+        # Inference
+        parser.add_argument('--load_embeddings', type=str, default='io/data/processed/images_embeddings.csv',
+                            help='precomputed embeddings with images and path')
         # Test
         if test:
             parser.add_argument('--num_retrieval', type=int, default=10, help='Number of images to be retrieved')

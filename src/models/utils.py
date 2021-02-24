@@ -3,7 +3,10 @@ import errno
 import pickle
 
 import torch
+import torch.nn as nn
 import numpy as np
+
+from src.models.encoder import EncoderCNN
 
 
 def save_checkpoint(state, directory, file_name):
@@ -67,3 +70,27 @@ def save_qualitative_results(sim, str_sim, fnames_sk, fnames_im, args):
 
     with open('src/visualisation/retrieved_im_true_false.pkl', 'wb') as f:
         pickle.dump([retrieved_im_true_false], f)
+
+
+def get_model(args, best_checkpoint):
+    im_net = EncoderCNN(out_size=args.emb_size, attention=True)
+    sk_net = EncoderCNN(out_size=args.emb_size, attention=True)
+
+    if args.cuda:
+        checkpoint = torch.load(best_checkpoint)
+    else:
+        checkpoint = torch.load(best_checkpoint, map_location='cpu')
+
+    im_net.load_state_dict(checkpoint['im_state'])
+    sk_net.load_state_dict(checkpoint['sk_state'])
+
+    if args.cuda and args.ngpu > 1:
+        print('\t* Data Parallel **NOT TESTED**')
+        im_net = nn.DataParallel(im_net, device_ids=list(range(args.ngpu)))
+        sk_net = nn.DataParallel(sk_net, device_ids=list(range(args.ngpu)))
+
+    if args.cuda:
+        print('\t* CUDA')
+        im_net, sk_net = im_net.cuda(), sk_net.cuda()
+
+    return im_net, sk_net

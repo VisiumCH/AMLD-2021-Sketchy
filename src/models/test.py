@@ -10,7 +10,7 @@ import torch.nn as nn
 from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
-from src.models.metrics import get_similarity, compare_classes, preca_k, get_map_prec_200, get_map_all
+from src.models.metrics import get_similarity, compare_classes, get_map_prec_200, get_map_all
 from src.models.utils import load_model, save_qualitative_results
 
 
