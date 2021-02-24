@@ -18,18 +18,16 @@ def TUBerlin_Extended(args, transform='None'):
     '''
     Creates all the data loaders for TU-Berlin dataset
     '''
-    # TU-Berlin datapath
-    args.data_path = os.path.join(args.data_path, 'TU-Berlin')
 
     # Getting the classes
-    class_labels_directory = os.path.join(args.data_path, 'sketches')
+    class_labels_directory = os.path.join(args.data_path, 'TU-Berlin/sketches')
     list_class = os.listdir(class_labels_directory)
     # Only folders
     list_class = [name for name in list_class if os.path.isdir(os.path.join(class_labels_directory, name))]
     nc = len(list_class)
     dicts_class = create_dict_texts(list_class)
 
-    images_directory = os.path.join(args.data_path, 'images')
+    images_directory = os.path.join(args.data_path, 'TU-Berlin/images')
     im_per_class = [len(glob(os.path.join(images_directory, c, '*jpg'))) for c in list_class]
     possible_test = np.where(np.array(im_per_class) >= 400)[0]
 
@@ -56,79 +54,35 @@ def TUBerlin_Extended(args, transform='None'):
             fp.write("%s\n" % item)
 
     # Data Loaders
-    train_loader = TUBerlin_Extended_train(
-        args, train_class, dicts_class, transform)
-    valid_sk_loader = TUBerlin_Extended_valid_test(
-        args, valid_class, dicts_class, transform, type_skim='sketch')
-    valid_im_loader = TUBerlin_Extended_valid_test(
-        args, valid_class, dicts_class, transform, type_skim='images')
-    test_sk_loader = TUBerlin_Extended_valid_test(
-        args, test_class, dicts_class, transform, type_skim='sketch')
-    test_im_loader = TUBerlin_Extended_valid_test(
-        args, test_class, dicts_class, transform, type_skim='images')
+    train_loader = TUBerlin(args, 'train', train_class, dicts_class, transform)
+    valid_sk_loader = TUBerlin(args, 'valid', valid_class, dicts_class, transform, 'sketch')
+    valid_im_loader = TUBerlin(args, 'valid', valid_class, dicts_class, transform, 'images')
+    test_sk_loader = TUBerlin(args, 'test', test_class, dicts_class, transform, 'sketch')
+    test_im_loader = TUBerlin(args, 'test', test_class, dicts_class, transform, 'images')
 
     return train_loader, [valid_sk_loader, valid_im_loader], [test_sk_loader, test_im_loader], dicts_class
 
 
-class TUBerlin_Extended_valid_test(data.Dataset):
+class TUBerlin(data.Dataset):
     '''
-    Custom dataset for TU-Berlin's validation and testing
+    Custom dataset for TU-Berlin's
     '''
 
-    def __init__(self, args, set_class, dicts_class, transform=None, type_skim='images'):
+    def __init__(self, args, dataset_type, set_class, dicts_class, transform=None, image_type=None):
+
         self.transform = transform
+        self.dataset_type = dataset_type
         self.set_class = set_class
         self.dicts_class = dicts_class
-        self.type_skim = type_skim
-
-        if type_skim == 'images':
-            self.dir_file = os.path.join(args.data_path, 'images')
-        elif type_skim == 'sketch':
-            self.dir_file = os.path.join(args.data_path, 'sketches')
-        else:
-            NameError(type_skim + ' not implemented!')
-
-        self.fnames, self.cls = get_file_list(self.dir_file, self.set_class, type_skim)
         self.loader = default_image_loader
         self.loader_image = default_image_loader_tuberlin
+        self.image_type = image_type
 
-    def __getitem__(self, index):
-        label = self.cls[index]
-        fname = os.path.join(self.dir_file, label, self.fnames[index])
-        if self.type_skim == 'images':
-            photo = self.transform(self.loader_image(fname))
-        else:
-            photo = self.transform(self.loader(fname))
+        self.dir_sketch = os.path.join(args.data_path, 'TU-Berlin/sketches')
+        self.dir_image = os.path.join(args.data_path, 'TU-Berlin/images')
 
-        lbl = self.dicts_class.get(label)
-
-        return photo, fname, lbl
-
-    def __len__(self):
-        # Number of sketches/images in the dataset
-        return len(self.fnames)
-
-    def get_class_dict(self):
-        # Dictionnary of categories of the dataset
-        return self.set_class
-
-
-class TUBerlin_Extended_train(data.Dataset):
-    '''
-    Custom dataset for TU-Berlin's training
-    '''
-
-    def __init__(self, args, train_class, dicts_class, transform=None):
-
-        self.transform = transform
-        self.train_class = train_class
-        self.dicts_class = dicts_class
-
-        self.dir_image = os.path.join(args.data_path, 'images')
-        self.dir_sketch = os.path.join(args.data_path, 'sketches')
-        self.loader = default_image_loader
-        self.loader_image = default_image_loader_tuberlin
-        self.fnames_sketch, self.cls_sketch = get_file_list(self.dir_sketch, self.train_class, 'sketch')
+        self.fnames_sketch, self.cls_sketch = get_file_list(self.dir_sketch, self.set_class, 'sketch')
+        self.fnames_image, self.cls_image = get_file_list(self.dir_image, self.set_class, 'images')
 
     def __getitem__(self, index):
         '''
@@ -143,33 +97,42 @@ class TUBerlin_Extended_train(data.Dataset):
             - lbl_neg: category of image_neg
         '''
         # Read sketch
-        fname = os.path.join(self.dir_sketch, self.cls_sketch[index], self.fnames_sketch[index])
-        sketch = self.loader(fname)
-        sketch = self.transform(sketch)
+        sketch_fname = os.path.join(self.dir_sketch, self.cls_sketch[index], self.fnames_sketch[index])
+        sketch = self.transform(self.loader(sketch_fname))
 
         # Target
         label = self.cls_sketch[index]
         lbl_pos = self.dicts_class.get(label)
 
         # Positive image
-        fname = get_random_file_from_path(os.path.join(self.dir_image, label))
-        image_pos = self.transform(self.loader_image(fname))
+        im_pos_fname = get_random_file_from_path(os.path.join(self.dir_image, label))
+        image_pos = self.transform(self.loader_image(im_pos_fname))
 
         # Negative class
         # Hard negative
-        possible_classes = [x for x in self.train_class if x != label]
+        possible_classes = [x for x in self.set_class if x != label]
         label_neg = np.random.choice(possible_classes, 1)[0]
         lbl_neg = self.dicts_class.get(label_neg)
 
-        fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
-        image_neg = self.transform(self.loader_image(fname))
+        im_neg_fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
+        image_neg = self.transform(self.loader_image(im_neg_fname))
 
-        return sketch, image_pos, image_neg, lbl_pos, lbl_neg
+        # return sketch, image_pos, image_neg, lbl_pos, lbl_neg
+        if self.dataset_type == 'train':
+            return sketch, image_pos, image_neg, lbl_pos, lbl_neg
+        else:
+            if self.image_type == 'images':
+                return image_pos, im_pos_fname, lbl_pos
+            elif self.image_type == 'sketch':
+                return sketch, sketch_fname, lbl_pos
 
     def __len__(self):
         # Number of sketches/images in the dataset
-        return len(self.fnames_sketch)
+        if self.dataset_type == 'train' or self.image_type == 'sketch':
+            return len(self.fnames_sketch)
+        else:
+            return len(self.fnames_image)
 
     def get_class_dict(self):
         # Dictionnary of categories of the dataset
-        return self.train_class
+        return self.set_class
