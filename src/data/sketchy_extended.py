@@ -118,14 +118,12 @@ class Sketchy(data.Dataset):
                 label = self.cls_image[index]
                 fname = os.path.join(self.dir_image, label, self.fnames_image[index])
                 photo = self.transform(self.loader(fname))
-                lbl = self.dicts_class.get(label)
 
             elif self.image_type == 'sketch':
                 label = self.cls_sketch[index]
                 fname = os.path.join(self.dir_sketch, label, self.fnames_sketch[index])
-                photo = self.transform(self.loader(fname))
-                lbl = self.dicts_class.get(label)
 
+            lbl = self.dicts_class.get(label)
             return photo, fname, lbl
 
     def __len__(self):
