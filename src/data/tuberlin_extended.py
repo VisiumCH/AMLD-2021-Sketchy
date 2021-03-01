@@ -86,6 +86,7 @@ class TUBerlin(data.Dataset):
         self.loader = default_image_loader
         self.loader_image = default_image_loader_tuberlin
         self.image_type = image_type
+        self.sketchy_limit = 0  # only useful for 'Both_Extended dataset'
 
         self.dir_sketch = os.path.join(args.data_path, 'TU-Berlin/sketches')
         self.dir_image = os.path.join(args.data_path, 'TU-Berlin/images')

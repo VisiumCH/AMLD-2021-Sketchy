@@ -47,7 +47,8 @@ def get_test_data(data_loader, model, args):
         else:
             embeddings = np.concatenate((embeddings, out_features), axis=0)
             classes = np.concatenate((classes, target), axis=0)
-
+        if i > 4:
+            break
     return fnames, embeddings, classes
 
 

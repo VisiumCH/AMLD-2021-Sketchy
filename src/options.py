@@ -45,7 +45,7 @@ class Options():
         parser.add_argument('--plot', action='store_true', help='Qualitative results (Default: False).')
         parser.add_argument('--attn_number', type=int, default=5,
                             help='Number of images and sketch to plot attention on tensorboard.')
-        parser.add_argument('--embedding_number', type=int, default=500,
+        parser.add_argument('--embedding_number', type=int, default=100,
                             help='Number of embedding images and sketch to plot in latent space on tensorboard.')
         # Inference
         parser.add_argument('--best_model', type=str,

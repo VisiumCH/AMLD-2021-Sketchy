@@ -75,22 +75,29 @@ class Logger(object):
 class EmbeddingLogger(object):
     '''Logs the images in the latent space'''
 
-    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
+    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args, sketchy_limit_images=None, sketchy_limit_sketch=None):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
+        self.sketchy_limit_images = sketchy_limit_images
+        self.sketchy_limit_sketch = sketchy_limit_sketch
         self.select_embedding_images(valid_sk_data, valid_im_data, args.embedding_number, args)
 
     def select_embedding_images(self, valid_sk_data, valid_im_data, number_images, args):
         '''Save some random images to plot attention at defferent epochs'''
-        sk_log, im_log, sk_lbl_log, im_lbl_log = select_images(valid_sk_data, valid_im_data, number_images, args)
+        sk_log, im_log, sk_lbl_log, im_lbl_log, index_sk, index_im = select_images(
+            valid_sk_data, valid_im_data, number_images, args)
 
         self.sk_log = sk_log
         self.im_log = im_log
 
         # Convert class number to class name
-        lbl_values = np.concatenate((im_lbl_log, sk_lbl_log), axis=0)
-        self.lbl = [list(self.dict_class.keys())[list(self.dict_class.values()).index(value)] for value in lbl_values]
+        #lbl_values = np.concatenate((im_lbl_log, sk_lbl_log), axis=0)
+        self.lbl = [get_labels_name(self.dict_class, value, index_im[i], self.sketchy_limit_images, args)
+                    for i, value in enumerate(im_lbl_log)]
+
+        self.lbl.extend([get_labels_name(self.dict_class, value, index_sk[i], self.sketchy_limit_sketch, args)
+                         for i, value in enumerate(sk_lbl_log)])
 
     def plot_embeddings(self, im_net, sk_net):
         im_embedding, _ = im_net(self.im_log)
@@ -104,20 +111,25 @@ class EmbeddingLogger(object):
 class AttentionLogger(object):
     '''Logs some images to visulatise attenction module in tensorboard'''
 
-    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
+    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args, sketchy_limit_images=None, sketchy_limit_sketch=None):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
+        self.sketchy_limit_images = sketchy_limit_images
+        self.sketchy_limit_sketch = sketchy_limit_sketch
         self.select_attn_images(valid_sk_data, valid_im_data, args.attn_number, args)
 
     def select_attn_images(self, valid_sk_data, valid_im_data, number_images, args):
         '''Save some random images to plot attention at defferent epochs'''
-        sk_log, im_log, sk_lbl_log, im_lbl_log = select_images(valid_sk_data, valid_im_data, number_images, args)
+        sk_log, im_log, sk_lbl_log, im_lbl_log, index_sk, index_im = select_images(
+            valid_sk_data, valid_im_data, number_images, args)
 
         self.sk_log = sk_log
         self.im_log = im_log
         self.sk_lbl_log = sk_lbl_log
         self.im_lbl_log = im_lbl_log
+        self.index_sk = index_sk
+        self.index_im = index_im
 
     def plot_attention(self, im_net, sk_net):
         '''Log the attention images in tensorboard'''
@@ -128,12 +140,14 @@ class AttentionLogger(object):
         for i in range(self.im_log.size(0)):  # for each image-sketch pair
 
             plt_im = self.add_heatmap_on_image(self.im_log[i], attn_im[i])
-            nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.im_lbl_log[i])]
-            self.logger.add_image('im{}_{}'.format(i, nam), plt_im)
+            class_names = get_labels_name(
+                self.dict_class, self.im_lbl_log[i], self.index_im[i], self.sketchy_limit_images, args)
+            self.logger.add_image('im{}_{}'.format(i, class_names), plt_im)
 
             plt_im = self.add_heatmap_on_image(self.sk_log[i], attn_sk[i])
-            nam = list(self.dict_class.keys())[list(self.dict_class.values()).index(self.sk_lbl_log[i])]
-            self.logger.add_image('sk{}_{}'.format(i, nam), plt_im)
+            class_names = get_labels_name(
+                self.dict_class, self.sk_lbl_log[i], self.index_sk[i], self.sketchy_limit_sketch, args)
+            self.logger.add_image('sk{}_{}'.format(i, class_names), plt_im)
 
     def process_attention(self, net, im):
         _, attn = net(im)
@@ -143,10 +157,6 @@ class AttentionLogger(object):
         return (attn - min_attn) / (max_attn - min_attn)
 
     def add_heatmap_on_image(self, im, attn):
-        # Get to numpy format
-        # if self.args.cuda:
-        #     attn = attn.cpu()
-        #     im = im.cpu()
         heat_map = attn.squeeze().detach().numpy()
         im = im.detach().numpy()
         im = np.transpose(im, (1, 2, 0))
@@ -172,8 +182,7 @@ def select_images(valid_sk_data, valid_im_data, number_images, args):
     for i in range(len(rand_samples_sk)):
         sk, _, lbl_sk = valid_sk_data[rand_samples_sk[i]]
         im, _, lbl_im = valid_im_data[rand_samples_im[i]]
-        # if args.cuda:
-        #     sk, im = sk.cuda(), im.cuda()
+
         if i == 0:
             sk_log = sk.unsqueeze(0)
             im_log = im.unsqueeze(0)
@@ -185,4 +194,16 @@ def select_images(valid_sk_data, valid_im_data, number_images, args):
             sk_lbl_log.append(lbl_sk)
             im_lbl_log.append(lbl_im)
 
-    return sk_log, im_log, sk_lbl_log, im_lbl_log
+    return sk_log, im_log, sk_lbl_log, im_lbl_log, rand_samples_sk, rand_samples_im
+
+
+def get_labels_name(dict_class, number_labels, idx, sketchy_limit, args):
+    if args.dataset == 'both':
+        if idx < sketchy_limit:  # sketchy dataset
+            class_names = list(dict_class[0].keys())[list(dict_class[0].values()).index(number_labels)]
+        else:  # tuberlin dataset
+            class_names = list(dict_class[1].keys())[list(dict_class[1].values()).index(number_labels)]
+    else:
+        class_names = list(dict_class.keys())[list(dict_class.values()).index(number_labels)]
+
+    return class_names

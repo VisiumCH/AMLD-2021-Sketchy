@@ -83,6 +83,8 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
                  ( Dom: {loss_dom.avg} + Spa: {loss_spa.avg}); Avg Time x Batch {b_time.avg:.3f}'
                   .format(epoch, i, len(data_loader), loss=losses,
                           loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
+        if i > 4:
+            break
 
     print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_dom.avg} + {loss_spa.avg} ); \
            Avg Time x Batch {b_time.avg:.3f}'
@@ -115,8 +117,10 @@ def main():
                                 num_workers=args.prefetch, pin_memory=pin_memory, drop_last=True)
 
     if (args.log and args.attn):
-        attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
-        embedding_logger = EmbeddingLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
+        attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger,
+                                           dict_class, args, valid_sk_data.sketchy_limit_images, valid_sk_data.sketchy_limit_sketch)
+        embedding_logger = EmbeddingLogger(valid_sk_data, valid_im_data, logger,
+                                           dict_class, args, valid_sk_data.sketchy_limit_images, valid_sk_data.sketchy_limit_sketch)
 
     print('Create trainable model')
     im_net = EncoderCNN(out_size=args.emb_size, pretrained=args.nopretrain, attention=args.attn)

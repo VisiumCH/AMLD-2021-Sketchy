@@ -73,6 +73,7 @@ class Sketchy(data.Dataset):
         self.dicts_class = dicts_class
         self.loader = default_image_loader
         self.image_type = image_type
+        self.sketchy_limit = 0  # only useful for 'Both_Extended dataset'
 
         self.dir_image = os.path.join(args.data_path, "Sketchy/extended_photo")
         self.dir_sketch = os.path.join(args.data_path, "Sketchy/sketch", "tx_000000000000")
