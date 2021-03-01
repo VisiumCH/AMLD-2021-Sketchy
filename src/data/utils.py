@@ -32,9 +32,7 @@ def get_file_list(dir_skim, class_list, skim="sketch"):
 
 def default_image_loader(path):
 
-    img = Image.fromarray(
-        cv2.resize(np.array(Image.open(path).convert("RGB")), (224, 224))
-    )
+    img = Image.fromarray(cv2.resize(np.array(Image.open(path).convert("RGB")), (224, 224)))
     return img
 
 
