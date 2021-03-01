@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import torch
 
+from src.data.both_extended import Both_Extended
 from src.data.sketchy_extended import Sketchy_Extended
 from src.data.tuberlin_extended import TUBerlin_Extended
 
@@ -26,9 +27,7 @@ def load_data(args, transform=None):
     elif args.dataset == "tuberlin_extend":
         return TUBerlin_Extended(args, transform)
     elif args.dataset == "both":
-        sketchy = Sketchy_Extended(args, transform)
-        tuberlin = TUBerlin_Extended(args, transform)
-        return torch.utils.data.ConcatDataset([sketchy, tuberlin])
+        return Both_Extended(args, transform)
     else:
         sys.exit()
 
@@ -62,23 +61,31 @@ if __name__ == "__main__":
 
     print("\n--- Train Data ---")
     print("\t* Length: {}".format(len(train_loader)))
-    print("\t* Classes: {}".format(train_loader.get_class_dict()))
+    #print("\t* Classes: {}".format(train_loader.get_class_dict()))
     print("\t* Num Classes. {}".format(len(train_loader.get_class_dict())))
 
     num_samples = 7
     rand_samples = np.random.randint(0, high=len(train_loader), size=num_samples)
     f, axarr = plt.subplots(3, num_samples)
     for i in range(len(rand_samples)):
+        print(rand_samples[i])
+        if args.dataset == "both":
+            if rand_samples[i] < train_loader.sketchy_limit:
+                dataset_dict_class = dict_class[0]
+            else:
+                dataset_dict_class = dict_class[1]
+        else:
+            dataset_dict_class = dict_class
         sk, im, im_neg, lbl, lbl_neg = train_loader[rand_samples[i]]
         axarr[0, i].imshow(sk.permute(1, 2, 0).numpy())
-        axarr[0, i].set_title(dict_by_value(dict_class, lbl))
+        axarr[0, i].set_title(dict_by_value(dataset_dict_class, lbl))
         axarr[0, i].axis("off")
 
         axarr[1, i].imshow(im.permute(1, 2, 0).numpy())
         axarr[1, i].axis("off")
 
         axarr[2, i].imshow(im_neg.permute(1, 2, 0).numpy())
-        axarr[2, i].set_title(dict_by_value(dict_class, lbl_neg))
+        axarr[2, i].set_title(dict_by_value(dataset_dict_class, lbl_neg))
         axarr[2, i].axis("off")
     plt.show()
     plt.savefig("src/visualization/training_samples_" + args.dataset + ".png")
