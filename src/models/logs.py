@@ -141,12 +141,12 @@ class AttentionLogger(object):
 
             plt_im = self.add_heatmap_on_image(self.im_log[i], attn_im[i])
             class_names = get_labels_name(
-                self.dict_class, self.im_lbl_log[i], self.index_im[i], self.sketchy_limit_images, args)
+                self.dict_class, self.im_lbl_log[i], self.index_im[i], self.sketchy_limit_images, self.args)
             self.logger.add_image('im{}_{}'.format(i, class_names), plt_im)
 
             plt_im = self.add_heatmap_on_image(self.sk_log[i], attn_sk[i])
             class_names = get_labels_name(
-                self.dict_class, self.sk_lbl_log[i], self.index_sk[i], self.sketchy_limit_sketch, args)
+                self.dict_class, self.sk_lbl_log[i], self.index_sk[i], self.sketchy_limit_sketch, self.args)
             self.logger.add_image('sk{}_{}'.format(i, class_names), plt_im)
 
     def process_attention(self, net, im):

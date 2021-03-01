@@ -31,8 +31,7 @@ class Options():
         parser.add_argument('--gamma', type=float, default=0.1, help='LR is multiplied by gamma on schedule.')
         parser.add_argument('--seed', type=int, default=42, help='Random seed.')
         parser.add_argument('--save', '-s', type=str, default='io/models', help='Folder to save checkpoints.')
-        parser.add_argument('--load', '-l', type=str,
-                            default='io/models/best_model/checkpoint.pth', help='path to the model to retrain')
+        parser.add_argument('--load', '-l', type=str, default=None, help='path to the model to retrain')
         parser.add_argument('--early_stop', '-es', type=int, default=20, help='Early stopping epochs.')
         # Acceleration
         parser.add_argument('--ngpu', type=int, default=1, help='0 = CPU, 1 = CUDA, 1 < DataParallel')
@@ -45,7 +44,7 @@ class Options():
         parser.add_argument('--plot', action='store_true', help='Qualitative results (Default: False).')
         parser.add_argument('--attn_number', type=int, default=5,
                             help='Number of images and sketch to plot attention on tensorboard.')
-        parser.add_argument('--embedding_number', type=int, default=100,
+        parser.add_argument('--embedding_number', type=int, default=200,
                             help='Number of embedding images and sketch to plot in latent space on tensorboard.')
         # Inference
         parser.add_argument('--best_model', type=str,
