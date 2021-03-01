@@ -79,8 +79,9 @@ class EmbeddingLogger(object):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        self.sketchy_limit_images = valid_sk_data.sketchy_limit_images
-        self.sketchy_limit_sketch = valid_sk_data.sketchy_limit_sketch
+        if args.dataset == 'both':
+            self.sketchy_limit_images = valid_sk_data.sketchy_limit_images
+            self.sketchy_limit_sketch = valid_sk_data.sketchy_limit_sketch
         self.select_embedding_images(valid_sk_data, valid_im_data, args.embedding_number, args)
 
     def select_embedding_images(self, valid_sk_data, valid_im_data, number_images, args):
@@ -114,8 +115,9 @@ class AttentionLogger(object):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        self.sketchy_limit_images = valid_sk_data.sketchy_limit_images
-        self.sketchy_limit_sketch = valid_sk_data.sketchy_limit_sketch
+        if args.dataset == 'both':
+            self.sketchy_limit_images = valid_sk_data.sketchy_limit_images
+            self.sketchy_limit_sketch = valid_sk_data.sketchy_limit_sketch
         self.select_attn_images(valid_sk_data, valid_im_data, args.attn_number, args)
 
     def select_attn_images(self, valid_sk_data, valid_im_data, number_images, args):
