@@ -71,9 +71,6 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
     similarity = get_similarity(sk_embeddings, im_embeddings)
     class_matches = compare_classes(im_class, sk_class)
 
-    # Precision and recall for top k
-    # mprec_k, rec_k = preca_k(similarity, class_matches, k=5)
-
     # Mean average precision
     num_cores = min(multiprocessing.cpu_count(), 32)
     map_200, prec_200 = get_map_prec_200(similarity, class_matches, num_cores)
@@ -86,7 +83,6 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
         for d_class in diff_class:
             ind = (sk_class == d_class)
             print('mAP {} class {}'.format(str(np.array(ap_all)[ind].mean()), dict_class[d_class]))
-            # print('Recall {} class {}'.format(str(np.array(rec_k)[ind].mean()), dict_class[d_class]))
 
     if args.plot:
         save_qualitative_results(similarity, class_matches, sk_fnames, im_fnames, args)
