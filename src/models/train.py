@@ -38,6 +38,8 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
 
     # switch to train mode
     im_net, sk_net = model
+    if args.cuda:
+        im_net, sk_net = im_net.cuda(), sk_net.cuda()
     im_net.train()
     sk_net.train()
     torch.set_grad_enabled(True)
@@ -117,9 +119,6 @@ def main():
         embedding_logger = EmbeddingLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
 
     print('Create trainable model')
-    if args.nopretrain:
-        print('\t* Loading a pretrained model')
-
     im_net = EncoderCNN(out_size=args.emb_size, pretrained=args.nopretrain, attention=args.attn)
     sk_net = EncoderCNN(out_size=args.emb_size, pretrained=args.nopretrain, attention=args.attn)
 
@@ -130,7 +129,6 @@ def main():
     optimizer = torch.optim.SGD(list(im_net.parameters()) + list(sk_net.parameters()) + list(criterion.parameters()),
                                 args.learning_rate, momentum=args.momentum, weight_decay=args.decay, nesterov=True)
 
-    print('Check CUDA')
     if args.cuda and args.ngpu > 1:
         print('\t* Data Parallel')
         im_net = nn.DataParallel(im_net, device_ids=list(range(args.ngpu)))
@@ -138,7 +136,6 @@ def main():
         criterion = nn.DataParallel(criterion, device_ids=list(range(args.ngpu)))
 
     if args.cuda:
-        print('\t* CUDA')
         im_net, sk_net = im_net.cuda(), sk_net.cuda()
         criterion = criterion.cuda()
 
@@ -167,6 +164,8 @@ def main():
                 pass
             else:
                 with torch.set_grad_enabled(False):
+                    im_net.to(torch.device('cpu'))
+                    sk_net.to(torch.device('cpu'))
                     attention_logger.plot_attention(im_net, sk_net)
                     embedding_logger.plot_embeddings(im_net, sk_net)
 

@@ -14,14 +14,11 @@ from src.data.utils import (
 )
 
 
-def TUBerlin_Extended(args, transform='None'):
-    '''
-    Creates all the data loaders for TU-Berlin dataset
-    '''
-
+def tuberlin_dataset_split(args):
     # Getting the classes
     class_labels_directory = os.path.join(args.data_path, 'TU-Berlin/sketches')
     list_class = os.listdir(class_labels_directory)
+
     # Only folders
     list_class = [name for name in list_class if os.path.isdir(os.path.join(class_labels_directory, name))]
     nc = len(list_class)
@@ -32,7 +29,6 @@ def TUBerlin_Extended(args, transform='None'):
     possible_test = np.where(np.array(im_per_class) >= 400)[0]
 
     # Random Shuffle
-    random.seed(args.seed)
     random.shuffle(possible_test)
     random.shuffle(list_class)
 
@@ -43,6 +39,7 @@ def TUBerlin_Extended(args, transform='None'):
     train_class = list_class[:int(0.8 * nc)]
     valid_class = list_class[int(0.8 * nc):]
 
+    # Save split
     with open(os.path.join(args.save, 'train.txt'), 'w') as fp:
         for item in train_class:
             fp.write("%s\n" % item)
@@ -52,6 +49,18 @@ def TUBerlin_Extended(args, transform='None'):
     with open(os.path.join(args.save, 'test.txt'), 'w') as fp:
         for item in test_class:
             fp.write("%s\n" % item)
+
+    return train_class, valid_class, test_class, dicts_class
+
+
+def TUBerlin_Extended(args, transform='None'):
+    '''
+    Creates all the data loaders for TU-Berlin dataset
+    '''
+    random.seed(args.seed)
+
+    # Get dataset classes
+    train_class, valid_class, test_class, dicts_class = tuberlin_dataset_split(args)
 
     # Data Loaders
     train_loader = TUBerlin(args, 'train', train_class, dicts_class, transform)

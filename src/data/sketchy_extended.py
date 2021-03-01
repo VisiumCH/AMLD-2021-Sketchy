@@ -13,17 +13,11 @@ from src.data.utils import (
 )
 
 
-def Sketchy_Extended(args, transform="None"):
-    '''
-    Creates all the data loaders for Sketchy dataset
-    '''
+def sketchy_dataset_split(args):
     # Getting the classes
     class_directories = glob(os.path.join(args.data_path, "Sketchy/extended_photo/*/"))
     list_class = [class_path.split("/")[-2] for class_path in class_directories]
     dicts_class = create_dict_texts(list_class)
-
-    # Random seed
-    np.random.seed(args.seed)
 
     # Read test classes
     with open(os.path.join(args.data_path, "Sketchy/zeroshot_classes_sketchy.txt")) as fp:
@@ -31,13 +25,26 @@ def Sketchy_Extended(args, transform="None"):
     list_class = [x for x in list_class if x not in test_class]
 
     # Random Shuffle
-    random.seed(args.seed)
     shuffled_list_class = list_class
     random.shuffle(shuffled_list_class)
 
     # Dividing the classes
     train_class = shuffled_list_class[: int(0.9 * len(shuffled_list_class))]
     valid_class = shuffled_list_class[int(0.9 * len(shuffled_list_class)):]
+
+    return train_class, valid_class, test_class, dicts_class
+
+
+def Sketchy_Extended(args, transform="None"):
+    '''
+    Creates all the data loaders for Sketchy dataset
+    '''
+    # Random seed
+    np.random.seed(args.seed)
+    random.seed(args.seed)
+
+    # Get dataset classes
+    train_class, valid_class, test_class, dicts_class = sketchy_dataset_split(args)
 
     # Data Loaders
     train_loader = Sketchy(args, 'train', train_class, dicts_class, transform)

@@ -144,6 +144,9 @@ class AttentionLogger(object):
 
     def add_heatmap_on_image(self, im, attn):
         # Get to numpy format
+        # if self.args.cuda:
+        #     attn = attn.cpu()
+        #     im = im.cpu()
         heat_map = attn.squeeze().detach().numpy()
         im = im.detach().numpy()
         im = np.transpose(im, (1, 2, 0))
@@ -169,8 +172,8 @@ def select_images(valid_sk_data, valid_im_data, number_images, args):
     for i in range(len(rand_samples_sk)):
         sk, _, lbl_sk = valid_sk_data[rand_samples_sk[i]]
         im, _, lbl_im = valid_im_data[rand_samples_im[i]]
-        if args.cuda:
-            sk, im = sk.cuda(), im.cuda()
+        # if args.cuda:
+        #     sk, im = sk.cuda(), im.cuda()
         if i == 0:
             sk_log = sk.unsqueeze(0)
             im_log = im.unsqueeze(0)
