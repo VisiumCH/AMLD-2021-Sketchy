@@ -75,12 +75,12 @@ class Logger(object):
 class EmbeddingLogger(object):
     '''Logs the images in the latent space'''
 
-    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args, sketchy_limit_images=None, sketchy_limit_sketch=None):
+    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        self.sketchy_limit_images = sketchy_limit_images
-        self.sketchy_limit_sketch = sketchy_limit_sketch
+        self.sketchy_limit_images = valid_sk_data.sketchy_limit_images
+        self.sketchy_limit_sketch = valid_sk_data.sketchy_limit_sketch
         self.select_embedding_images(valid_sk_data, valid_im_data, args.embedding_number, args)
 
     def select_embedding_images(self, valid_sk_data, valid_im_data, number_images, args):
@@ -92,7 +92,6 @@ class EmbeddingLogger(object):
         self.im_log = im_log
 
         # Convert class number to class name
-        #lbl_values = np.concatenate((im_lbl_log, sk_lbl_log), axis=0)
         self.lbl = [get_labels_name(self.dict_class, value, index_im[i], self.sketchy_limit_images, args)
                     for i, value in enumerate(im_lbl_log)]
 
@@ -111,12 +110,12 @@ class EmbeddingLogger(object):
 class AttentionLogger(object):
     '''Logs some images to visulatise attenction module in tensorboard'''
 
-    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args, sketchy_limit_images=None, sketchy_limit_sketch=None):
+    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        self.sketchy_limit_images = sketchy_limit_images
-        self.sketchy_limit_sketch = sketchy_limit_sketch
+        self.sketchy_limit_images = valid_sk_data.sketchy_limit_images
+        self.sketchy_limit_sketch = valid_sk_data.sketchy_limit_sketch
         self.select_attn_images(valid_sk_data, valid_im_data, args.attn_number, args)
 
     def select_attn_images(self, valid_sk_data, valid_im_data, number_images, args):

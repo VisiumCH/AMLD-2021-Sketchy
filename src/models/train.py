@@ -44,7 +44,6 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
     sk_net.train()
     torch.set_grad_enabled(True)
 
-    embeddings = []
     end = time.time()
     for i, (sk, im, im_neg, _, _) in enumerate(data_loader):
         # Prepare input data
@@ -115,10 +114,8 @@ def main():
                                 num_workers=args.prefetch, pin_memory=pin_memory, drop_last=True)
 
     if (args.log and args.attn):
-        attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger,
-                                           dict_class, args, valid_sk_data.sketchy_limit_images, valid_sk_data.sketchy_limit_sketch)
-        embedding_logger = EmbeddingLogger(valid_sk_data, valid_im_data, logger,
-                                           dict_class, args, valid_sk_data.sketchy_limit_images, valid_sk_data.sketchy_limit_sketch)
+        attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
+        embedding_logger = EmbeddingLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
 
     print('Create trainable model')
     im_net = EncoderCNN(out_size=args.emb_size, pretrained=args.nopretrain, attention=args.attn)

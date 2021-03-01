@@ -1,7 +1,6 @@
 import sys
 
 import numpy as np
-import torch
 
 from src.data.both_extended import Both_Extended
 from src.data.sketchy_extended import Sketchy_Extended
@@ -56,12 +55,9 @@ if __name__ == "__main__":
         dict_class,
     ) = load_data(args, transform)
 
-    # test = load_data(args, transform)
-    # print(len(test))
-
     print("\n--- Train Data ---")
     print("\t* Length: {}".format(len(train_loader)))
-    #print("\t* Classes: {}".format(train_loader.get_class_dict()))
+    print("\t* Classes: {}".format(train_loader.get_class_dict()))
     print("\t* Num Classes. {}".format(len(train_loader.get_class_dict())))
 
     num_samples = 7
