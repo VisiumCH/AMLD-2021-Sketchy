@@ -2,6 +2,7 @@ import sys
 
 import numpy as np
 
+from src.data.all_extended import All_Extended
 from src.data.quickdraw_extended import Quickdraw_Extended
 from src.data.sktu_extended import SkTu_Extended
 from src.data.sketchy_extended import Sketchy_Extended
@@ -30,6 +31,8 @@ def load_data(args, transform=None):
         return SkTu_Extended(args, transform)
     elif args.dataset == "quickdraw":
         return Quickdraw_Extended(args, transform)
+    elif args.dataset == "all":
+        return All_Extended(args, transform)
     else:
         print(args.dataset + ' dataset not implemented. Exiting.')
         sys.exit()
@@ -88,62 +91,32 @@ def print_one_dataset(args, transform):
 
 
 def print_all_dataset_length(args, transform):
-    args.dataset = "sketchy_extend"
-    (train_loader_sketchy,
-     [valid_sk_loader_sketchy, valid_im_loader_sketchy],
-     [test_sk_loader_sketchy, test_im_loader_sketchy],
-     dict_class_sketchy,
-     ) = load_data(args, transform)
-    print("Sketchy extend")
-    print("\t* Length sketch train: {}".format(len(train_loader_sketchy)))
-    print("\t* Length image train: {}".format(len(train_loader_sketchy.fnames_image)))
-    print("\t* Length sketch valid: {}".format(len(valid_sk_loader_sketchy)))
-    print("\t* Length image valid: {}".format(len(valid_im_loader_sketchy)))
-    print("\t* Length sketch test: {}".format(len(test_sk_loader_sketchy)))
-    print("\t* Length image test: {}".format(len(test_im_loader_sketchy)))
 
-    args.dataset = "tuberlin_extend"
-    (train_loader_tuberlin,
-     [valid_sk_loader_tuberlin, valid_im_loader_tuberlin],
-     [test_sk_loader_tuberlin, test_im_loader_tuberlin],
-     dict_class_tuberlin,
-     ) = load_data(args, transform)
-    print("Tuberlin extend")
-    print("\t* Length sketch train: {}".format(len(train_loader_tuberlin)))
-    print("\t* Length image train: {}".format(len(train_loader_tuberlin.fnames_image)))
-    print("\t* Length sketch valid: {}".format(len(valid_sk_loader_tuberlin)))
-    print("\t* Length image valid: {}".format(len(valid_im_loader_tuberlin)))
-    print("\t* Length sketch test: {}".format(len(test_sk_loader_tuberlin)))
-    print("\t* Length image test: {}".format(len(test_im_loader_tuberlin)))
+    list_dataset = ["sketchy_extend", "tuberlin_extend", "sk+tu", "quickdraw", "all"]
+    for dataset in list_dataset:
+        args.dataset = dataset
 
-    args.dataset = "sk+tu"
-    (train_loader_sktu,
-     [valid_sk_loader_sktu, valid_im_loader_sktu],
-     [test_sk_loader_sktu, test_im_loader_sktu],
-     dict_class_sktu,
-     ) = load_data(args, transform)
-    print("SkTu extend")
-    print("\t* Length sketch train: {}".format(len(train_loader_sktu)))
-    print("\t* Length image train: {}".format(len(train_loader_sktu.fnames_image_sketchy) +
-                                              len(train_loader_sktu.fnames_image_tuberlin)))
-    print("\t* Length sketch valid: {}".format(len(valid_sk_loader_sktu)))
-    print("\t* Length image valid: {}".format(len(valid_im_loader_sktu)))
-    print("\t* Length sketch test: {}".format(len(test_sk_loader_sktu)))
-    print("\t* Length image test: {}".format(len(test_im_loader_sktu)))
+        (train_loader,
+         [valid_sk_loader, valid_im_loader],
+         [test_sk_loader, test_im_loader],
+         dict_class,
+         ) = load_data(args, transform)
 
-    args.dataset = "quickdraw"
-    (train_loader_quickdraw,
-     [valid_sk_loader_quickdraw, valid_im_loader_quickdraw],
-     [test_sk_loader_quickdraw, test_im_loader_quickdraw],
-     dict_class_quickdraw,
-     ) = load_data(args, transform)
-    print("Quickdraw extend")
-    print("\t* Length sketch train: {}".format(len(train_loader_quickdraw)))
-    print("\t* Length image train: {}".format(len(train_loader_quickdraw.fnames_image)))
-    print("\t* Length sketch valid: {}".format(len(valid_sk_loader_quickdraw)))
-    print("\t* Length image valid: {}".format(len(valid_im_loader_quickdraw)))
-    print("\t* Length sketch test: {}".format(len(test_sk_loader_quickdraw)))
-    print("\t* Length image test: {}".format(len(test_im_loader_quickdraw)))
+        print(f'Dataset {dataset}')
+        print("\t* Length sketch train: {}".format(len(train_loader)))
+        if dataset == "sk+tu":
+            print("\t* Length image train: {}".format(len(train_loader.sketchy.fnames_image) +
+                                                      len(train_loader.tuberlin.fnames_image)))
+        elif dataset == "all":
+            print("\t* Length image train: {}".format(len(train_loader.sketchy.fnames_image) +
+                                                      len(train_loader.tuberlin.fnames_image) +
+                                                      len(train_loader.quickdraw.fnames_image)))
+        else:
+            print("\t* Length image train: {}".format(len(train_loader.fnames_image)))
+        print("\t* Length sketch valid: {}".format(len(valid_sk_loader)))
+        print("\t* Length image valid: {}".format(len(valid_im_loader)))
+        print("\t* Length sketch test: {}".format(len(test_sk_loader)))
+        print("\t* Length image test: {}".format(len(test_im_loader)))
 
 
 if __name__ == "__main__":
@@ -164,6 +137,6 @@ if __name__ == "__main__":
 
     transform = transforms.Compose([transforms.ToTensor()])
 
-    #print_one_dataset(args, transform)
+    # print_one_dataset(args, transform)
 
     print_all_dataset_length(args, transform)
