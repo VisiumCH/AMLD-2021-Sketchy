@@ -1,17 +1,22 @@
 import json
+import os
+
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import pandas as pd
+from PIL import Image
 import torch
 from torchvision import transforms
 
+from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader
 from src.options import Options
 from src.models.utils import get_model
 from src.models.metrics import get_similarity
 
 NUM_CLOSEST = 4
+NUMBER_RANDOM_IMAGES = 20
 
 
 class Inference():
@@ -26,6 +31,10 @@ class Inference():
         self.sk_net.eval()
         torch.set_grad_enabled(False)
 
+        self.prediction_folder = os.path.join(model_path.rstrip('checkpoint.pth'), 'predictions')
+        if not os.path.exists(self.prediction_folder):
+            os.makedirs(self.prediction_folder)
+
         dict_path = embedding_path.replace('.ending', '_dict_class.json')
         with open(dict_path, 'r') as fp:
             self.dict_class = json.load(fp)
@@ -39,12 +48,18 @@ class Inference():
         with open(array_path, 'rb') as f:
             self.images_embeddings = np.load(f)
 
+    def random_images_inference(self, args):
+        _, _, [test_sk_loader, _], _ = load_data(args, self.transform)
+        rand_samples_sk = np.random.randint(0, high=len(test_sk_loader), size=NUMBER_RANDOM_IMAGES)
+
+        for i in range(len(rand_samples_sk)):
+            _, sketch_fname, _ = test_sk_loader[rand_samples_sk[i]]
+            self.inference_sketch(sketch_fname, plot=True)
+
     def inference_sketch(self, sketch_fname, plot=True):
         ''' For now just process a sketch but TODO decide how to proceed later'''
 
-        sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)
-        if args.cuda:
-            sketch = sketch.cuda()
+        sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
         sketch_embedding, _ = self.sk_net(sketch)
         self.get_closest_images(sketch_embedding)
 
@@ -55,8 +70,6 @@ class Inference():
         '''
         Based on a sketch embedding, retrieve the index of the closest images
         '''
-        if args.cuda:
-            sketch_embedding = sketch_embedding.cpu()
         similarity = get_similarity(sketch_embedding.detach().numpy(), self.images_embeddings)
         arg_sorted_sim = (-similarity).argsort()
 
@@ -66,40 +79,31 @@ class Inference():
                               for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]]
 
     def plot_closest(self, sketch_fname):
-        fig, axes = plt.subplots(1, NUM_CLOSEST + 1)
+        fig, axes = plt.subplots(1, NUM_CLOSEST + 1, figsize=(20, 8))
 
         sk = mpimg.imread(sketch_fname)
         axes[0].imshow(sk)
         axes[0].set(title='Sketch \n Label: ' + sketch_fname.split('/')[-2])
+        axes[0].axis('off')
 
         for i in range(1, NUM_CLOSEST + 1):
-            im = mpimg.imread(self.sorted_fnames[i-1])
+            im = Image.open(self.sorted_fnames[i-1])
+            im = im.resize((400, 400))
+
             axes[i].imshow(im)
             axes[i].set(title='Closest image ' + str(i) +
                         '\n Label: ' + self.dict_class[str(self.sorted_labels[i-1])])
-
+            axes[i].axis('off')
         plt.subplots_adjust(wspace=0.25, hspace=-0.35)
-        plt.show()
+
+        img_name = '_'.join(sketch_fname.split('/')[-2:])
+        plt.savefig(os.path.join(self.prediction_folder, img_name))
 
 
-def main():
+def main(args):
     inference_test = Inference(args.best_model, args.load_embeddings, '_test')
 
-    # TODO: modify to drawn sketch
-    sketch_fname = args.data_path + '/Sketchy/sketch/tx_000000000000/bat/n02139199_1332-1.png'
-    inference_test.inference_sketch(sketch_fname, plot=True)
-
-    sketch_fname = args.data_path + '/Sketchy/sketch/tx_000000000000/door/n03222176_681-1.png'
-    inference_test.inference_sketch(sketch_fname, plot=True)
-
-    sketch_fname = args.data_path + '/Sketchy/sketch/tx_000000000000/giraffe/n02439033_67-1.png'
-    inference_test.inference_sketch(sketch_fname, plot=True)
-
-    sketch_fname = args.data_path + '/Sketchy/sketch/tx_000000000000/skyscraper/n04233124_498-1.png'
-    inference_test.inference_sketch(sketch_fname, plot=True)
-
-    sketch_fname = args.data_path + '/Sketchy/sketch/tx_000000000000/wheelchair/n04576002_150-2.png'
-    inference_test.inference_sketch(sketch_fname, plot=True)
+    inference_test.random_images_inference(args)
 
 
 if __name__ == '__main__':
@@ -114,4 +118,4 @@ if __name__ == '__main__':
     if args.best_model is None:
         raise Exception('Cannot test without loading a model.')
 
-    main()
+    main(args)
