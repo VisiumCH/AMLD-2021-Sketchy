@@ -83,14 +83,14 @@ class SkTu(data.Dataset):
         if ((self.dataset_type == 'train' and index < self.sketchy_limit_sketch)
                 or (self.image_type == 'images' and index < self.sketchy_limit_images)
                 or (self.image_type == 'sketch' and index < self.sketchy_limit_sketch)):
-            self.sketchy.__getitem__(index)
+            return self.sketchy.__getitem__(index)
 
         else:
             if (self.image_type == 'sketch' or self.dataset_type == 'train'):
                 index -= self.sketchy_limit_sketch
             elif self.image_type == 'images':
                 index -= self.sketchy_limit_images
-            self.tuberlin.__getitem__(index)
+            return self.tuberlin.__getitem__(index)
 
     def __len__(self):
         # Number of sketches/images in the dataset

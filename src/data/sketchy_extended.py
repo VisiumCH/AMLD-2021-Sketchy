@@ -28,11 +28,11 @@ class Sketchy(ParentDataset):
     '''
 
     def __init__(self, args, dataset_type, set_class, dicts_class, transform=None, image_type=None):
-        super().__init__(dataset_type, set_class, dicts_class, transform, image_type=None)
+        super().__init__(dataset_type, set_class, dicts_class, transform, image_type)
         self.loader_image = default_image_loader
 
         self.dir_image = os.path.join(args.data_path, "Sketchy/extended_photo")
         self.dir_sketch = os.path.join(args.data_path, "Sketchy/sketch/tx_000000000000")
 
         self.fnames_sketch, self.cls_sketch = get_file_list(self.dir_sketch, self.set_class, "sketch")
-        self.fnames_image, self.cls_image = get_file_list(self.dir_image, self.set_class, "images")
+        self.fnames_image, self.cls_images = get_file_list(self.dir_image, self.set_class, "images")

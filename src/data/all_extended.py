@@ -63,10 +63,12 @@ class All(data.Dataset):
         self.image_type = image_type
 
         # Sketchy data
-        self.sketchy = Sketchy(args, dataset_type, set_class_sketchy, dicts_class_sketchy, transform, image_type)
+        self.sketchy = Sketchy(args, dataset_type, set_class_sketchy,
+                               dicts_class_sketchy, transform, image_type)
 
         # Tuberlin data
-        self.tuberlin = TUBerlin(args, dataset_type, set_class_tuberlin, dicts_class_tuberlin, transform, image_type)
+        self.tuberlin = TUBerlin(args, dataset_type, set_class_tuberlin,
+                                 dicts_class_tuberlin, transform, image_type)
 
         # Quickdraw data
         self.quickdraw = Quickdraw(args, dataset_type, set_class_quickdraw,
@@ -95,7 +97,7 @@ class All(data.Dataset):
         if ((self.dataset_type == 'train' and index < self.sketchy_limit_sketch)
                 or (self.image_type == 'images' and index < self.sketchy_limit_images)
                 or (self.image_type == 'sketch' and index < self.sketchy_limit_sketch)):
-            self.sketchy.__getitem__(index)
+            return self.sketchy.__getitem__(index)
 
         elif ((self.dataset_type == 'train' and index < self.tuberlin_limit_sketch)
                 or (self.image_type == 'images' and index < self.tuberlin_limit_images)
@@ -105,14 +107,14 @@ class All(data.Dataset):
                 index -= self.sketchy_limit_sketch
             elif self.image_type == 'images':
                 index -= self.sketchy_limit_images
-            self.tuberlin.__getitem__(index)
+            return self.tuberlin.__getitem__(index)
 
         else:
             if (self.image_type == 'sketch' or self.dataset_type == 'train'):
                 index -= self.tuberlin_limit_sketch
             elif self.image_type == 'images':
                 index -= self.tuberlin_limit_images
-            self.quickdraw.__getitem__(index)
+            return self.quickdraw.__getitem__(index)
 
     def __len__(self):
         # Number of sketches/images in the dataset

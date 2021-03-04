@@ -11,8 +11,8 @@ class Options():
         parser.add_argument(
             "dataset",
             type=str,
-            choices=["sketchy_extend", "tuberlin_extend", "sk+tu", "quickdraw"],
-            help="Choose between (Sketchy).")
+            choices=["sketchy_extend", "tuberlin_extend", "sk+tu", "quickdraw", "all"],
+            help="Choose a dataset.")
         # Model parameters
         parser.add_argument('--data_path', '-dp', type=str, default='io/data/raw', help='Dataset root path.')
         parser.add_argument('--emb_size', type=int, default=256, help='Embedding Size.')

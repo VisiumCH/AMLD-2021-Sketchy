@@ -80,7 +80,7 @@ class EmbeddingLogger(object):
         self.dict_class = dict_class
         self.args = args
         (self.sketchy_limit_images, self.sketchy_limit_sketch,
-         self.tuberlin_limit_images, self.tuberlin_limit_sketch) = get_limits(args.dataset, valid_sk_data)
+         self.tuberlin_limit_images, self.tuberlin_limit_sketch) = get_limits(args.dataset, valid_sk_data, valid_im_data)
 
         self.select_embedding_images(valid_sk_data, valid_im_data, args.embedding_number, args)
 
@@ -93,12 +93,12 @@ class EmbeddingLogger(object):
         self.im_log = im_log
 
         # Convert class number to class name
-        self.lbl = [get_labels_name(self.dict_class, value, index_im[i],
-                                    args, self.sketchy_limit_images, self.tuberlin_limit_images)
+        self.lbl = [get_labels_name(self.dict_class, value, index_im[i], args,
+                                    self.sketchy_limit_images, self.tuberlin_limit_images)
                     for i, value in enumerate(im_lbl_log)]
 
-        self.lbl.extend([get_labels_name(self.dict_class, value, index_sk[i],
-                                         args, self.sketchy_limit_sketch, self.tuberlin_limit_sketch)
+        self.lbl.extend([get_labels_name(self.dict_class, value, index_sk[i], args,
+                                         self.sketchy_limit_sketch, self.tuberlin_limit_sketch)
                          for i, value in enumerate(sk_lbl_log)])
 
     def plot_embeddings(self, im_net, sk_net):
@@ -118,7 +118,7 @@ class AttentionLogger(object):
         self.dict_class = dict_class
         self.args = args
         (self.sketchy_limit_images, self.sketchy_limit_sketch,
-         self.tuberlin_limit_images, self.tuberlin_limit_sketch) = get_limits(args.dataset, valid_sk_data)
+         self.tuberlin_limit_images, self.tuberlin_limit_sketch) = get_limits(args.dataset, valid_sk_data, valid_im_data)
         self.select_attn_images(valid_sk_data, valid_im_data, args.attn_number, args)
 
     def select_attn_images(self, valid_sk_data, valid_im_data, number_images, args):
@@ -199,16 +199,16 @@ def select_images(valid_sk_data, valid_im_data, number_images, args):
     return sk_log, im_log, sk_lbl_log, im_lbl_log, rand_samples_sk, rand_samples_im
 
 
-def get_limits(dataset, valid_sk_data):
+def get_limits(dataset, valid_sk_data, valid_im_data):
     if dataset == 'sk+tu' or dataset == 'all':
-        sketchy_images = valid_sk_data.sketchy_limit_images
+        sketchy_images = valid_im_data.sketchy_limit_images
         sketchy_sketch = valid_sk_data.sketchy_limit_sketch
     else:
         sketchy_images = None
         sketchy_sketch = None
 
     if dataset == 'all':
-        tuberlin_images = valid_sk_data.tuberlin_limit_images
+        tuberlin_images = valid_im_data.tuberlin_limit_images
         tuberlin_sketch = valid_sk_data.tuberlin_limit_sketch
     else:
         tuberlin_images = None

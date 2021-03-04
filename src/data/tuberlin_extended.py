@@ -35,11 +35,11 @@ class TUBerlin(ParentDataset):
     '''
 
     def __init__(self, args, dataset_type, set_class, dicts_class, transform=None, image_type=None):
-        super().__init__(dataset_type, set_class, dicts_class, transform, image_type=None)
+        super().__init__(dataset_type, set_class, dicts_class, transform, image_type)
         self.loader_image = default_image_loader_tuberlin
 
         self.dir_sketch = os.path.join(args.data_path, 'TU-Berlin/sketches')
         self.dir_image = os.path.join(args.data_path, 'TU-Berlin/images')
 
         self.fnames_sketch, self.cls_sketch = get_file_list(self.dir_sketch, self.set_class, 'sketch')
-        self.fnames_image, self.cls_image = get_file_list(self.dir_image, self.set_class, 'images')
+        self.fnames_image, self.cls_images = get_file_list(self.dir_image, self.set_class, 'images')
