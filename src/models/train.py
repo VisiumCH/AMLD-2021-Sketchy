@@ -1,4 +1,4 @@
-import glob
+from datetime import datetime
 import numpy as np
 import time
 import os
@@ -98,10 +98,7 @@ def main():
     transform = transforms.Compose([transforms.ToTensor()])
     train_data, [valid_sk_data, valid_im_data], [test_sk_data, test_im_data], dict_class = load_data(args, transform)
 
-    if args.cuda:
-        pin_memory = True
-    else:
-        pin_memory = False
+    pin_memory = args.cuda
     train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True,
                               num_workers=args.prefetch, pin_memory=pin_memory, drop_last=True)
     valid_sk_loader = DataLoader(valid_sk_data, batch_size=3*args.batch_size,
@@ -232,13 +229,12 @@ if __name__ == '__main__':
 
     if args.log is not None:
         print('Initialize logger')
-        log_dir = args.log + '{}_run-batch_size_{}/' \
-            .format(len(glob.glob(args.log + '*_run-batch_size_{}'.format(args.batch_size))), args.batch_size)
+        now = datetime.now()
+        args.save = args.log + now.strftime("%Y_%m_%d_%Hh%Mmin/")
 
-        args.save = log_dir
         # Create logger
-        print('Log dir:\t' + log_dir)
-        logger = Logger(log_dir, force=True)
+        print('Log dir:\t' + args.save)
+        logger = Logger(args.save, force=True)
         with open(os.path.join(args.save, 'params.txt'), 'w') as fp:
             for key, val in vars(args).items():
                 fp.write('{} {}\n'.format(key, val))

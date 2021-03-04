@@ -11,13 +11,13 @@ class Options():
         parser.add_argument(
             "dataset",
             type=str,
-            choices=["sketchy_extend", "tuberlin_extend", "both"],
+            choices=["sketchy_extend", "tuberlin_extend", "sk+tu", "quickdraw"],
             help="Choose between (Sketchy).")
         # Model parameters
         parser.add_argument('--data_path', '-dp', type=str, default='io/data/raw', help='Dataset root path.')
         parser.add_argument('--emb_size', type=int, default=256, help='Embedding Size.')
         parser.add_argument('--grl_lambda', type=float, default=0.5, help='Lambda used to normalize the GRL layer.')
-        parser.add_argument('--nopretrain', action='store_true', help='Loads a pretrained model (Default: False).')
+        parser.add_argument('--nopretrain', action='store_false', help='Loads a pretrained model (Default: True).')
         # Optimization options
         parser.add_argument('--epochs', '-e', type=int, default=1000, help='Number of epochs to train.')
         parser.add_argument('--batch_size', '-b', type=int, default=10, help='Batch size.')
@@ -48,7 +48,7 @@ class Options():
                             help='Number of embedding images and sketch to plot in latent space on tensorboard.')
         # Inference
         parser.add_argument('--best_model', type=str,
-                            default='io/models/best_model/checkpoint.pth', help='path to the best saved model')
+                            default='io/models/best_model_sketchy_epoch42/checkpoint.pth', help='path to the best saved model')
         parser.add_argument('--load_embeddings', type=str, default='io/data/processed/embeddings.ending',
                             help='precomputed embeddings with images and path')
         # Test

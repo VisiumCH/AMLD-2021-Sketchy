@@ -79,7 +79,7 @@ class EmbeddingLogger(object):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        if args.dataset == 'both':
+        if args.dataset == 'sk+tu':
             self.sketchy_limit_images = valid_sk_data.sketchy_limit_images
             self.sketchy_limit_sketch = valid_sk_data.sketchy_limit_sketch
         else:
@@ -118,7 +118,7 @@ class AttentionLogger(object):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        if args.dataset == 'both':
+        if args.dataset == 'sk+tu':
             self.sketchy_limit_images = valid_sk_data.sketchy_limit_images
             self.sketchy_limit_sketch = valid_sk_data.sketchy_limit_sketch
         else:
@@ -205,7 +205,7 @@ def select_images(valid_sk_data, valid_im_data, number_images, args):
 
 
 def get_labels_name(dict_class, number_labels, idx, args, sketchy_limit):
-    if args.dataset == 'both':
+    if args.dataset == 'sk+tu':
         if idx < sketchy_limit:  # sketchy dataset
             class_names = list(dict_class[0].keys())[list(dict_class[0].values()).index(number_labels)]
         else:  # tuberlin dataset

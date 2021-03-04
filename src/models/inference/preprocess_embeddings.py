@@ -31,16 +31,13 @@ def preprocess_embeddings(args):
     transform = transforms.Compose([transforms.ToTensor()])
     _, [_, valid_im_data], [_, test_im_data], dict_class = load_data(args, transform)
 
-    if args.cuda:
-        pin_memory = True
-    else:
-        pin_memory = False
-
     print('Class dictionnary')
     dict_path = args.load_embeddings.replace('.ending', '_dict_class.json')
     dict_class = {v: k for k, v in dict_class.items()}
     with open(dict_path, 'w') as fp:
         json.dump(dict_class, fp)
+
+    pin_memory = args.cuda
 
     print('Valid')
     valid_im_loader = DataLoader(valid_im_data, batch_size=1, num_workers=args.prefetch,
