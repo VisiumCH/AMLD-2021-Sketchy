@@ -16,10 +16,10 @@ def save_data(args, fnames,  embeddings, classes, dataset_type):
 
     df = pd.DataFrame(data=[fnames, classes]).T
     df.columns = ['fnames', 'classes']
-    meta_path = embedding_path.replace('.ending', args.dataset + '_' + dataset_type + '_meta.csv')
+    meta_path = embedding_path.replace('.ending', '_' + args.dataset + '_' + dataset_type + '_meta.csv')
     df.to_csv(meta_path, sep=' ', header=True)
 
-    array_path = embedding_path.replace('.ending', args.dataset + '_' + dataset_type + '_array.npy')
+    array_path = embedding_path.replace('.ending', '_' + args.dataset + '_' + dataset_type + '_array.npy')
     with open(array_path, 'wb') as f:
         np.save(f, embeddings)
 
@@ -33,16 +33,13 @@ def process_images(args, data, im_net):
 
 
 def save_dict(args, dict_class):
-    print('Class dictionnary')
-    dict_path = args.load_embeddings.replace('.ending', args.dataset + '_dict_class.json')
+    dict_path = args.load_embeddings.replace('.ending', '_' + args.dataset + '_dict_class.json')
     dict_class = {v: k for k, v in dict_class.items()}
     with open(dict_path, 'w') as fp:
         json.dump(dict_class, fp)
 
 
-def preprocess_embeddings(args):
-
-    im_net, _ = get_model(args, args.best_model)
+def preprocess_embeddings(args, im_net):
 
     transform = transforms.Compose([transforms.ToTensor()])
     _, [_, valid_im_data], [_, test_im_data], dicts_class = load_data(args, transform)
@@ -50,11 +47,11 @@ def preprocess_embeddings(args):
 
     print('Valid')
     valid_fnames, valid_embeddings, valid_classes = process_images(args, valid_im_data, im_net)
-    save_data(args, valid_fnames, valid_embeddings, valid_classes, '_valid')
+    save_data(args, valid_fnames, valid_embeddings, valid_classes, 'valid')
 
     print('Test')
     test_fnames, test_embeddings, test_classes = process_images(args, test_im_data, im_net)
-    save_data(args, test_fnames, test_embeddings, test_classes, '_test')
+    save_data(args, test_fnames, test_embeddings, test_classes, 'test')
 
 
 if __name__ == '__main__':
@@ -64,6 +61,7 @@ if __name__ == '__main__':
 
     # Check cuda & Set random seed
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
+    args.cuda = False
     args.pin_memory = args.cuda
 
     # Check Test and Load
@@ -72,4 +70,22 @@ if __name__ == '__main__':
     if args.load_embeddings is None:
         raise Exception('No path to save embeddings')
 
-    preprocess_embeddings(args)
+    im_net, _ = get_model(args, args.best_model)
+    im_net.eval()
+    torch.set_grad_enabled(False)
+
+    dataset = args.dataset
+    if dataset in ['sketchy', 'tuberlin', 'quickdraw']:
+        preprocess_embeddings(args, im_net)
+
+    elif dataset in ['sk+tu', 'sk+tu+qd']:
+        args.dataset = 'sketchy'
+        preprocess_embeddings(args, im_net)
+        args.dataset = 'tuberlin'
+        preprocess_embeddings(args, im_net)
+
+        if dataset == 'sk+tu+qd':
+            args.dataset = 'quickdraw'
+            preprocess_embeddings(args, im_net)
+    else:
+        raise Exception(args.dataset + ' not implemented.')

@@ -57,6 +57,8 @@ class SkTu(data.Dataset):
                  transform=None, image_type=None):
         self.dataset_type = dataset_type
         self.image_type = image_type
+        self.set_class_sketchy = set_class_sketchy
+        self.set_class_tuberlin = set_class_tuberlin
 
         # Sketchy data
         self.sketchy = Sketchy(args, dataset_type, set_class_sketchy, dicts_class_sketchy, transform, image_type)
@@ -101,4 +103,4 @@ class SkTu(data.Dataset):
 
     def get_class_dict(self):
         # Dictionnary of categories of the dataset
-        return self.set_class_sketchy, self.set_class_tuberlin
+        return [self.set_class_sketchy, self.set_class_tuberlin]

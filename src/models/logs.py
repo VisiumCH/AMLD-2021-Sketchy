@@ -6,6 +6,8 @@ from tensorboardX import SummaryWriter
 import torch
 import torch.nn as nn
 
+from src.models.utils import get_limits, get_dataset_dict
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -79,8 +81,8 @@ class EmbeddingLogger(object):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        (self.sketchy_limit_im, self.sketchy_limit_sk,
-         self.tuberlin_limit_im, self.tuberlin_limit_sk) = get_limits(args.dataset, valid_sk_data, valid_im_data)
+        self.sketchy_limit_im, self.tuberlin_limit_im = get_limits(args.dataset, valid_im_data, 'image')
+        self.sketchy_limit_sk, self.tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, 'sketch')
 
         self.select_embedding_images(valid_sk_data, valid_im_data, args.embedding_number, args)
 
@@ -93,13 +95,14 @@ class EmbeddingLogger(object):
         self.im_log = im_log
 
         # Convert class number to class name
-        self.lbl = [get_labels_name(self.dict_class, value, index_im[i], args,
-                                    self.sketchy_limit_im, self.tuberlin_limit_im)
-                    for i, value in enumerate(im_lbl_log)]
+        self.lbl = []
+        for i, value in enumerate(im_lbl_log):
+            dict_class = get_dataset_dict(self.dict_class, index_im[i], self.sketchy_limit_im, self.tuberlin_limit_im)
+            self.lbl.append(list(dict_class.keys())[list(dict_class.values()).index(value)])
 
-        self.lbl.extend([get_labels_name(self.dict_class, value, index_sk[i], args,
-                                         self.sketchy_limit_sk, self.tuberlin_limit_sk)
-                         for i, value in enumerate(sk_lbl_log)])
+        for i, value in enumerate(sk_lbl_log):
+            dict_class = get_dataset_dict(self.dict_class, index_sk[i], self.sketchy_limit_sk, self.tuberlin_limit_sk)
+            self.lbl.append(list(dict_class.keys())[list(dict_class.values()).index(value)])
 
     def plot_embeddings(self, im_net, sk_net):
         im_embedding, _ = im_net(self.im_log)
@@ -117,8 +120,8 @@ class AttentionLogger(object):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        (self.sketchy_limit_im, self.sketchy_limit_sk,
-         self.tuberlin_limit_im, self.tuberlin_limit_sk) = get_limits(args.dataset, valid_sk_data, valid_im_data)
+        self.sketchy_limit_im, self.tuberlin_limit_im = get_limits(args.dataset, valid_im_data, 'image')
+        self.sketchy_limit_sk, self.tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, 'sketch')
         self.select_attn_images(valid_sk_data, valid_im_data, args.attn_number, args)
 
     def select_attn_images(self, valid_sk_data, valid_im_data, number_images, args):
@@ -142,13 +145,15 @@ class AttentionLogger(object):
         for i in range(self.im_log.size(0)):  # for each image-sketch pair
 
             plt_im = self.add_heatmap_on_image(self.im_log[i], attn_im[i])
-            class_names = get_labels_name(self.dict_class, self.im_lbl_log[i], self.index_im[i],
-                                          self.args, self.sketchy_limit_im, self.tuberlin_limit_im)
+            dict_class = get_dataset_dict(
+                self.dict_class, self.index_im[i], self.sketchy_limit_im, self.tuberlin_limit_im)
+            class_names = list(dict_class.keys())[list(dict_class.values()).index(self.im_lbl_log[i])]
             self.logger.add_image('im{}_{}'.format(i, class_names), plt_im)
 
             plt_im = self.add_heatmap_on_image(self.sk_log[i], attn_sk[i])
-            class_names = get_labels_name(self.dict_class, self.sk_lbl_log[i], self.index_sk[i],
-                                          self.args, self.sketchy_limit_sk, self.tuberlin_limit_sk)
+            dict_class = get_dataset_dict(
+                self.dict_class, self.index_sk[i], self.sketchy_limit_sk, self.tuberlin_limit_sk)
+            class_names = list(dict_class.keys())[list(dict_class.values()).index(self.sk_lbl_log[i])]
             self.logger.add_image('sk{}_{}'.format(i, class_names), plt_im)
 
     def process_attention(self, net, im):
@@ -197,37 +202,3 @@ def select_images(valid_sk_data, valid_im_data, number_images, args):
             im_lbl_log.append(lbl_im)
 
     return sk_log, im_log, sk_lbl_log, im_lbl_log, rand_samples_sk, rand_samples_im
-
-
-def get_limits(dataset, valid_sk_data, valid_im_data):
-    if dataset == 'sk+tu' or dataset == 'sk+tu+qd':
-        sketchy_images = valid_im_data.sketchy_limit_images
-        sketchy_sketch = valid_sk_data.sketchy_limit_sketch
-    else:
-        sketchy_images = None
-        sketchy_sketch = None
-
-    if dataset == 'sk+tu+qd':
-        tuberlin_images = valid_im_data.tuberlin_limit_images
-        tuberlin_sketch = valid_sk_data.tuberlin_limit_sketch
-    else:
-        tuberlin_images = None
-        tuberlin_sketch = None
-
-    return sketchy_images, sketchy_sketch, tuberlin_images, tuberlin_sketch
-
-
-def get_labels_name(dict_class, number_labels, idx, args, sketchy_limit, tuberlin_limit):
-
-    if sketchy_limit is None:  # single dataset
-        pass
-    else:  # multiple datasets
-        if idx < sketchy_limit:  # sketchy dataset
-            dict_class = dict_class[0]
-        else:
-            if tuberlin_limit is None or idx < tuberlin_limit:  # tuberlin dataset
-                dict_class = dict_class[1]
-            else:  # quickdraw dataset
-                dict_class = dict_class[2]
-
-    return list(dict_class.keys())[list(dict_class.values()).index(number_labels)]

@@ -12,41 +12,79 @@ from torchvision import transforms
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader
 from src.options import Options
-from src.models.utils import get_model
+from src.models.utils import get_model, get_dataset_dict
 from src.models.metrics import get_similarity
 
 NUM_CLOSEST = 4
 NUMBER_RANDOM_IMAGES = 20
 
 
+def get_processed_images(args, dataset_type):
+
+    dict_path = args.load_embeddings.replace('.ending', '_' + args.dataset + '_dict_class.json')
+    with open(dict_path, 'r') as fp:
+        dict_class = json.load(fp)
+
+    array_path = args.load_embeddings.replace('.ending', '_' + args.dataset + '_' + dataset_type + '_array.npy')
+    with open(array_path, 'rb') as f:
+        images_embeddings = np.load(f)
+
+    meta_path = args.load_embeddings.replace('.ending', '_' + args.dataset + '_' + dataset_type + '_meta.csv')
+    df = pd.read_csv(meta_path, sep=' ')
+
+    return dict_class, df['fnames'].values, df['classes'].values, images_embeddings
+
+
 class Inference():
 
-    def __init__(self, model_path, embedding_path, dataset_type):
+    def __init__(self, args, dataset_type):
 
+        self.args = args
         self.transform = transforms.Compose([transforms.ToTensor()])
         self.loader = default_image_loader
 
-        self.im_net, self.sk_net = get_model(args, model_path)
+        self.im_net, self.sk_net = get_model(args, args.best_model)
         self.im_net.eval()
         self.sk_net.eval()
         torch.set_grad_enabled(False)
 
-        self.prediction_folder = os.path.join(model_path.rstrip('checkpoint.pth'), 'predictions')
+        self.prediction_folder = os.path.join(args.best_model.rstrip('checkpoint.pth'), 'predictions')
         if not os.path.exists(self.prediction_folder):
             os.makedirs(self.prediction_folder)
 
-        dict_path = embedding_path.replace('.ending', '_dict_class.json')
-        with open(dict_path, 'r') as fp:
-            self.dict_class = json.load(fp)
+        dataset = args.dataset
+        if dataset in ['sketchy', 'tuberlin', 'quickdraw']:
+            self.dict_class, self.images_fnames, self.images_classes, self.images_embeddings = get_processed_images(
+                args, dataset_type)
+            self.sketchy_limit, self.tuberlin_limit = None, None
 
-        meta_path = embedding_path.replace('.ending', dataset_type + '_meta.csv')
-        df = pd.read_csv(meta_path, sep=' ')
-        self.images_fnames = df['fnames'].values
-        self.images_classes = df['classes'].values
+        elif dataset in ['sk+tu', 'sk+tu+qd']:
+            args.dataset = 'sketchy'
+            dict_class_sk, self.images_fnames, self.images_classes, self.images_embeddings = get_processed_images(
+                args, dataset_type)
+            self.sketchy_limit = len(self.images_fnames)
+            self.tuberlin_limit = None
 
-        array_path = embedding_path.replace('.ending', dataset_type + '_array.npy')
-        with open(array_path, 'rb') as f:
-            self.images_embeddings = np.load(f)
+            args.dataset = 'tuberlin'
+            dict_class_tu, images_fnames, images_classes, images_embeddings = get_processed_images(args, dataset_type)
+            self.dict_class = [dict_class_sk, dict_class_tu]
+            self.images_fnames = np.concatenate((self.images_fnames, images_fnames), axis=0)
+            self.images_classes = np.concatenate((self.images_classes, images_classes), axis=0)
+            self.images_embeddings = np.concatenate((self.images_embeddings, images_embeddings), axis=0)
+
+            if dataset == 'sk+tu+qd':
+                args.dataset = 'quickdraw'
+                self.tuberlin_limit = len(self.images_fnames)
+                dict_class_qd, images_fnames, images_classes, images_embeddings = get_processed_images(
+                    args, dataset_type)
+
+                self.dict_class.append(dict_class_qd)
+                self.images_fnames = np.concatenate((self.images_fnames, images_fnames), axis=0)
+                self.images_classes = np.concatenate((self.images_classes, images_classes), axis=0)
+                self.images_embeddings = np.concatenate((self.images_embeddings, images_embeddings), axis=0)
+        else:
+            raise Exception(args.dataset + ' not implemented.')
+        args.dataset = dataset
 
     def random_images_inference(self, args):
         _, _, [test_sk_loader, _], _ = load_data(args, self.transform)
@@ -57,7 +95,7 @@ class Inference():
             self.inference_sketch(sketch_fname, plot=True)
 
     def inference_sketch(self, sketch_fname, plot=True):
-        ''' For now just process a sketch but TODO decide how to proceed later'''
+        ''' Process a sketch'''
 
         sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
         sketch_embedding, _ = self.sk_net(sketch)
@@ -91,8 +129,11 @@ class Inference():
             im = im.resize((400, 400))
 
             axes[i].imshow(im)
+            dict_class = get_dataset_dict(
+                self.dict_class, self.sorted_labels[i-1], self.sketchy_limit, self.tuberlin_limit)
             axes[i].set(title='Closest image ' + str(i) +
-                        '\n Label: ' + self.dict_class[str(self.sorted_labels[i-1])])
+                        '\n Label: ' + dict_class[str(self.sorted_labels[i-1])])
+
             axes[i].axis('off')
         plt.subplots_adjust(wspace=0.25, hspace=-0.35)
 
@@ -101,8 +142,7 @@ class Inference():
 
 
 def main(args):
-    inference_test = Inference(args.best_model, args.load_embeddings, '_test')
-
+    inference_test = Inference(args, 'test')
     inference_test.random_images_inference(args)
 
 

@@ -11,7 +11,7 @@ class Options():
         parser.add_argument(
             "dataset",
             type=str,
-            choices=["sketchy_extend", "tuberlin_extend", "sk+tu", "quickdraw", "sk+tu+qd", "watch"],
+            choices=["sketchy", "tuberlin", "sk+tu", "quickdraw", "sk+tu+qd", "watch"],
             help="Choose a dataset.")
         # Model parameters
         parser.add_argument('--data_path', '-dp', type=str, default='io/data/raw', help='Dataset root path.')
@@ -44,7 +44,7 @@ class Options():
         parser.add_argument('--plot', action='store_true', help='Qualitative results (Default: False).')
         parser.add_argument('--attn_number', type=int, default=5,
                             help='Number of images and sketch to plot attention on tensorboard.')
-        parser.add_argument('--embedding_number', type=int, default=200,
+        parser.add_argument('--embedding_number', type=int, default=10,
                             help='Number of embedding images and sketch to plot in latent space on tensorboard.')
         # Inference
         parser.add_argument('--best_model', type=str,

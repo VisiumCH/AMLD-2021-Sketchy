@@ -7,6 +7,7 @@ from src.data.quickdraw_extended import Quickdraw_Extended
 from src.data.sktu_extended import SkTu_Extended
 from src.data.sketchy_extended import Sketchy_Extended
 from src.data.tuberlin_extended import TUBerlin_Extended
+from src.models.utils import get_dataset_dict, get_limits
 
 
 def load_data(args, transform=None):
@@ -23,9 +24,9 @@ def load_data(args, transform=None):
         - test_im_loader: image test dataset class
         - dicts_class: Ordered dictionnary {class_name, value}
     """
-    if args.dataset == "sketchy_extend":
+    if args.dataset == "sketchy":
         return Sketchy_Extended(args, transform)
-    elif args.dataset == "tuberlin_extend":
+    elif args.dataset == "tuberlin":
         return TUBerlin_Extended(args, transform)
     elif args.dataset == "sk+tu":
         return SkTu_Extended(args, transform)
@@ -52,17 +53,13 @@ def print_one_dataset(args, transform):
     print("\t* Classes: {}".format(train_loader.get_class_dict()))
     print("\t* Num Classes. {}".format(len(train_loader.get_class_dict())))
 
+    sketchy_limit, tuberlin_limit = get_limits(args.dataset, train_loader, 'sketch')
+
     num_samples = 7
     rand_samples = np.random.randint(0, high=len(train_loader), size=num_samples)
     f, axarr = plt.subplots(3, num_samples)
     for i in range(len(rand_samples)):
-        if args.dataset == "both":
-            if rand_samples[i] < train_loader.sketchy_limit:
-                dataset_dict_class = dict_class[0]
-            else:
-                dataset_dict_class = dict_class[1]
-        else:
-            dataset_dict_class = dict_class
+        dataset_dict_class = get_dataset_dict(dict_class, rand_samples[i], sketchy_limit, tuberlin_limit)
         sk, im, im_neg, lbl, lbl_neg = train_loader[rand_samples[i]]
         axarr[0, i].imshow(sk.permute(1, 2, 0).numpy())
         axarr[0, i].set_title(dict_by_value(dataset_dict_class, lbl))
@@ -92,7 +89,7 @@ def print_one_dataset(args, transform):
 
 def print_all_dataset_length(args, transform):
 
-    list_dataset = ["sketchy_extend", "tuberlin_extend", "sk+tu", "quickdraw", "sk+tu+qd"]
+    list_dataset = ["sketchy", "tuberlin", "sk+tu", "quickdraw", "sk+tu+qd"]
     for dataset in list_dataset:
         args.dataset = dataset
 
