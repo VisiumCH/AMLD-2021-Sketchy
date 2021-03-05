@@ -137,7 +137,7 @@ class AttentionLogger(object):
         '''Log the attention images in tensorboard'''
 
         attn_im = self.process_attention(im_net, self.im_log)
-        attn_sk = self.process_attention(sk_net, self.sk_log)
+        attn_sk = - self.process_attention(sk_net, self.sk_log)
 
         for i in range(self.im_log.size(0)):  # for each image-sketch pair
 
@@ -200,14 +200,14 @@ def select_images(valid_sk_data, valid_im_data, number_images, args):
 
 
 def get_limits(dataset, valid_sk_data, valid_im_data):
-    if dataset == 'sk+tu' or dataset == 'all':
+    if dataset == 'sk+tu' or dataset == 'sk+tu+qd':
         sketchy_images = valid_im_data.sketchy_limit_images
         sketchy_sketch = valid_sk_data.sketchy_limit_sketch
     else:
         sketchy_images = None
         sketchy_sketch = None
 
-    if dataset == 'all':
+    if dataset == 'sk+tu+qd':
         tuberlin_images = valid_im_data.tuberlin_limit_images
         tuberlin_sketch = valid_sk_data.tuberlin_limit_sketch
     else:
@@ -219,16 +219,15 @@ def get_limits(dataset, valid_sk_data, valid_im_data):
 
 def get_labels_name(dict_class, number_labels, idx, args, sketchy_limit, tuberlin_limit):
 
-    if sketchy_limit is None:  # sketchy or tuberlin or quickdraw dataset
-        class_names = list(dict_class.keys())[list(dict_class.values()).index(number_labels)]
-
-    else:
+    if sketchy_limit is None:  # single dataset
+        pass
+    else:  # multiple datasets
         if idx < sketchy_limit:  # sketchy dataset
-            class_names = list(dict_class[0].keys())[list(dict_class[0].values()).index(number_labels)]
+            dict_class = dict_class[0]
         else:
             if tuberlin_limit is None or idx < tuberlin_limit:  # tuberlin dataset
-                class_names = list(dict_class[1].keys())[list(dict_class[1].values()).index(number_labels)]
+                dict_class = dict_class[1]
             else:  # quickdraw dataset
-                class_names = list(dict_class[2].keys())[list(dict_class[2].values()).index(number_labels)]
+                dict_class = dict_class[2]
 
-    return class_names
+    return list(dict_class.keys())[list(dict_class.values()).index(number_labels)]

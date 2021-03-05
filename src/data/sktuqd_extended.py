@@ -7,9 +7,9 @@ from src.data.tuberlin_extended import TUBerlin
 from src.data.utils import dataset_split
 
 
-def All_Extended(args, transform="None"):
+def SkTuQd_Extended(args, transform="None"):
     '''
-    Creates all the data loaders for Sketchy dataset
+    Creates sketchy, tu-berlin and quickdraw data loader in one go
     '''
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -25,16 +25,16 @@ def All_Extended(args, transform="None"):
         args, dataset_folder="Quickdraw", image_folder="images", name='quickdraw')
 
     # Data Loaders
-    train_loader = All(args, 'train', train_class_sketchy, train_class_tuberlin, train_class_quickdraw,
-                       dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform)
-    valid_sk_loader = All(args, 'valid', valid_class_sketchy, valid_class_tuberlin, valid_class_quickdraw,
-                          dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "sketch")
-    valid_im_loader = All(args, 'valid', valid_class_sketchy, valid_class_tuberlin, valid_class_quickdraw,
-                          dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "images")
-    test_sk_loader = All(args, 'test', test_class_sketchy, test_class_tuberlin, test_class_quickdraw,
-                         dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "sketch")
-    test_im_loader = All(args, 'test', test_class_sketchy, test_class_tuberlin, test_class_quickdraw,
-                         dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "images")
+    train_loader = SkTuQd(args, 'train', train_class_sketchy, train_class_tuberlin, train_class_quickdraw,
+                          dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform)
+    valid_sk_loader = SkTuQd(args, 'valid', valid_class_sketchy, valid_class_tuberlin, valid_class_quickdraw,
+                             dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "sketch")
+    valid_im_loader = SkTuQd(args, 'valid', valid_class_sketchy, valid_class_tuberlin, valid_class_quickdraw,
+                             dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "images")
+    test_sk_loader = SkTuQd(args, 'test', test_class_sketchy, test_class_tuberlin, test_class_quickdraw,
+                            dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "sketch")
+    test_im_loader = SkTuQd(args, 'test', test_class_sketchy, test_class_tuberlin, test_class_quickdraw,
+                            dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "images")
     return (
         train_loader,
         [valid_sk_loader, valid_im_loader],
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     All_Extended(args)
 
 
-class All(data.Dataset):
+class SkTuQd(data.Dataset):
     '''
     Custom dataset for Stetchy's training
     '''

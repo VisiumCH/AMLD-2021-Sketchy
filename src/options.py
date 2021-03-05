@@ -11,7 +11,7 @@ class Options():
         parser.add_argument(
             "dataset",
             type=str,
-            choices=["sketchy_extend", "tuberlin_extend", "sk+tu", "quickdraw", "all"],
+            choices=["sketchy_extend", "tuberlin_extend", "sk+tu", "quickdraw", "sk+tu+qd", "watch"],
             help="Choose a dataset.")
         # Model parameters
         parser.add_argument('--data_path', '-dp', type=str, default='io/data/raw', help='Dataset root path.')
