@@ -79,8 +79,8 @@ class EmbeddingLogger(object):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        (self.sketchy_limit_images, self.sketchy_limit_sketch,
-         self.tuberlin_limit_images, self.tuberlin_limit_sketch) = get_limits(args.dataset, valid_sk_data, valid_im_data)
+        (self.sketchy_limit_im, self.sketchy_limit_sk,
+         self.tuberlin_limit_im, self.tuberlin_limit_sk) = get_limits(args.dataset, valid_sk_data, valid_im_data)
 
         self.select_embedding_images(valid_sk_data, valid_im_data, args.embedding_number, args)
 
@@ -94,11 +94,11 @@ class EmbeddingLogger(object):
 
         # Convert class number to class name
         self.lbl = [get_labels_name(self.dict_class, value, index_im[i], args,
-                                    self.sketchy_limit_images, self.tuberlin_limit_images)
+                                    self.sketchy_limit_im, self.tuberlin_limit_im)
                     for i, value in enumerate(im_lbl_log)]
 
         self.lbl.extend([get_labels_name(self.dict_class, value, index_sk[i], args,
-                                         self.sketchy_limit_sketch, self.tuberlin_limit_sketch)
+                                         self.sketchy_limit_sk, self.tuberlin_limit_sk)
                          for i, value in enumerate(sk_lbl_log)])
 
     def plot_embeddings(self, im_net, sk_net):
@@ -117,8 +117,8 @@ class AttentionLogger(object):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        (self.sketchy_limit_images, self.sketchy_limit_sketch,
-         self.tuberlin_limit_images, self.tuberlin_limit_sketch) = get_limits(args.dataset, valid_sk_data, valid_im_data)
+        (self.sketchy_limit_im, self.sketchy_limit_sk,
+         self.tuberlin_limit_im, self.tuberlin_limit_sk) = get_limits(args.dataset, valid_sk_data, valid_im_data)
         self.select_attn_images(valid_sk_data, valid_im_data, args.attn_number, args)
 
     def select_attn_images(self, valid_sk_data, valid_im_data, number_images, args):
@@ -143,12 +143,12 @@ class AttentionLogger(object):
 
             plt_im = self.add_heatmap_on_image(self.im_log[i], attn_im[i])
             class_names = get_labels_name(self.dict_class, self.im_lbl_log[i], self.index_im[i],
-                                          self.args, self.sketchy_limit_images, self.tuberlin_limit_images)
+                                          self.args, self.sketchy_limit_im, self.tuberlin_limit_im)
             self.logger.add_image('im{}_{}'.format(i, class_names), plt_im)
 
             plt_im = self.add_heatmap_on_image(self.sk_log[i], attn_sk[i])
             class_names = get_labels_name(self.dict_class, self.sk_lbl_log[i], self.index_sk[i],
-                                          self.args, self.sketchy_limit_sketch, self.tuberlin_limit_sketch)
+                                          self.args, self.sketchy_limit_sk, self.tuberlin_limit_sk)
             self.logger.add_image('sk{}_{}'.format(i, class_names), plt_im)
 
     def process_attention(self, net, im):

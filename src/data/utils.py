@@ -51,7 +51,7 @@ def get_random_file_from_path(file_path):
     return np.random.choice(f_list, 1)[0]
 
 
-def dataset_split(args, dataset_folder="Sketchy", image_folder="extended_photo", name='sketchy'):
+def dataset_split(args, dataset_folder, image_folder, name):
     # Random seed
     np.random.seed(args.seed)
     random.seed(args.seed)

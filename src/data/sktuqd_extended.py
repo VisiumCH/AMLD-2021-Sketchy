@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     # Parse options
     args = Options().parse()
-    All_Extended(args)
+    SkTuQd_Extended(args)
 
 
 class SkTuQd(data.Dataset):

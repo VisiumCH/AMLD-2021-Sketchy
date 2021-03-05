@@ -82,8 +82,7 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
                  ( Dom: {loss_dom.avg} + Spa: {loss_spa.avg}); Avg Time x Batch {b_time.avg:.3f}'
                   .format(epoch, i, len(data_loader), loss=losses,
                           loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
-        # if i > 1:
-        #     break
+
     print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_dom.avg} + {loss_spa.avg} ); \
            Avg Time x Batch {b_time.avg:.3f}'
           .format(epoch, loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))

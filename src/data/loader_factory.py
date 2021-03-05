@@ -7,7 +7,6 @@ from src.data.quickdraw_extended import Quickdraw_Extended
 from src.data.sktu_extended import SkTu_Extended
 from src.data.sketchy_extended import Sketchy_Extended
 from src.data.tuberlin_extended import TUBerlin_Extended
-from src.data.watch import Watch
 
 
 def load_data(args, transform=None):
@@ -33,31 +32,10 @@ def load_data(args, transform=None):
     elif args.dataset == "quickdraw":
         return Quickdraw_Extended(args, transform)
     elif args.dataset == "sk+tu+qd":
-        return All_Extended(args, transform)
+        return SkTuQd_Extended(args, transform)
     else:
         print(args.dataset + ' dataset not implemented. Exiting.')
         sys.exit()
-
-
-def print_watch_dataset(args, transform):
-
-    data_loader = Watch(args, transform)
-    print("\n--- Watch Data ---")
-    print("\t* Length: {}".format(len(data_loader)))
-    print("\t* Classes: {}".format(data_loader.get_class_dict()))
-    print("\t* Num Classes. {}".format(len(data_loader.get_class_dict())))
-
-    num_samples = 7
-    rand_samples = np.random.randint(0, high=len(data_loader), size=num_samples)
-    f, axarr = plt.subplots(num_samples)
-    for i in range(len(rand_samples)):
-        im, fname, lbl = data_loader[rand_samples[i]]
-        axarr[i].imshow(im.permute(1, 2, 0).numpy())
-        axarr[i].set_title(dict_by_value(data_loader.dicts_class, lbl))
-        axarr[i].axis("off")
-
-    plt.show()
-    plt.savefig("src/visualization/training_samples_" + args.dataset + ".png")
 
 
 def print_one_dataset(args, transform):
@@ -159,8 +137,6 @@ if __name__ == "__main__":
 
     transform = transforms.Compose([transforms.ToTensor()])
 
-    # print_one_dataset(args, transform)
+    print_one_dataset(args, transform)
 
-    # print_all_dataset_length(args, transform)
-
-    print_watch_dataset(args, transform)
+    print_all_dataset_length(args, transform)

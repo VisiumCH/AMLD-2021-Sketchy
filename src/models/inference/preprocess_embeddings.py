@@ -34,7 +34,7 @@ def process_images(args, data, im_net):
 
 def save_dict(args, dict_class):
     print('Class dictionnary')
-    dict_path = args.load_embeddings.replace('.ending', args.datapath + '_dict_class.json')
+    dict_path = args.load_embeddings.replace('.ending', args.dataset + '_dict_class.json')
     dict_class = {v: k for k, v in dict_class.items()}
     with open(dict_path, 'w') as fp:
         json.dump(dict_class, fp)
@@ -45,7 +45,7 @@ def preprocess_embeddings(args):
     im_net, _ = get_model(args, args.best_model)
 
     transform = transforms.Compose([transforms.ToTensor()])
-    _, [_, valid_im_data], [_, test_im_data], dict_class = load_data(args, transform)
+    _, [_, valid_im_data], [_, test_im_data], dicts_class = load_data(args, transform)
     save_dict(args, dicts_class)
 
     print('Valid')
@@ -53,21 +53,8 @@ def preprocess_embeddings(args):
     save_data(args, valid_fnames, valid_embeddings, valid_classes, '_valid')
 
     print('Test')
-    test_fnames, test_embeddings, test_classes = process_images(args, testt_im_data, im_net)
+    test_fnames, test_embeddings, test_classes = process_images(args, test_im_data, im_net)
     save_data(args, test_fnames, test_embeddings, test_classes, '_test')
-
-
-def preprocess_watch_embeddings(args):
-
-    im_net, _ = get_model(args, args.best_model)
-
-    transform = transforms.Compose([transforms.ToTensor()])
-    watch_data = Watch(args, transform)
-    save_dict(args, wathc_data.dicts_class)
-
-    print('Watch')
-    fnames, embeddings, classes = process_images(args, watch_data, im_net)
-    save_data(args, fnames,  embeddings, classes, '')
 
 
 if __name__ == '__main__':
@@ -85,11 +72,4 @@ if __name__ == '__main__':
     if args.load_embeddings is None:
         raise Exception('No path to save embeddings')
 
-    if args.dataset == 'watch':
-        preprocess_watch_embeddings(args)
-    elif args.dataset in ['sketchy_extend', 'tuberlin_extend', 'quickdraw']:
-        preprocess_embeddings(args)
-    elif args.dataset in ['sk+tu', 'sk+tu+qd']:
-        print('\nPlease process the dataset independently, not together.')
-    else:
-        sys.exit()
+    preprocess_embeddings(args)
