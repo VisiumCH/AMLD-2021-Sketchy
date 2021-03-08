@@ -5,14 +5,13 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import pandas as pd
-from PIL import Image
 import torch
 from torchvision import transforms
 
 from src.data.loader_factory import load_data
-from src.data.utils import default_image_loader
+from src.data.utils import default_image_loader, default_image_loader_tuberlin
 from src.options import Options
-from src.models.utils import get_model, get_dataset_dict
+from src.models.utils import get_model
 from src.models.metrics import get_similarity
 
 NUM_CLOSEST = 4
@@ -35,6 +34,29 @@ def get_processed_images(args, dataset_type):
     return dict_class, df['fnames'].values, df['classes'].values, images_embeddings
 
 
+def get_loader(dataset):
+    if dataset == 'TU-Berlin':
+        loader = default_image_loader_tuberlin
+    else:
+        loader = default_image_loader
+    return loader
+
+
+def get_dict(dataset, dict_class):
+    if isinstance(dict_class, dict):
+        dict_class = dict_class
+    else:
+        if dataset == 'Sketchy':
+            dict_class = dict_class[0]
+        elif dataset == 'TU-Berlin':
+            dict_class = dict_class[1]
+        elif dataset == 'Quickdraw':
+            dict_class = dict_class[2]
+        else:
+            raise(f"Error with dataset name: {dataset}.")
+    return dict_class
+
+
 class Inference():
 
     def __init__(self, args, dataset_type):
@@ -52,57 +74,69 @@ class Inference():
         if not os.path.exists(self.prediction_folder):
             os.makedirs(self.prediction_folder)
 
-        dataset = args.dataset
+        self.get_data(dataset_type)
+
+    def get_data(self, dataset_type):
+
+        dataset = self.args.dataset
+
         if dataset in ['sketchy', 'tuberlin', 'quickdraw']:
             self.dict_class, self.images_fnames, self.images_classes, self.images_embeddings = get_processed_images(
-                args, dataset_type)
-            self.sketchy_limit, self.tuberlin_limit = None, None
+                self.args, dataset_type)
+            self.sketchy_limit = None
+            self.tuberlin_limit = None
 
         elif dataset in ['sk+tu', 'sk+tu+qd']:
-            args.dataset = 'sketchy'
+            self.args.dataset = 'sketchy'
             dict_class_sk, self.images_fnames, self.images_classes, self.images_embeddings = get_processed_images(
-                args, dataset_type)
+                self.args, dataset_type)
+
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
 
-            args.dataset = 'tuberlin'
-            dict_class_tu, images_fnames, images_classes, images_embeddings = get_processed_images(args, dataset_type)
+            self.args.dataset = 'tuberlin'
+            dict_class_tu, images_fnames, images_classes, images_embeddings = get_processed_images(
+                self.args, dataset_type)
             self.dict_class = [dict_class_sk, dict_class_tu]
+
             self.images_fnames = np.concatenate((self.images_fnames, images_fnames), axis=0)
             self.images_classes = np.concatenate((self.images_classes, images_classes), axis=0)
             self.images_embeddings = np.concatenate((self.images_embeddings, images_embeddings), axis=0)
 
             if dataset == 'sk+tu+qd':
-                args.dataset = 'quickdraw'
+                self.args.dataset = 'quickdraw'
                 self.tuberlin_limit = len(self.images_fnames)
-                dict_class_qd, images_fnames, images_classes, images_embeddings = get_processed_images(
-                    args, dataset_type)
 
+                dict_class_qd, images_fnames, images_classes, images_embeddings = get_processed_images(
+                    self.args, dataset_type)
                 self.dict_class.append(dict_class_qd)
+
                 self.images_fnames = np.concatenate((self.images_fnames, images_fnames), axis=0)
                 self.images_classes = np.concatenate((self.images_classes, images_classes), axis=0)
                 self.images_embeddings = np.concatenate((self.images_embeddings, images_embeddings), axis=0)
         else:
             raise Exception(args.dataset + ' not implemented.')
-        args.dataset = dataset
+        self.args.dataset = dataset
 
-    def random_images_inference(self, args):
+    def random_images_inference(self, args, number_images):
         _, _, [test_sk_loader, _], _ = load_data(args, self.transform)
-        rand_samples_sk = np.random.randint(0, high=len(test_sk_loader), size=NUMBER_RANDOM_IMAGES)
+        rand_samples_sk = np.random.randint(0, high=len(test_sk_loader), size=number_images)
 
         for i in range(len(rand_samples_sk)):
             _, sketch_fname, _ = test_sk_loader[rand_samples_sk[i]]
-            self.inference_sketch(sketch_fname, plot=True)
+            self.inference_sketch(sketch_fname)
 
-    def inference_sketch(self, sketch_fname, plot=True):
+    def inference_sketch(self, sketch_fname):
         ''' Process a sketch'''
-
         sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
+        if self.args.cuda:
+            sketch = sketch.cuda()
         sketch_embedding, _ = self.sk_net(sketch)
+        if self.args.cuda:
+            sketch_embedding = sketch_embedding.cpu()
         self.get_closest_images(sketch_embedding)
 
-        if plot:
-            self.plot_closest(sketch_fname)
+        self.plot_closest(sketch_fname)
 
     def get_closest_images(self, sketch_embedding):
         '''
@@ -125,12 +159,13 @@ class Inference():
         axes[0].axis('off')
 
         for i in range(1, NUM_CLOSEST + 1):
-            im = Image.open(self.sorted_fnames[i-1])
-            im = im.resize((400, 400))
 
+            dataset = self.sorted_fnames[i-1].split('/')[-4]
+            loader = get_loader(dataset)
+            dict_class = get_dict(dataset, self.dict_class)
+
+            im = loader(self.sorted_fnames[i-1])
             axes[i].imshow(im)
-            dict_class = get_dataset_dict(
-                self.dict_class, self.sorted_labels[i-1], self.sketchy_limit, self.tuberlin_limit)
             axes[i].set(title='Closest image ' + str(i) +
                         '\n Label: ' + dict_class[str(self.sorted_labels[i-1])])
 
@@ -143,7 +178,7 @@ class Inference():
 
 def main(args):
     inference_test = Inference(args, 'test')
-    inference_test.random_images_inference(args)
+    inference_test.random_images_inference(args, number_images=NUMBER_RANDOM_IMAGES)
 
 
 if __name__ == '__main__':
