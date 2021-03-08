@@ -1,10 +1,8 @@
 import random
 import numpy as np
 import torch.utils.data as data
-from src.data.quickdraw_extended import Quickdraw
-from src.data.sketchy_extended import Sketchy
-from src.data.tuberlin_extended import TUBerlin
 from src.data.utils import dataset_split
+from src.data.default_dataset import DefaultDataset
 
 
 def SkTuQd_Extended(args, transform="None"):
@@ -16,13 +14,13 @@ def SkTuQd_Extended(args, transform="None"):
 
     # Sketchy and TU-Berlin
     train_class_sketchy, valid_class_sketchy, test_class_sketchy, dicts_class_sketchy = dataset_split(
-        args, dataset_folder="Sketchy", image_folder="extended_photo", name='sketchy')
+        args, dataset_folder="Sketchy")
 
     train_class_tuberlin, valid_class_tuberlin, test_class_tuberlin, dicts_class_tuberlin = dataset_split(
-        args, dataset_folder="TU-Berlin", image_folder="images", name='tuberlin')
+        args, dataset_folder="TU-Berlin")
 
     train_class_quickdraw, valid_class_quickdraw, test_class_quickdraw, dicts_class_quickdraw = dataset_split(
-        args, dataset_folder="Quickdraw", image_folder="images", name='quickdraw')
+        args, dataset_folder="Quickdraw")
 
     # Data Loaders
     train_loader = SkTuQd(args, 'train', train_class_sketchy, train_class_tuberlin, train_class_quickdraw,
@@ -66,16 +64,16 @@ class SkTuQd(data.Dataset):
         self.set_class_quickdraw = set_class_quickdraw
 
         # Sketchy data
-        self.sketchy = Sketchy(args, dataset_type, set_class_sketchy,
-                               dicts_class_sketchy, transform, image_type)
+        self.sketchy = DefaultDataset(args, "Sketchy", dataset_type, set_class_sketchy,
+                                      dicts_class_sketchy, transform, image_type)
 
         # Tuberlin data
-        self.tuberlin = TUBerlin(args, dataset_type, set_class_tuberlin,
-                                 dicts_class_tuberlin, transform, image_type)
+        self.tuberlin = DefaultDataset(args, "TU-Berlin", dataset_type, set_class_tuberlin,
+                                       dicts_class_tuberlin, transform, image_type)
 
         # Quickdraw data
-        self.quickdraw = Quickdraw(args, dataset_type, set_class_quickdraw,
-                                   dicts_class_quickdraw, transform, image_type)
+        self.quickdraw = DefaultDataset(args, "Quickdraw", dataset_type, set_class_quickdraw,
+                                        dicts_class_quickdraw, transform, image_type)
 
         # Separator between sketchy and tuberlin datasets
         self.sketchy_limit_sketch = len(self.sketchy.fnames_sketch)

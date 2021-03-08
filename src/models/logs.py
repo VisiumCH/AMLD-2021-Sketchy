@@ -83,7 +83,6 @@ class EmbeddingLogger(object):
         self.args = args
         self.sketchy_limit_im, self.tuberlin_limit_im = get_limits(args.dataset, valid_im_data, 'image')
         self.sketchy_limit_sk, self.tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, 'sketch')
-
         self.select_embedding_images(valid_sk_data, valid_im_data, args.embedding_number, args)
 
     def select_embedding_images(self, valid_sk_data, valid_im_data, number_images, args):
@@ -140,7 +139,7 @@ class AttentionLogger(object):
         '''Log the attention images in tensorboard'''
 
         attn_im = self.process_attention(im_net, self.im_log)
-        attn_sk = - self.process_attention(sk_net, self.sk_log)
+        attn_sk = self.process_attention(sk_net, self.sk_log)
 
         for i in range(self.im_log.size(0)):  # for each image-sketch pair
 

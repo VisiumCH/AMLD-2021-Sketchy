@@ -51,17 +51,18 @@ def get_random_file_from_path(file_path):
     return np.random.choice(f_list, 1)[0]
 
 
-def dataset_split(args, dataset_folder, image_folder, name):
+def dataset_split(args, dataset_folder):
     # Random seed
     np.random.seed(args.seed)
     random.seed(args.seed)
 
     # Getting the classes
-    class_directories = glob(os.path.join(args.data_path, dataset_folder, image_folder, "*/"))
+    class_directories = glob(os.path.join(args.data_path, dataset_folder, "images/*/"))
     list_class = [class_path.split("/")[-2] for class_path in class_directories]
     dicts_class = create_dict_texts(list_class)
 
     # Read test classes
+    name = dataset_folder.lower()
     with open(os.path.join(args.data_path, dataset_folder, "zeroshot_classes_" + name + ".txt")) as fp:
         test_class = fp.read().splitlines()
     list_class = [x for x in list_class if x not in test_class]

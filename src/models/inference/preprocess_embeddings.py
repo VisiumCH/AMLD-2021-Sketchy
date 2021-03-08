@@ -61,7 +61,6 @@ if __name__ == '__main__':
 
     # Check cuda & Set random seed
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
-    args.cuda = False
     args.pin_memory = args.cuda
 
     # Check Test and Load

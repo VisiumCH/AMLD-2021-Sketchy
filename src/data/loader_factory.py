@@ -3,11 +3,9 @@ import sys
 import numpy as np
 
 from src.data.sktuqd_extended import SkTuQd_Extended
-from src.data.quickdraw_extended import Quickdraw_Extended
 from src.data.sktu_extended import SkTu_Extended
-from src.data.sketchy_extended import Sketchy_Extended
-from src.data.tuberlin_extended import TUBerlin_Extended
 from src.models.utils import get_dataset_dict, get_limits
+from src.data.default_dataset import DefaultDataset_Extended
 
 
 def load_data(args, transform=None):
@@ -25,13 +23,13 @@ def load_data(args, transform=None):
         - dicts_class: Ordered dictionnary {class_name, value}
     """
     if args.dataset == "sketchy":
-        return Sketchy_Extended(args, transform)
+        return DefaultDataset_Extended(args, "Sketchy", transform)
     elif args.dataset == "tuberlin":
-        return TUBerlin_Extended(args, transform)
+        return DefaultDataset_Extended(args, "TU-Berlin", transform)
+    elif args.dataset == "quickdraw":
+        return DefaultDataset_Extended(args, "Quickdraw", transform)
     elif args.dataset == "sk+tu":
         return SkTu_Extended(args, transform)
-    elif args.dataset == "quickdraw":
-        return Quickdraw_Extended(args, transform)
     elif args.dataset == "sk+tu+qd":
         return SkTuQd_Extended(args, transform)
     else:

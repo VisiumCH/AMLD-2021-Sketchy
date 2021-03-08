@@ -2,8 +2,7 @@ import random
 import numpy as np
 import torch.utils.data as data
 from src.data.utils import dataset_split
-from src.data.sketchy_extended import Sketchy
-from src.data.tuberlin_extended import TUBerlin
+from src.data.default_dataset import DefaultDataset
 
 
 def SkTu_Extended(args, transform="None"):
@@ -15,10 +14,10 @@ def SkTu_Extended(args, transform="None"):
 
     # Sketchy and TU-Berlin
     train_class_sketchy, valid_class_sketchy, test_class_sketchy, dicts_class_sketchy = dataset_split(
-        args, dataset_folder="Sketchy", image_folder="extended_photo", name='sketchy')
+        args, dataset_folder="Sketchy")
 
     train_class_tuberlin, valid_class_tuberlin, test_class_tuberlin, dicts_class_tuberlin = dataset_split(
-        args, dataset_folder="TU-Berlin", image_folder="images", name='tuberlin')
+        args, dataset_folder="TU-Berlin")
 
     # Data Loaders
     train_loader = SkTu(args, 'train', train_class_sketchy, train_class_tuberlin,
@@ -61,10 +60,12 @@ class SkTu(data.Dataset):
         self.set_class_tuberlin = set_class_tuberlin
 
         # Sketchy data
-        self.sketchy = Sketchy(args, dataset_type, set_class_sketchy, dicts_class_sketchy, transform, image_type)
+        self.sketchy = DefaultDataset(args, "Sketchy", dataset_type, set_class_sketchy,
+                                      dicts_class_sketchy, transform, image_type)
 
         # Tuberlin data
-        self.tuberlin = TUBerlin(args, dataset_type, set_class_tuberlin, dicts_class_tuberlin, transform, image_type)
+        self.tuberlin = DefaultDataset(args, "TU-Berlin", dataset_type, set_class_tuberlin,
+                                       dicts_class_tuberlin, transform, image_type)
 
         # Separator between sketchy and tuberlin datasets
         self.sketchy_limit_sketch = len(self.sketchy.fnames_sketch)
