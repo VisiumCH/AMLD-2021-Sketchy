@@ -12,27 +12,25 @@ def SkTuQd_Extended(args, transform="None"):
     random.seed(args.seed)
     np.random.seed(args.seed)
 
-    # Sketchy and TU-Berlin
-    train_class_sketchy, valid_class_sketchy, test_class_sketchy, dicts_class_sketchy = dataset_split(
+    # Sketchy, TU-Berlin and Quickdraw
+    dicts_class_sketchy, train_data_sketchy, valid_data_sketchy, test_data_sketchy = dataset_split(
         args, dataset_folder="Sketchy")
-
-    train_class_tuberlin, valid_class_tuberlin, test_class_tuberlin, dicts_class_tuberlin = dataset_split(
+    dicts_class_tuberlin, train_data_tuberlin, valid_data_tuberlin, test_data_tuberlin = dataset_split(
         args, dataset_folder="TU-Berlin")
-
-    train_class_quickdraw, valid_class_quickdraw, test_class_quickdraw, dicts_class_quickdraw = dataset_split(
+    dicts_class_quickdraw, train_data_quickdraw, valid_data_quickdraw, test_data_quickdraw = dataset_split(
         args, dataset_folder="Quickdraw")
 
     # Data Loaders
-    train_loader = SkTuQd(args, 'train', train_class_sketchy, train_class_tuberlin, train_class_quickdraw,
-                          dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform)
-    valid_sk_loader = SkTuQd(args, 'valid', valid_class_sketchy, valid_class_tuberlin, valid_class_quickdraw,
-                             dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "sketch")
-    valid_im_loader = SkTuQd(args, 'valid', valid_class_sketchy, valid_class_tuberlin, valid_class_quickdraw,
-                             dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "images")
-    test_sk_loader = SkTuQd(args, 'test', test_class_sketchy, test_class_tuberlin, test_class_quickdraw,
-                            dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "sketch")
-    test_im_loader = SkTuQd(args, 'test', test_class_sketchy, test_class_tuberlin, test_class_quickdraw,
-                            dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw, transform, "images")
+    train_loader = SkTuQd(args, 'train', dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw,
+                          train_data_sketchy, train_data_tuberlin, train_data_quickdraw, transform)
+    valid_sk_loader = SkTuQd(args, 'valid', dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw,
+                             valid_data_sketchy, valid_data_tuberlin, valid_data_quickdraw, transform, "sketches")
+    valid_im_loader = SkTuQd(args, 'valid', dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw,
+                             valid_data_sketchy, valid_data_tuberlin, valid_data_quickdraw, transform, "images")
+    test_sk_loader = SkTuQd(args, 'test', dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw,
+                            test_data_sketchy, test_data_tuberlin, test_data_quickdraw, transform, "sketches")
+    test_im_loader = SkTuQd(args, 'test', dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw,
+                            test_data_sketchy, test_data_tuberlin, test_data_quickdraw, transform, "images")
     return (
         train_loader,
         [valid_sk_loader, valid_im_loader],
@@ -54,26 +52,25 @@ class SkTuQd(data.Dataset):
     Custom dataset for Stetchy's training
     '''
 
-    def __init__(self, args, dataset_type, set_class_sketchy, set_class_tuberlin, set_class_quickdraw,
-                 dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw,
-                 transform=None, image_type=None):
+    def __init__(self, args, dataset_type, dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw,
+                 data_sketchy, data_tuberlin, data_quickdraw, transform=None, image_type=None):
         self.dataset_type = dataset_type
         self.image_type = image_type
-        self.set_class_sketchy = set_class_sketchy
-        self.set_class_tuberlin = set_class_tuberlin
-        self.set_class_quickdraw = set_class_quickdraw
+        self.dicts_class_sketchy = dicts_class_sketchy
+        self.dicts_class_tuberlin = dicts_class_tuberlin
+        self.dicts_class_quickdraw = dicts_class_quickdraw
 
         # Sketchy data
-        self.sketchy = DefaultDataset(args, "Sketchy", dataset_type, set_class_sketchy,
-                                      dicts_class_sketchy, transform, image_type)
+        self.sketchy = DefaultDataset(args, "Sketchy", dataset_type, dicts_class_sketchy,
+                                      data_sketchy, transform, image_type)
 
         # Tuberlin data
-        self.tuberlin = DefaultDataset(args, "TU-Berlin", dataset_type, set_class_tuberlin,
-                                       dicts_class_tuberlin, transform, image_type)
+        self.tuberlin = DefaultDataset(args, "TU-Berlin", dataset_type, dicts_class_tuberlin,
+                                       data_tuberlin, transform, image_type)
 
         # Quickdraw data
-        self.quickdraw = DefaultDataset(args, "Quickdraw", dataset_type, set_class_quickdraw,
-                                        dicts_class_quickdraw, transform, image_type)
+        self.quickdraw = DefaultDataset(args, "Quickdraw", dataset_type, dicts_class_quickdraw,
+                                        data_quickdraw, transform, image_type)
 
         # Separator between sketchy and tuberlin datasets
         self.sketchy_limit_sketch = len(self.sketchy.fnames_sketch)
@@ -97,21 +94,21 @@ class SkTuQd(data.Dataset):
         '''
         if ((self.dataset_type == 'train' and index < self.sketchy_limit_sketch)
                 or (self.image_type == 'images' and index < self.sketchy_limit_images)
-                or (self.image_type == 'sketch' and index < self.sketchy_limit_sketch)):
+                or (self.image_type == 'sketches' and index < self.sketchy_limit_sketch)):
             return self.sketchy.__getitem__(index)
 
         elif ((self.dataset_type == 'train' and index < self.tuberlin_limit_sketch)
                 or (self.image_type == 'images' and index < self.tuberlin_limit_images)
-                or (self.image_type == 'sketch' and index < self.tuberlin_limit_sketch)):
+                or (self.image_type == 'sketches' and index < self.tuberlin_limit_sketch)):
 
-            if (self.image_type == 'sketch' or self.dataset_type == 'train'):
+            if (self.image_type == 'sketches' or self.dataset_type == 'train'):
                 index -= self.sketchy_limit_sketch
             elif self.image_type == 'images':
                 index -= self.sketchy_limit_images
             return self.tuberlin.__getitem__(index)
 
         else:
-            if (self.image_type == 'sketch' or self.dataset_type == 'train'):
+            if (self.image_type == 'sketches' or self.dataset_type == 'train'):
                 index -= self.tuberlin_limit_sketch
             elif self.image_type == 'images':
                 index -= self.tuberlin_limit_images
@@ -119,7 +116,7 @@ class SkTuQd(data.Dataset):
 
     def __len__(self):
         # Number of sketches/images in the dataset
-        if self.dataset_type == 'train' or self.image_type == 'sketch':
+        if self.dataset_type == 'train' or self.image_type == 'sketches':
             return len(self.sketchy.fnames_sketch) + \
                 len(self.tuberlin.fnames_sketch) + \
                 len(self.quickdraw.fnames_sketch)
@@ -130,4 +127,4 @@ class SkTuQd(data.Dataset):
 
     def get_class_dict(self):
         # Dictionnary of categories of the dataset
-        return [self.set_class_sketchy, self.set_class_tuberlin, self.set_class_quickdraw]
+        return [self.dicts_class_sketchy, self.dicts_class_tuberlin, self.dicts_class_quickdraw]

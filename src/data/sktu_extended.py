@@ -12,24 +12,23 @@ def SkTu_Extended(args, transform="None"):
     random.seed(args.seed)
     np.random.seed(args.seed)
 
-    # Sketchy and TU-Berlin
-    train_class_sketchy, valid_class_sketchy, test_class_sketchy, dicts_class_sketchy = dataset_split(
+    # # Sketchy
+    dicts_class_sketchy, train_data_sketchy, valid_data_sketchy, test_data_sketchy = dataset_split(
         args, dataset_folder="Sketchy")
-
-    train_class_tuberlin, valid_class_tuberlin, test_class_tuberlin, dicts_class_tuberlin = dataset_split(
+    dicts_class_tuberlin, train_data_tuberlin, valid_data_tuberlin, test_data_tuberlin = dataset_split(
         args, dataset_folder="TU-Berlin")
 
     # Data Loaders
-    train_loader = SkTu(args, 'train', train_class_sketchy, train_class_tuberlin,
-                        dicts_class_sketchy, dicts_class_tuberlin, transform)
-    valid_sk_loader = SkTu(args, 'valid', valid_class_sketchy, valid_class_tuberlin,
-                           dicts_class_sketchy, dicts_class_tuberlin, transform, "sketch")
-    valid_im_loader = SkTu(args, 'valid', valid_class_sketchy, valid_class_tuberlin,
-                           dicts_class_sketchy, dicts_class_tuberlin, transform, "images")
-    test_sk_loader = SkTu(args, 'test', test_class_sketchy, test_class_tuberlin,
-                          dicts_class_sketchy, dicts_class_tuberlin, transform, "sketch")
-    test_im_loader = SkTu(args, 'test', test_class_sketchy, test_class_tuberlin,
-                          dicts_class_sketchy, dicts_class_tuberlin, transform, "images")
+    train_loader = SkTu(args, 'train', dicts_class_sketchy, dicts_class_tuberlin,
+                        train_data_sketchy, train_data_tuberlin, transform)
+    valid_sk_loader = SkTu(args, 'valid', dicts_class_sketchy, dicts_class_tuberlin,
+                           valid_data_sketchy, valid_data_tuberlin, transform, "sketches")
+    valid_im_loader = SkTu(args, 'valid', dicts_class_sketchy, dicts_class_tuberlin,
+                           valid_data_sketchy, valid_data_tuberlin, transform, "images")
+    test_sk_loader = SkTu(args, 'test', dicts_class_sketchy, dicts_class_tuberlin,
+                          test_data_sketchy, test_data_tuberlin, transform, "sketches")
+    test_im_loader = SkTu(args, 'test', dicts_class_sketchy, dicts_class_tuberlin,
+                          test_data_sketchy, test_data_tuberlin, transform, "images")
     return (
         train_loader,
         [valid_sk_loader, valid_im_loader],
@@ -51,21 +50,20 @@ class SkTu(data.Dataset):
     Custom dataset for Stetchy's training
     '''
 
-    def __init__(self, args, dataset_type, set_class_sketchy, set_class_tuberlin,
-                 dicts_class_sketchy, dicts_class_tuberlin,
-                 transform=None, image_type=None):
+    def __init__(self, args, dataset_type, dicts_class_sketchy, dicts_class_tuberlin,
+                 data_sketchy, data_tuberlin, transform=None, image_type=None):
         self.dataset_type = dataset_type
         self.image_type = image_type
-        self.set_class_sketchy = set_class_sketchy
-        self.set_class_tuberlin = set_class_tuberlin
+        self.dicts_class_sketchy = dicts_class_sketchy
+        self.dicts_class_tuberlin = dicts_class_tuberlin
 
         # Sketchy data
-        self.sketchy = DefaultDataset(args, "Sketchy", dataset_type, set_class_sketchy,
-                                      dicts_class_sketchy, transform, image_type)
+        self.sketchy = DefaultDataset(args, "Sketchy", dataset_type, dicts_class_sketchy,
+                                      data_sketchy, transform, image_type)
 
         # Tuberlin data
-        self.tuberlin = DefaultDataset(args, "TU-Berlin", dataset_type, set_class_tuberlin,
-                                       dicts_class_tuberlin, transform, image_type)
+        self.tuberlin = DefaultDataset(args, "TU-Berlin", dataset_type, dicts_class_tuberlin,
+                                       data_tuberlin, transform, image_type)
 
         # Separator between sketchy and tuberlin datasets
         self.sketchy_limit_sketch = len(self.sketchy.fnames_sketch)
@@ -85,11 +83,11 @@ class SkTu(data.Dataset):
         '''
         if ((self.dataset_type == 'train' and index < self.sketchy_limit_sketch)
                 or (self.image_type == 'images' and index < self.sketchy_limit_images)
-                or (self.image_type == 'sketch' and index < self.sketchy_limit_sketch)):
+                or (self.image_type == 'sketches' and index < self.sketchy_limit_sketch)):
             return self.sketchy.__getitem__(index)
 
         else:
-            if (self.image_type == 'sketch' or self.dataset_type == 'train'):
+            if (self.image_type == 'sketches' or self.dataset_type == 'train'):
                 index -= self.sketchy_limit_sketch
             elif self.image_type == 'images':
                 index -= self.sketchy_limit_images
@@ -97,11 +95,11 @@ class SkTu(data.Dataset):
 
     def __len__(self):
         # Number of sketches/images in the dataset
-        if self.dataset_type == 'train' or self.image_type == 'sketch':
+        if self.dataset_type == 'train' or self.image_type == 'sketches':
             return len(self.sketchy.fnames_sketch) + len(self.tuberlin.fnames_sketch)
         else:
             return len(self.sketchy.fnames_image) + len(self.tuberlin.fnames_image)
 
     def get_class_dict(self):
         # Dictionnary of categories of the dataset
-        return [self.set_class_sketchy, self.set_class_tuberlin]
+        return [self.dicts_class_sketchy, self.dicts_class_tuberlin]

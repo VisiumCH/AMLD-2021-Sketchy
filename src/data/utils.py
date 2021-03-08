@@ -15,7 +15,7 @@ def create_dict_texts(texts):
 
 
 def get_file_list(dir_skim, class_list, skim="sketch"):
-    if skim == "sketch":
+    if skim == "sketches":
         _ext = "*.png"
     elif skim == "images":
         _ext = "*.jpg"
@@ -51,39 +51,67 @@ def get_random_file_from_path(file_path):
     return np.random.choice(f_list, 1)[0]
 
 
-def dataset_split(args, dataset_folder):
-    # Random seed
-    np.random.seed(args.seed)
-    random.seed(args.seed)
-
+def get_class_dict(args, dataset_folder):
     # Getting the classes
     class_directories = glob(os.path.join(args.data_path, dataset_folder, "images/*/"))
     list_class = [class_path.split("/")[-2] for class_path in class_directories]
     dicts_class = create_dict_texts(list_class)
+    return dicts_class
 
-    # Read test classes
-    name = dataset_folder.lower()
-    with open(os.path.join(args.data_path, dataset_folder, "zeroshot_classes_" + name + ".txt")) as fp:
-        test_class = fp.read().splitlines()
-    list_class = [x for x in list_class if x not in test_class]
 
-    # Random Shuffle
-    shuffled_list_class = list_class
-    random.shuffle(shuffled_list_class)
+def dataset_class_split(args, dataset_folder, image_type):
+    # Random seed
+    random.seed(args.seed)
 
-    # Dividing the classes
-    train_class = shuffled_list_class[: int(0.9 * len(shuffled_list_class))]
-    valid_class = shuffled_list_class[int(0.9 * len(shuffled_list_class)):]
+    if image_type == "sketches":
+        _ext = ".png"
+    else:
+        _ext = ".jpg"
 
-    # Save split
-    with open(os.path.join(args.save, name + '_train.txt'), 'w') as fp:
-        for item in train_class:
-            fp.write("%s\n" % item)
-    with open(os.path.join(args.save, name + '_valid.txt'), 'w') as fp:
-        for item in valid_class:
-            fp.write("%s\n" % item)
-    with open(os.path.join(args.save, name + '_test.txt'), 'w') as fp:
-        for item in test_class:
-            fp.write("%s\n" % item)
+    fnames_train = []
+    cls_train = []
+    fnames_valid = []
+    cls_valid = []
+    fnames_test = []
+    cls_test = []
 
-    return train_class, valid_class, test_class, dicts_class
+    class_directories = glob(os.path.join(args.data_path, dataset_folder, image_type, "*/"))
+
+    for class_dir in class_directories:
+        cls_name = class_dir.split('/')[-2]
+        images_path = glob(class_dir + '/*')
+        images_path = [path for path in images_path if path.endswith(_ext)]
+        random.shuffle(images_path)
+
+        train_images = images_path[: int(0.8 * len(images_path))]
+        valid_images = images_path[int(0.8 * len(images_path)):int(0.9 * len(images_path))]
+        test_images = images_path[int(0.9 * len(images_path)):]
+
+        fnames_train += [os.path.basename(x) for x in train_images]
+        cls_train += [cls_name] * len(train_images)
+
+        fnames_valid += [os.path.basename(x) for x in valid_images]
+        cls_valid += [cls_name] * len(valid_images)
+
+        fnames_test += [os.path.basename(x) for x in test_images]
+        cls_test += [cls_name] * len(test_images)
+
+    return fnames_train, cls_train, fnames_valid, cls_valid, fnames_test, cls_test
+
+
+def dataset_split(args, dataset_folder):
+    dicts_class = get_class_dict(args, dataset_folder)
+
+    (fnames_image_train, cls_image_train,
+     fnames_image_valid, cls_image_valid,
+     fnames_image_test, cls_image_test) = dataset_class_split(args, dataset_folder, "images")
+
+    (fnames_sketch_train, cls_sketch_train,
+     fnames_sketch_valid, cls_sketch_valid,
+     fnames_sketch_test, cls_sketch_test) = dataset_class_split(args, dataset_folder, "sketches")
+
+    train_data = [fnames_image_train, cls_image_train, fnames_sketch_train, cls_sketch_train]
+    valid_data = [fnames_image_valid, cls_image_valid, fnames_sketch_valid, cls_sketch_valid]
+    test_data = [fnames_image_test, cls_image_test, fnames_sketch_test, cls_sketch_test]
+
+    return dicts_class, train_data, valid_data, test_data

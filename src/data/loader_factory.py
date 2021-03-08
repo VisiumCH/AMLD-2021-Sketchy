@@ -75,14 +75,10 @@ def print_one_dataset(args, transform):
     print("\n--- Valid Data ---")
     print("\t* Length Sketch: {}".format(len(valid_sk_loader)))
     print("\t* Length Image: {}".format(len(valid_im_loader)))
-    print("\t* Classes: {}".format(valid_sk_loader.get_class_dict()))
-    print("\t* Num Classes. {}".format(len(valid_sk_loader.get_class_dict())))
 
     print("\n--- Test Data ---")
     print("\t* Length Sketch: {}".format(len(test_sk_loader)))
     print("\t* Length Image: {}".format(len(test_im_loader)))
-    print("\t* Classes: {}".format(test_sk_loader.get_class_dict()))
-    print("\t* Num Classes. {}".format(len(test_sk_loader.get_class_dict())))
 
 
 def print_all_dataset_length(args, transform):
