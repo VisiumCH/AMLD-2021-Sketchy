@@ -15,7 +15,7 @@ def make_sketches(args):
 
     watches_folder = os.path.join(args.data_path, 'Watch')
 
-    watches_images_path = glob(watches_folder + '/*/*/*/*.png')
+    watches_images_path = glob(watches_folder + '/*/*/*/*image.png')
     number_images = len(watches_images_path)
 
     for i, image_path in enumerate(watches_images_path):
