@@ -84,8 +84,8 @@ class Inference():
         dataset = self.args.dataset
 
         if dataset in ['sketchy', 'tuberlin', 'quickdraw']:
-            self.dict_class, self.images_fnames, self.images_classes, self.images_embeddings = self.get_processed_images(
-                self.args, dataset_type)
+            (self.dict_class, self.images_fnames,
+             self.images_classes, self.images_embeddings) = self.get_processed_images(self.args, dataset_type)
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
