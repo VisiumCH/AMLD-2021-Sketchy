@@ -74,7 +74,7 @@ if __name__ == '__main__':
     torch.set_grad_enabled(False)
 
     dataset = args.dataset
-    if dataset in ['sketchy', 'tuberlin', 'quickdraw']:
+    if dataset in ['sketchy', 'tuberlin', 'quickdraw', 'watch']:
         preprocess_embeddings(args, im_net)
 
     elif dataset in ['sk+tu', 'sk+tu+qd']:

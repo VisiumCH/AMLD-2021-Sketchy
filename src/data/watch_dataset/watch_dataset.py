@@ -1,4 +1,3 @@
-import os
 import random
 from glob import glob
 import numpy as np
@@ -16,7 +15,7 @@ def Watch_Extended(args, transform='None'):
     np.random.seed(args.seed)
 
     # Get all images path
-    images_path = glob(args.data_path + '/Watch/*/*/*/*image.png')
+    images_path = glob(args.data_path + '/Raw_Watch/*/*/*/*image.png')
 
     # Split train, valid, test sets
     train_data, valid_data, test_data = watch_dataset_split(images_path)
@@ -47,9 +46,6 @@ class WatchDataset(data.Dataset):
         self.loader = default_image_loader
         self.image_type = image_type
 
-        self.dir_sketch = os.path.join(args.data_path, 'Watch', 'sketches')
-        self.dir_image = os.path.join(args.data_path, 'Watch', 'images')
-
         self.fnames_image, self.fnames_sketch = data[0], data[1]
         self.number_images = len(self.fnames_image)
 
@@ -74,14 +70,16 @@ class WatchDataset(data.Dataset):
             im_pos_fname = self.fnames_image[index]
             image_pos = self.transform(self.loader(im_pos_fname))
             lbl_pos = get_watch_label(self.fnames_image[index])
+            lbl_pos = self.dicts_class.get(lbl_pos)
 
             # Negative image (any other image)
             index_neg = random.randint(0, self.number_images)
-            while index_neg == index:  # make sure not same index
+            while index_neg == index:  # make sure not same index as positive
                 index_neg = random.randint(0, self.number_images)
             im_neg_fname = self.fnames_image[index_neg]
             image_neg = self.transform(self.loader(im_neg_fname))
             lbl_neg = get_watch_label(self.fnames_image[index_neg])
+            lbl_neg = self.dicts_class.get(lbl_neg)
 
             return sketch, image_pos, image_neg, lbl_pos, lbl_neg
         else:
@@ -92,6 +90,8 @@ class WatchDataset(data.Dataset):
 
             photo = self.transform(self.loader(fname))
             lbl = get_watch_label(self.fnames_image[index])
+            lbl = self.dicts_class.get(lbl)
+
             return photo, fname, lbl
 
     def __len__(self):

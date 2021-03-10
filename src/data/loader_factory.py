@@ -4,6 +4,7 @@ import numpy as np
 
 from src.data.sktuqd_extended import SkTuQd_Extended
 from src.data.sktu_extended import SkTu_Extended
+from src.data.watch_dataset.watch_dataset import Watch_Extended
 from src.models.utils import get_dataset_dict, get_limits
 from src.data.default_dataset import DefaultDataset_Extended
 
@@ -32,58 +33,16 @@ def load_data(args, transform=None):
         return SkTu_Extended(args, transform)
     elif args.dataset == "sk+tu+qd":
         return SkTuQd_Extended(args, transform)
+    elif args.dataset == "watch":
+        return Watch_Extended(args, transform)
     else:
         print(args.dataset + ' dataset not implemented. Exiting.')
         sys.exit()
 
 
-def print_one_dataset(args, transform):
+def dataset_details(args, transform):
 
-    (
-        train_loader,
-        [valid_sk_loader, valid_im_loader],
-        [test_sk_loader, test_im_loader],
-        dict_class,
-    ) = load_data(args, transform)
-
-    print("\n--- Train Data ---")
-    print("\t* Length: {}".format(len(train_loader)))
-    print("\t* Classes: {}".format(train_loader.get_class_dict()))
-    print("\t* Num Classes. {}".format(len(train_loader.get_class_dict())))
-
-    sketchy_limit, tuberlin_limit = get_limits(args.dataset, train_loader, 'sketch')
-
-    num_samples = 7
-    rand_samples = np.random.randint(0, high=len(train_loader), size=num_samples)
-    f, axarr = plt.subplots(3, num_samples)
-    for i in range(len(rand_samples)):
-        dataset_dict_class = get_dataset_dict(dict_class, rand_samples[i], sketchy_limit, tuberlin_limit)
-        sk, im, im_neg, lbl, lbl_neg = train_loader[rand_samples[i]]
-        axarr[0, i].imshow(sk.permute(1, 2, 0).numpy())
-        axarr[0, i].set_title(dict_by_value(dataset_dict_class, lbl))
-        axarr[0, i].axis("off")
-
-        axarr[1, i].imshow(im.permute(1, 2, 0).numpy())
-        axarr[1, i].axis("off")
-
-        axarr[2, i].imshow(im_neg.permute(1, 2, 0).numpy())
-        axarr[2, i].set_title(dict_by_value(dataset_dict_class, lbl_neg))
-        axarr[2, i].axis("off")
-    plt.show()
-    plt.savefig("src/visualization/training_samples_" + args.dataset + ".png")
-
-    print("\n--- Valid Data ---")
-    print("\t* Length Sketch: {}".format(len(valid_sk_loader)))
-    print("\t* Length Image: {}".format(len(valid_im_loader)))
-
-    print("\n--- Test Data ---")
-    print("\t* Length Sketch: {}".format(len(test_sk_loader)))
-    print("\t* Length Image: {}".format(len(test_im_loader)))
-
-
-def print_all_dataset_length(args, transform):
-
-    list_dataset = ["sketchy", "tuberlin", "sk+tu", "quickdraw", "sk+tu+qd"]
+    list_dataset = ["sketchy", "tuberlin", "sk+tu", "quickdraw", "sk+tu+qd", "watch"]
     for dataset in list_dataset:
         args.dataset = dataset
 
@@ -109,6 +68,42 @@ def print_all_dataset_length(args, transform):
         print("\t* Length sketch test: {}".format(len(test_sk_loader)))
         print("\t* Length image test: {}".format(len(test_im_loader)))
 
+        # Plot check
+        sketchy_limit, tuberlin_limit = get_limits(args.dataset, train_loader, 'sketch')
+        num_samples = 5
+        rand_samples = np.random.randint(0, high=len(train_loader), size=num_samples)
+        f, axarr = plt.subplots(3, num_samples)
+        for i in range(len(rand_samples)):
+            dataset_dict_class = get_dataset_dict(dict_class, rand_samples[i], sketchy_limit, tuberlin_limit)
+            sk, im, im_neg, lbl, lbl_neg = train_loader[rand_samples[i]]
+
+            title_pos = dict_by_value(dataset_dict_class, lbl)
+            title_neg = dict_by_value(dataset_dict_class, lbl_neg)
+            fontsize = 12
+            plt.suptitle(args.dataset.upper(), fontsize=fontsize)
+
+            if args.dataset == "watch":
+                meta_pos = title_pos.split('__')
+                title_pos = f'{meta_pos[0]} \n{meta_pos[1]} \n{meta_pos[2]}'
+                meta_neg = title_neg.split('__')
+                title_neg = f'{meta_neg[0]} \n{meta_neg[1]} \n{meta_neg[2]}'
+                fontsize = 6
+                plt.suptitle('Watches: Brand, model, variant', fontsize=10)
+
+            axarr[0, i].imshow(sk.permute(1, 2, 0).numpy())
+            axarr[0, i].set_title(title_pos, fontsize=fontsize)
+            axarr[0, i].axis("off")
+
+            axarr[1, i].imshow(im.permute(1, 2, 0).numpy())
+            axarr[1, i].set_title(title_pos, fontsize=fontsize)
+            axarr[1, i].axis("off")
+
+            axarr[2, i].imshow(im_neg.permute(1, 2, 0).numpy())
+            axarr[2, i].set_title(title_neg, fontsize=fontsize)
+            axarr[2, i].axis("off")
+        plt.show()
+        plt.savefig("src/visualization/training_samples_" + args.dataset + ".png")
+
 
 if __name__ == "__main__":
     """
@@ -124,10 +119,6 @@ if __name__ == "__main__":
 
     # Parse options
     args = Options().parse()
-    print("Parameters:\t" + str(args))
-
     transform = transforms.Compose([transforms.ToTensor()])
 
-    print_one_dataset(args, transform)
-
-    print_all_dataset_length(args, transform)
+    dataset_details(args, transform)

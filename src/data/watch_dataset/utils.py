@@ -15,7 +15,7 @@ def get_watch_label(watch_image_path):
     model = splitted_path[-3]
     variant = splitted_path[-2]
 
-    return f'{brand}_{model}_{variant}'
+    return f'{brand}__{model}__{variant}'
 
 
 def watch_dataset_split(images_path):
