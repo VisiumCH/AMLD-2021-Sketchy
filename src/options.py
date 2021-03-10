@@ -38,7 +38,7 @@ class Options():
         parser.add_argument('--prefetch', type=int, default=2, help='Pre-fetching threads.')
         # i/o
         parser.add_argument('--log', type=str, default='io/models/', help='Log folder.')
-        parser.add_argument('--log-interval', type=int, default=20, metavar='N',
+        parser.add_argument('--log-interval', type=int, default=50, metavar='N',
                             help='How many batches to wait before logging training status')
         parser.add_argument('--attn', action='store_false', help='Attention module (Default: True).')
         parser.add_argument('--plot', action='store_true', help='Qualitative results (Default: False).')
