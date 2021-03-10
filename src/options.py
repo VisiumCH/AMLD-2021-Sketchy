@@ -47,8 +47,6 @@ class Options():
         # Inference
         parser.add_argument('--best_model', type=str,
                             default='io/models/best_model/checkpoint.pth', help='path to the best saved model')
-        parser.add_argument('--load_embeddings', type=str, default='io/data/processed/embeddings.ending',
-                            help='precomputed embeddings with images and path')
         # Test
         if test:
             parser.add_argument('--num_retrieval', type=int, default=10, help='Number of images to be retrieved')

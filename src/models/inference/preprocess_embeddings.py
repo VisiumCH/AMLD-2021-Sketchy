@@ -1,3 +1,4 @@
+import os
 import json
 import numpy as np
 import pandas as pd
@@ -12,14 +13,13 @@ from src.options import Options
 
 
 def save_data(args, fnames,  embeddings, classes, dataset_type):
-    embedding_path = args.load_embeddings
 
     df = pd.DataFrame(data=[fnames, classes]).T
     df.columns = ['fnames', 'classes']
-    meta_path = embedding_path.replace('.ending', '_' + args.dataset + '_' + dataset_type + '_meta.csv')
+    meta_path = os.path.join(args.embedding_path, '_' + args.dataset + '_' + dataset_type + '_meta.csv')
     df.to_csv(meta_path, sep=' ', header=True)
 
-    array_path = embedding_path.replace('.ending', '_' + args.dataset + '_' + dataset_type + '_array.npy')
+    array_path = os.path.join(args.embedding_path,  '_' + args.dataset + '_' + dataset_type + '_array.npy')
     with open(array_path, 'wb') as f:
         np.save(f, embeddings)
 
@@ -33,7 +33,7 @@ def process_images(args, data, im_net):
 
 
 def save_dict(args, dict_class):
-    dict_path = args.load_embeddings.replace('.ending', '_' + args.dataset + '_dict_class.json')
+    dict_path = os.path.join(args.embedding_path, '_' + args.dataset + '_dict_class.json')
     dict_class = {v: k for k, v in dict_class.items()}
     with open(dict_path, 'w') as fp:
         json.dump(dict_class, fp)
@@ -68,6 +68,10 @@ if __name__ == '__main__':
         raise Exception('Cannot compute embeddins without a model.')
     if args.load_embeddings is None:
         raise Exception('No path to save embeddings')
+
+    args.embedding_path = os.path.join(args.best_model.rstrip('checkpoint.pth'), 'precomputed_embeddings')
+    if not os.path.exists(args.embedding_path):
+        os.makedirs(args.embedding_path)
 
     im_net, _ = get_model(args, args.best_model)
     im_net.eval()

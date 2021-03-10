@@ -137,7 +137,6 @@ if __name__ == '__main__':
 
     # Check cuda & Set random seed
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
-    args.cuda = False
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)

@@ -18,22 +18,6 @@ NUM_CLOSEST = 4
 NUMBER_RANDOM_IMAGES = 20
 
 
-def get_processed_images(args, dataset_type):
-
-    dict_path = args.load_embeddings.replace('.ending', '_' + args.dataset + '_dict_class.json')
-    with open(dict_path, 'r') as fp:
-        dict_class = json.load(fp)
-
-    array_path = args.load_embeddings.replace('.ending', '_' + args.dataset + '_' + dataset_type + '_array.npy')
-    with open(array_path, 'rb') as f:
-        images_embeddings = np.load(f)
-
-    meta_path = args.load_embeddings.replace('.ending', '_' + args.dataset + '_' + dataset_type + '_meta.csv')
-    df = pd.read_csv(meta_path, sep=' ')
-
-    return dict_class, df['fnames'].values, df['classes'].values, images_embeddings
-
-
 def get_loader(dataset):
     if dataset == 'TU-Berlin':
         loader = default_image_loader_tuberlin
@@ -74,28 +58,47 @@ class Inference():
         if not os.path.exists(self.prediction_folder):
             os.makedirs(self.prediction_folder)
 
+        self.embedding_path = os.path.join(args.best_model.rstrip('checkpoint.pth'), 'precomputed_embeddings')
+        if not os.path.exists(self.embedding_path):
+            os.makedirs(self.embedding_path)
+
         self.get_data(dataset_type)
+
+    def get_processed_images(self, args, dataset_type):
+
+        dict_path = os.path.join(self.embedding_path, '_' + args.dataset + '_dict_class.json')
+        with open(dict_path, 'r') as fp:
+            dict_class = json.load(fp)
+
+        array_path = os.path.join(self.embedding_path,  '_' + args.dataset + '_' + dataset_type + '_array.npy')
+        with open(array_path, 'rb') as f:
+            images_embeddings = np.load(f)
+
+        meta_path = os.path.join(self.embedding_path, '_' + args.dataset + '_' + dataset_type + '_meta.csv')
+        df = pd.read_csv(meta_path, sep=' ')
+
+        return dict_class, df['fnames'].values, df['classes'].values, images_embeddings
 
     def get_data(self, dataset_type):
 
         dataset = self.args.dataset
 
         if dataset in ['sketchy', 'tuberlin', 'quickdraw']:
-            self.dict_class, self.images_fnames, self.images_classes, self.images_embeddings = get_processed_images(
-                self.args, dataset_type)
+            (self.dict_class, self.images_fnames,
+             self.images_classes, self.images_embeddings) = self.get_processed_images(self.args, dataset_type)
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
         elif dataset in ['sk+tu', 'sk+tu+qd']:
             self.args.dataset = 'sketchy'
-            dict_class_sk, self.images_fnames, self.images_classes, self.images_embeddings = get_processed_images(
+            dict_class_sk, self.images_fnames, self.images_classes, self.images_embeddings = self.get_processed_images(
                 self.args, dataset_type)
 
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
 
             self.args.dataset = 'tuberlin'
-            dict_class_tu, images_fnames, images_classes, images_embeddings = get_processed_images(
+            dict_class_tu, images_fnames, images_classes, images_embeddings = self.get_processed_images(
                 self.args, dataset_type)
             self.dict_class = [dict_class_sk, dict_class_tu]
 
@@ -107,7 +110,7 @@ class Inference():
                 self.args.dataset = 'quickdraw'
                 self.tuberlin_limit = len(self.images_fnames)
 
-                dict_class_qd, images_fnames, images_classes, images_embeddings = get_processed_images(
+                dict_class_qd, images_fnames, images_classes, images_embeddings = self.get_processed_images(
                     self.args, dataset_type)
                 self.dict_class.append(dict_class_qd)
 
