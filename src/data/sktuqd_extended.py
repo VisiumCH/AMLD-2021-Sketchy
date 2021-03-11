@@ -14,11 +14,11 @@ def SkTuQd_Extended(args, transform="None"):
 
     # Sketchy, TU-Berlin and Quickdraw
     dicts_class_sketchy, train_data_sketchy, valid_data_sketchy, test_data_sketchy = dataset_split(
-        args, dataset_folder="Sketchy")
+        args, "Sketchy", args.training_split, args.valid_split)
     dicts_class_tuberlin, train_data_tuberlin, valid_data_tuberlin, test_data_tuberlin = dataset_split(
-        args, dataset_folder="TU-Berlin")
+        args, "TU-Berlin", args.training_split, args.valid_split)
     dicts_class_quickdraw, train_data_quickdraw, valid_data_quickdraw, test_data_quickdraw = dataset_split(
-        args, dataset_folder="Quickdraw")
+        args, "Quickdraw", args.qd_training_split, args.qd_valid_split)
 
     # Data Loaders
     train_loader = SkTuQd(args, 'train', dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw,

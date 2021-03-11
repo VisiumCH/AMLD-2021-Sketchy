@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import multiprocessing
+from tqdm import tqdm
 
 import torch
 from torchvision import transforms
@@ -11,7 +12,7 @@ from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
 from src.models.metrics import get_similarity, compare_classes, get_map_prec_200, get_map_all
-from src.models.utils import load_model, save_qualitative_results
+from src.models.utils import load_model
 
 
 def get_test_data(data_loader, model, args):
@@ -26,7 +27,7 @@ def get_test_data(data_loader, model, args):
         - classes: list of the associated target classes
     '''
     fnames = []
-    for i, (image, fname, target) in enumerate(data_loader):
+    for i, (image, fname, target) in tqdm(enumerate(data_loader)):
         # Data to Variable
         if args.cuda:
             image, target = image.cuda(), target.cuda()
@@ -51,7 +52,7 @@ def get_test_data(data_loader, model, args):
     return fnames, embeddings, classes
 
 
-def test(im_loader, sk_loader, model, args, dict_class=None):
+def test(im_loader, sk_loader, model, args, inference_logger, dict_class=None):
     '''
     Get data and computes metrics on the model
     '''
@@ -70,22 +71,16 @@ def test(im_loader, sk_loader, model, args, dict_class=None):
     # Similarity
     similarity = get_similarity(sk_embeddings, im_embeddings)
     class_matches = compare_classes(im_class, sk_class)
+    del sk_embeddings, im_embeddings
 
     # Mean average precision
     num_cores = min(multiprocessing.cpu_count(), 32)
     map_200, prec_200 = get_map_prec_200(similarity, class_matches, num_cores)
     ap_all, map_all = get_map_all(similarity, class_matches, num_cores)
 
-    # Metrics for each class
-    if dict_class is not None:
-        dict_class = {v: k for k, v in dict_class.items()}
-        diff_class = set(sk_class)
-        for d_class in diff_class:
-            ind = (sk_class == d_class)
-            print('mAP {} class {}'.format(str(np.array(ap_all)[ind].mean()), dict_class[d_class]))
-
-    if args.plot:
-        save_qualitative_results(similarity, class_matches, sk_fnames, im_fnames, args)
+    if args.log:
+        # save_qualitative_results(similarity, class_matches, sk_fnames, im_fnames, args)
+        inference_logger.plot_inference(similarity, im_fnames, im_class)
 
     # Measure elapsed time
     batch_time = time.time() - end

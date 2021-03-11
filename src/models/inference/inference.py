@@ -9,36 +9,13 @@ import torch
 from torchvision import transforms
 
 from src.data.loader_factory import load_data
-from src.data.utils import default_image_loader, default_image_loader_tuberlin
+from src.data.utils import default_image_loader, get_loader, get_dict
 from src.options import Options
 from src.models.utils import get_model
 from src.models.metrics import get_similarity
 
 NUM_CLOSEST = 4
 NUMBER_RANDOM_IMAGES = 20
-
-
-def get_loader(dataset):
-    if dataset == 'TU-Berlin':
-        loader = default_image_loader_tuberlin
-    else:
-        loader = default_image_loader
-    return loader
-
-
-def get_dict(dataset, dict_class):
-    if isinstance(dict_class, dict):
-        dict_class = dict_class
-    else:
-        if dataset == 'Sketchy':
-            dict_class = dict_class[0]
-        elif dataset == 'TU-Berlin':
-            dict_class = dict_class[1]
-        elif dataset == 'Quickdraw':
-            dict_class = dict_class[2]
-        else:
-            raise(f"Error with dataset name: {dataset}.")
-    return dict_class
 
 
 class Inference():

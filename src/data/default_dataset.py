@@ -15,8 +15,15 @@ def DefaultDataset_Extended(args, dataset_folder, transform='None'):
     random.seed(args.seed)
     np.random.seed(args.seed)
 
+    if dataset_folder == 'Quickdraw':
+        training_split = args.qd_training_split
+        valid_split = args.qd_valid_split
+    else:
+        training_split = args.training_split
+        valid_split = args.valid_split
+
     # Get dataset classes
-    dicts_class, train_data, valid_data, test_data = dataset_split(args, dataset_folder)
+    dicts_class, train_data, valid_data, test_data = dataset_split(args, dataset_folder, training_split, valid_split)
 
     # Data Loaders
     train_loader = DefaultDataset(args, dataset_folder, 'train', dicts_class, train_data, transform)
@@ -30,7 +37,7 @@ def DefaultDataset_Extended(args, dataset_folder, transform='None'):
 
 class DefaultDataset(data.Dataset):
     '''
-    Custom dataset for TU-Berlin's
+    Custom dataset
     '''
 
     def __init__(self, args, dataset_folder, dataset_type, dicts_class, data, transform=None, image_type=None):
