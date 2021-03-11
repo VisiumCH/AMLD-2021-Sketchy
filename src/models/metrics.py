@@ -54,29 +54,21 @@ def get_similarity(sk_embeddings, im_embeddings):
     Hence Similarity = 1 - distance (or 1/(1+distance))
     Args:
         - sk_embeddings: embeddings of the sketches [NxE]
-        - im_embeddings: embeddings of the images [NxE]
+        - im_embeddings: embeddings of the images [MxE]
     Return:
-        - similarity: similarity value between images and sketches embeddings [NxN]
+        - similarity: similarity value between images and sketches embeddings [NxM]
     '''
-    # Distance Measure
-    distance = cdist(sk_embeddings, im_embeddings, 'euclidean')  # L1 same as Manhattan, Cityblock
-    # distance = cdist(sk_embeddings, im_embeddings, 'cosine')/2 # Distance between 0 and 2
-
-    # Similarity
-    similarity = 1/(1+distance)
-    # sim = 1 - distance
-
-    return similarity
+    return np.float32(1/(1 + cdist(np.float32(sk_embeddings), np.float32(im_embeddings), 'euclidean')))
 
 
 def compare_classes(class_im, class_sk):
     '''
     Compare classes of images and sketches
     Args:
-        - class_im: list of classes of the images [N]
+        - class_im: list of classes of the images [M]
         - class_sk: list of classes of the sketches [N]
     Return:
-        - array [NxN] of 1 where the image and sketch belong to the same class and 0 elsewhere
+        - array [MxN] of 1 where the image and sketch belong to the same class and 0 elsewhere
     '''
     return (np.expand_dims(class_sk, axis=1) == np.expand_dims(class_im, axis=0)) * 1
 
@@ -85,11 +77,11 @@ def sort_by_similarity(similarity, class_matches):
     '''
     Sort the compared classes by decreasing similarity
     Args:
-        - similarity: similarity value between images and sketches embeddings [NxN]
-        - class_matches: 1 where the image and sketch belong to the same class and 0 elsewhere [NxN]
+        - similarity: similarity value between images and sketches embeddings [NxM]
+        - class_matches: 1 where the image and sketch belong to the same class and 0 elsewhere [NxM]
     return:
-        - sorted_similarity: sorted sim [NxN]
-        - sorted_class_matches: sorted class_matches [NxN]
+        - sorted_similarity: sorted sim [NxM]
+        - sorted_class_matches: sorted class_matches [NxM]
     '''
     arg_sorted_sim = (-similarity).argsort()
     sorted_similarity = []  # list of similarity values ordered by similarity (most to least similar)
@@ -98,7 +90,8 @@ def sort_by_similarity(similarity, class_matches):
         sorted_similarity.append(similarity[indx, arg_sorted_sim[indx, :]])
         sorted_lst.append(class_matches[indx, arg_sorted_sim[indx, :]])
 
-    sorted_similarity = np.array(sorted_similarity)
+    del similarity, arg_sorted_sim
+    sorted_similarity = np.array(sorted_similarity, dtype=np.float32)
     sorted_class_matches = np.array(sorted_lst)
 
     return sorted_similarity, sorted_class_matches

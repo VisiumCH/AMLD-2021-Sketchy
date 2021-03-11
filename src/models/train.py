@@ -11,7 +11,7 @@ import torch.nn as nn
 from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
-from src.models.logs import AverageMeter, Logger, AttentionLogger, EmbeddingLogger
+from src.models.logs import AverageMeter, Logger, AttentionLogger, EmbeddingLogger, InferenceLogger
 from src.models.loss import DetangledJoinDomainLoss
 from src.models.utils import save_checkpoint, load_model
 from src.models.test import test
@@ -27,7 +27,7 @@ def adjust_learning_rate(optimizer, epoch):
             param_group['lr'] = args.learning_rate
 
 
-def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
+def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int, logger):
     '''
     Train an epoch
     '''
@@ -46,6 +46,7 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
 
     end = time.time()
     for i, (sk, im, im_neg, _, _) in enumerate(data_loader):
+
         # Prepare input data
         if cuda:
             im, im_neg, sk = im.cuda(), im_neg.cuda(), sk.cuda()
@@ -78,12 +79,15 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int=20):
         end = time.time()
 
         if log_int > 0 and i % log_int == 0:
-            print('Epoch: [{0}]({1}/{2}) Average Loss {loss.avg:.3f} \
-                 ( Dom: {loss_dom.avg} + Spa: {loss_spa.avg}); Avg Time x Batch {b_time.avg:.3f}'
+            print('Epoch: [{0}]({1}/{2}) Average Loss {loss.avg:.4f} \
+                 (Dom: {loss_dom.avg:.4f} + Spa: {loss_spa.avg:.4f}); Avg Time x Batch {b_time.avg:.3f}'
                   .format(epoch, i, len(data_loader), loss=losses,
                           loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
+            logger.add_scalar_training('loss_step', losses.avg)
+            logger.add_scalar_training('loss_domain_step', losses_dom.avg)
+            logger.add_scalar_training('loss_triplet_step', losses_spa.avg)
 
-    print('Epoch: [{0}] Average Loss {loss.avg:.3f} ( {loss_dom.avg} + {loss_spa.avg} ); \
+    print('Epoch: [{0}] Average Loss {loss.avg:.4f} ({loss_dom.avg:.4f} + {loss_spa.avg:.4f}); \
            Avg Time x Batch {b_time.avg:.3f}'
           .format(epoch, loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))
 
@@ -112,6 +116,7 @@ def main():
 
     if (args.log and args.attn):
         attention_logger = AttentionLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
+        inference_logger = InferenceLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
         embedding_logger = EmbeddingLogger(valid_sk_data, valid_im_data, logger, dict_class, args)
 
     print('Create trainable model')
@@ -146,11 +151,12 @@ def main():
     for epoch in range(start_epoch, args.epochs):
         # Update learning rate
         adjust_learning_rate(optimizer, epoch)
-
+        print(f'Training epoch {epoch}.')
         loss_train, loss_dom, loss_spa = train(
-            train_loader, [im_net, sk_net], optimizer, args.cuda, criterion, epoch, args.log_interval)
+            train_loader, [im_net, sk_net], optimizer, args.cuda, criterion, epoch, args.log_interval, logger)
+        print(f'Validation epoch {epoch}.')
         map_valid, map_valid_200, prec_valid_200 = test(
-            valid_im_loader, valid_sk_loader, [im_net, sk_net], args)
+            valid_im_loader, valid_sk_loader, [im_net, sk_net], args, inference_logger, dict_class)
 
         # Logger
         if args.log:
@@ -167,8 +173,8 @@ def main():
 
             # Scalars
             logger.add_scalar('loss_train', loss_train.avg)
-            logger.add_scalar('loss_dom', loss_dom.avg)
-            logger.add_scalar('loss_spa', loss_spa.avg)
+            logger.add_scalar('loss_domain', loss_dom.avg)
+            logger.add_scalar('loss_triplet', loss_spa.avg)
             logger.add_scalar('map_valid', map_valid)
             logger.add_scalar('map_valid_200', map_valid_200)
             logger.add_scalar('prec_valid_200', prec_valid_200)

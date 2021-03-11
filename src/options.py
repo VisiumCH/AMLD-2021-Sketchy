@@ -18,6 +18,12 @@ class Options():
         parser.add_argument('--emb_size', type=int, default=256, help='Embedding Size.')
         parser.add_argument('--grl_lambda', type=float, default=0.5, help='Lambda used to normalize the GRL layer.')
         parser.add_argument('--nopretrain', action='store_false', help='Loads a pretrained model (Default: True).')
+        parser.add_argument('--training_split', type=float, default=0.8, help='Proportion of data in the training set')
+        parser.add_argument('--valid_split', type=float, default=0.1, help='Proportion of data in the validation set')
+        parser.add_argument('--qd_training_split', type=float, default=0.95,
+                            help='Proportion of data in the training set of Quickdraw')
+        parser.add_argument('--qd_valid_split', type=float, default=0.025,
+                            help='Proportion of data in the validation set of Quickdraw')
         # Optimization options
         parser.add_argument('--epochs', '-e', type=int, default=1000, help='Number of epochs to train.')
         parser.add_argument('--batch_size', '-b', type=int, default=10, help='Batch size.')
@@ -38,12 +44,14 @@ class Options():
         parser.add_argument('--prefetch', type=int, default=2, help='Pre-fetching threads.')
         # i/o
         parser.add_argument('--log', type=str, default='io/models/', help='Log folder.')
-        parser.add_argument('--log-interval', type=int, default=20, metavar='N',
+        parser.add_argument('--log-interval', type=int, default=100, metavar='N',
                             help='How many batches to wait before logging training status')
         parser.add_argument('--attn', action='store_false', help='Attention module (Default: True).')
         parser.add_argument('--plot', action='store_true', help='Qualitative results (Default: False).')
-        parser.add_argument('--attn_number', type=int, default=5,
+        parser.add_argument('--attn_number', type=int, default=10,
                             help='Number of images and sketch to plot attention on tensorboard.')
+        parser.add_argument('--inference_number', type=int, default=10,
+                            help='Number of inference to plot attention on tensorboard.')
         parser.add_argument('--embedding_number', type=int, default=500,
                             help='Number of embedding images and sketch to plot in latent space on tensorboard.')
         # Inference
