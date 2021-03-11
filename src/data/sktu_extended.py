@@ -14,9 +14,9 @@ def SkTu_Extended(args, transform="None"):
 
     # # Sketchy
     dicts_class_sketchy, train_data_sketchy, valid_data_sketchy, test_data_sketchy = dataset_split(
-        args, dataset_folder="Sketchy")
+        args, "Sketchy", args.training_split, args.valid_split)
     dicts_class_tuberlin, train_data_tuberlin, valid_data_tuberlin, test_data_tuberlin = dataset_split(
-        args, dataset_folder="TU-Berlin")
+        args, "TU-Berlin", args.training_split, args.valid_split)
 
     # Data Loaders
     train_loader = SkTu(args, 'train', dicts_class_sketchy, dicts_class_tuberlin,
