@@ -8,6 +8,7 @@ import pandas as pd
 import torch
 from torchvision import transforms
 
+from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_loader, get_dict
 from src.options import Options
@@ -19,9 +20,15 @@ NUMBER_RANDOM_IMAGES = 20
 
 
 class Inference():
+    ''' Class to infer closest images of a sketch '''
 
     def __init__(self, args, dataset_type):
-
+        '''
+        Initialises the inference with the trained model and precomputed embeddings
+        Args:
+            - args: arguments reveived from the command line (argparse)
+            - dataset_type: dataset split ('train', 'valid' or 'test')
+        '''
         self.args = args
         self.transform = transforms.Compose([transforms.ToTensor()])
         self.loader = default_image_loader
@@ -42,7 +49,17 @@ class Inference():
         self.get_data(dataset_type)
 
     def get_processed_images(self, args, dataset_type):
-
+        '''
+        Get the data of images to match with the sketches
+        Args:
+            - args: arguments reveived from the command line (argparse)
+            - dataset_type: dataset split ('train', 'valid' or 'test')
+        Return:
+            - dict_class: dictionnary mapping numbers to classes names
+            - paths to the images
+            - classes of the images
+            - images_embeddings: embeddings of the images
+        '''
         dict_path = os.path.join(self.embedding_path, '_' + args.dataset + '_dict_class.json')
         with open(dict_path, 'r') as fp:
             dict_class = json.load(fp)
@@ -57,24 +74,26 @@ class Inference():
         return dict_class, df['fnames'].values, df['classes'].values, images_embeddings
 
     def get_data(self, dataset_type):
-
+        '''
+        Loads the paths, classes and embeddings of the images of different datasets
+        '''
         dataset = self.args.dataset
 
-        if dataset in ['sketchy', 'tuberlin', 'quickdraw']:
+        if dataset in [DatasetName.sketchy, DatasetName.tuberlin, DatasetName.quickdraw]:
             (self.dict_class, self.images_fnames,
              self.images_classes, self.images_embeddings) = self.get_processed_images(self.args, dataset_type)
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
-        elif dataset in ['sk+tu', 'sk+tu+qd']:
-            self.args.dataset = 'sketchy'
+        elif dataset in [DatasetName.sktu, DatasetName.sktuqd]:
+            self.args.dataset = DatasetName.sketchy
             dict_class_sk, self.images_fnames, self.images_classes, self.images_embeddings = self.get_processed_images(
                 self.args, dataset_type)
 
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
 
-            self.args.dataset = 'tuberlin'
+            self.args.dataset = DatasetName.tuberlin
             dict_class_tu, images_fnames, images_classes, images_embeddings = self.get_processed_images(
                 self.args, dataset_type)
             self.dict_class = [dict_class_sk, dict_class_tu]
@@ -83,8 +102,8 @@ class Inference():
             self.images_classes = np.concatenate((self.images_classes, images_classes), axis=0)
             self.images_embeddings = np.concatenate((self.images_embeddings, images_embeddings), axis=0)
 
-            if dataset == 'sk+tu+qd':
-                self.args.dataset = 'quickdraw'
+            if dataset == DatasetName.sktuqd:
+                self.args.dataset = DatasetName.quickdraw
                 self.tuberlin_limit = len(self.images_fnames)
 
                 dict_class_qd, images_fnames, images_classes, images_embeddings = self.get_processed_images(
@@ -98,16 +117,17 @@ class Inference():
             raise Exception(args.dataset + ' not implemented.')
         self.args.dataset = dataset
 
-    def random_images_inference(self, args, number_images):
+    def random_images_inference(self, args, number_sketches):
+        ''' Selects number_sketches random sketched and find the closest images '''
         _, _, [test_sk_loader, _], _ = load_data(args, self.transform)
-        rand_samples_sk = np.random.randint(0, high=len(test_sk_loader), size=number_images)
+        rand_samples_sk = np.random.randint(0, high=len(test_sk_loader), size=number_sketches)
 
         for i in range(len(rand_samples_sk)):
             _, sketch_fname, _ = test_sk_loader[rand_samples_sk[i]]
             self.inference_sketch(sketch_fname)
 
     def inference_sketch(self, sketch_fname):
-        ''' Process a sketch'''
+        ''' Find the closest images of a sketch and plot it '''
         sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
         if self.args.cuda:
             sketch = sketch.cuda()
@@ -131,6 +151,10 @@ class Inference():
                               for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]]
 
     def plot_closest(self, sketch_fname):
+        '''
+        Plots a sketch with its closest images in the embedding space.
+        The images are stored in the same folder as the best model in a subfolder called 'predictions'
+        '''
         fig, axes = plt.subplots(1, NUM_CLOSEST + 1, figsize=(20, 8))
 
         sk = mpimg.imread(sketch_fname)
@@ -157,7 +181,7 @@ class Inference():
 
 
 def main(args):
-    inference_test = Inference(args, 'test')
+    inference_test = Inference(args, Split.test)
     inference_test.random_images_inference(args, number_images=NUMBER_RANDOM_IMAGES)
 
 

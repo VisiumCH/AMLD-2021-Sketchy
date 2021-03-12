@@ -1,4 +1,5 @@
 import argparse
+from src.data.constants import DatasetName
 
 
 class Options():
@@ -8,11 +9,10 @@ class Options():
         parser = argparse.ArgumentParser(description='Zero-shot Sketch Based Retrieval',
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         # Positional arguments
-        parser.add_argument(
-            "dataset",
-            type=str,
-            choices=["sketchy", "tuberlin", "sk+tu", "quickdraw", "sk+tu+qd"],
-            help="Choose a dataset.")
+        parser.add_argument("dataset", type=str,
+                            choices=[DatasetName.sketchy, DatasetName.tuberlin, DatasetName.quickdraw,
+                                     DatasetName.sktu, DatasetName.sktuqd],
+                            help="Choose a dataset.")
         # Model parameters
         parser.add_argument('--data_path', '-dp', type=str, default='io/data/raw', help='Dataset root path.')
         parser.add_argument('--emb_size', type=int, default=256, help='Embedding Size.')

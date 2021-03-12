@@ -6,8 +6,8 @@ from tensorboardX import SummaryWriter
 import torch
 import torch.nn as nn
 
-from src.data.utils import get_loader, get_dict
-from src.models.utils import get_limits, get_dataset_dict
+from src.data.constants import ImageType
+from src.data.utils import get_loader, get_dict, get_limits, get_dataset_dict
 
 NUM_CLOSEST = 4
 
@@ -88,13 +88,13 @@ class Logger(object):
 
 
 class InferenceLogger(object):
-    '''Logs the images in the latent space'''
+    ''' Inference of the closest images of a selected sketches at different epochs'''
 
     def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
         self.logger = logger
         self.dict_class = dict_class
         self.args = args
-        sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, 'sketch')
+        sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, ImageType.sketch)
         self.sk_log, self.sk_class_names, self.sk_indexes = select_images(
             valid_sk_data, args.inference_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
 
@@ -107,7 +107,7 @@ class InferenceLogger(object):
             self.sorted_fnames = [images_fnames[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
             self.sorted_classes = [images_classes[i] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
 
-            fig, axes = plt.subplots(1, NUM_CLOSEST, figsize=(25, 12))
+            fig, axes = plt.subplots(1, NUM_CLOSEST, figsize=(20, 8))
             axes[0].imshow(sk.permute(1, 2, 0).numpy())
             axes[0].set(title='Sketch \n Label: ' + self.sk_class_names[i])
             axes[0].axis('off')
@@ -145,8 +145,8 @@ class EmbeddingLogger(object):
     def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
         self.logger = logger
 
-        sketchy_limit_im, tuberlin_limit_im = get_limits(args.dataset, valid_im_data, 'image')
-        sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, 'sketch')
+        sketchy_limit_im, tuberlin_limit_im = get_limits(args.dataset, valid_im_data, ImageType.image)
+        sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, ImageType.sketch)
 
         self.sk_log, self.sk_class_names, _ = select_images(
             valid_sk_data, args.embedding_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
@@ -170,8 +170,8 @@ class AttentionLogger(object):
     def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
         self.logger = logger
 
-        sketchy_limit_im, tuberlin_limit_im = get_limits(args.dataset, valid_im_data, 'image')
-        sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, 'sketch')
+        sketchy_limit_im, tuberlin_limit_im = get_limits(args.dataset, valid_im_data, ImageType.image)
+        sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, ImageType.sketch)
 
         self.sk_log, self.sk_class_names, _ = select_images(
             valid_sk_data, args.attn_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
@@ -224,7 +224,7 @@ class AttentionLogger(object):
 
 
 def select_images(valid_data, number_images, all_dict_class, sketchy_limit_im, tuberlin_limit_im):
-    '''Save some random images to plot attention at defferent epochs'''
+    '''Select some random images/sketch for tensorboard plots '''
     class_names = []
     rand_samples = np.random.randint(0, high=len(valid_data), size=number_images)
     for i in range(len(rand_samples)):

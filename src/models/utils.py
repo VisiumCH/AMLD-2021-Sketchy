@@ -8,7 +8,6 @@ from src.models.encoder import EncoderCNN
 
 
 def save_checkpoint(state, directory, file_name):
-
     if not os.path.isdir(directory):
         os.makedirs(directory)
     checkpoint_file = os.path.join(directory, file_name + '.pth')
@@ -69,39 +68,3 @@ def get_model(args, best_checkpoint):
         im_net, sk_net = im_net.cuda(), sk_net.cuda()
 
     return im_net, sk_net
-
-
-def get_limits(dataset, valid_data, image_type):
-    if dataset == 'sk+tu' or dataset == 'sk+tu+qd':
-        if image_type == 'image':
-            sketchy_limit = valid_data.sketchy_limit_images
-        else:
-            sketchy_limit = valid_data.sketchy_limit_sketch
-    else:
-        sketchy_limit = None
-
-    if dataset == 'sk+tu+qd':
-        if image_type == 'image':
-            tuberlin_limit = valid_data.tuberlin_limit_images
-        else:
-            tuberlin_limit = valid_data.tuberlin_limit_sketch
-    else:
-        tuberlin_limit = None
-
-    return sketchy_limit, tuberlin_limit
-
-
-def get_dataset_dict(dict_class, idx, sketchy_limit, tuberlin_limit):
-
-    if sketchy_limit is None:  # single dataset
-        pass
-    else:  # multiple datasets
-        if idx < sketchy_limit:  # sketchy dataset
-            dict_class = dict_class[0]
-        else:
-            if tuberlin_limit is None or idx < tuberlin_limit:  # tuberlin dataset
-                dict_class = dict_class[1]
-            else:  # quickdraw dataset
-                dict_class = dict_class[2]
-
-    return dict_class
