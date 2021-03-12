@@ -132,6 +132,10 @@ class InferenceLogger(object):
             image_from_plot = np.transpose(image_from_plot, (2, 0, 1))
             infer_plt = torch.tensor(image_from_plot.copy())
 
+            # Close image
+            plt.cla()
+            plt.close(fig)
+
             self.logger.add_image('Inference_{}_{}'.format(i, self.sk_class_names[i]), infer_plt)
 
 
@@ -211,6 +215,11 @@ class AttentionLogger(object):
         image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
         image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
         image_from_plot = np.transpose(image_from_plot, (2, 0, 1))
+
+        # Close image
+        plt.cla()
+        plt.close(fig)
+
         return torch.tensor(image_from_plot.copy())
 
 

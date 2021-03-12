@@ -1,10 +1,8 @@
 import os
 import errno
-import pickle
 
 import torch
 import torch.nn as nn
-import numpy as np
 
 from src.models.encoder import EncoderCNN
 
