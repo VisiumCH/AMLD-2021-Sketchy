@@ -15,7 +15,7 @@ def Watch_Extended(args, transform='None'):
     np.random.seed(args.seed)
 
     # Get all images path
-    images_path = glob(args.data_path + '/Raw_Watch/*/*/*/*image.png')
+    images_path = glob(args.data_path + '/Watch/*/*/*/*image.png')
 
     # Split train, valid, test sets
     train_data, valid_data, test_data = watch_dataset_split(images_path)
@@ -73,10 +73,17 @@ class WatchDataset(data.Dataset):
             lbl_pos = self.dicts_class.get(lbl_pos)
 
             # Negative image (any other image)
-            index_neg = random.randint(0, self.number_images)
+            index_neg = random.randint(0, self.number_images-1)
             while index_neg == index:  # make sure not same index as positive
-                index_neg = random.randint(0, self.number_images)
-            im_neg_fname = self.fnames_image[index_neg]
+                index_neg = random.randint(0, self.number_images-1)
+
+            try:
+                im_neg_fname = self.fnames_image[index_neg]
+            except IndexError:
+                print(index_neg)
+                print('stopping now')
+                assert 0
+
             image_neg = self.transform(self.loader(im_neg_fname))
             lbl_neg = get_watch_label(self.fnames_image[index_neg])
             lbl_neg = self.dicts_class.get(lbl_neg)
@@ -89,7 +96,7 @@ class WatchDataset(data.Dataset):
                 fname = self.fnames_sketch[index]
 
             photo = self.transform(self.loader(fname))
-            lbl = get_watch_label(self.fnames_image[index])
+            lbl = get_watch_label(fname)
             lbl = self.dicts_class.get(lbl)
 
             return photo, fname, lbl
