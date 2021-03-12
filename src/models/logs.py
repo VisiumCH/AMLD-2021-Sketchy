@@ -170,9 +170,9 @@ class AttentionLogger(object):
         sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, 'sketch')
 
         self.sk_log, self.sk_class_names, _ = select_images(
-            valid_sk_data, args.attn_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk, args)
+            valid_sk_data, args.attn_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
         self.im_log, self.im_class_names, _ = select_images(
-            valid_im_data, args.attn_number, dict_class, sketchy_limit_im, tuberlin_limit_im, args)
+            valid_im_data, args.attn_number, dict_class, sketchy_limit_im, tuberlin_limit_im)
 
     def plot_attention(self, im_net, sk_net):
         '''Log the attention images in tensorboard'''
@@ -214,7 +214,7 @@ class AttentionLogger(object):
         return torch.tensor(image_from_plot.copy())
 
 
-def select_images(valid_data, number_images, all_dict_class, sketchy_limit_im, tuberlin_limit_im, args):
+def select_images(valid_data, number_images, all_dict_class, sketchy_limit_im, tuberlin_limit_im):
     '''Save some random images to plot attention at defferent epochs'''
     class_names = []
     rand_samples = np.random.randint(0, high=len(valid_data), size=number_images)
