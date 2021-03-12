@@ -79,7 +79,6 @@ def test(im_loader, sk_loader, model, args, inference_logger, dict_class=None):
     ap_all, map_all = get_map_all(similarity, class_matches, num_cores)
 
     if args.log:
-        # save_qualitative_results(similarity, class_matches, sk_fnames, im_fnames, args)
         inference_logger.plot_inference(similarity, im_fnames, im_class)
 
     # Measure elapsed time

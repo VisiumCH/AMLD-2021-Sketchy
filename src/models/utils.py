@@ -49,29 +49,6 @@ def load_model(model_path, im_net, sk_net, criterion=None):
         return im_net, sk_net
 
 
-def save_qualitative_results(sim, str_sim, fnames_sk, fnames_im, args):
-    '''Save images with close embeddings'''
-    # Qualitative Results
-    flatten_fnames_sk = [item for sublist in fnames_sk for item in sublist]
-    flatten_fnames_im = [item for sublist in fnames_im for item in sublist]
-
-    retrieved_im_fnames = []
-    retrieved_im_true_false = []
-    for i in range(0, sim.shape[0]):
-        sorted_indx = np.argsort(sim[i, :])[::-1]
-        retrieved_im_fnames.append(list(np.array(flatten_fnames_im)[sorted_indx][:args.num_retrieval]))
-        retrieved_im_true_false.append(list(np.array(str_sim[i])[sorted_indx][:args.num_retrieval]))
-
-    with open('src/visualisation/sketches.pkl', 'wb') as f:
-        pickle.dump([flatten_fnames_sk], f)
-
-    with open('src/visualisation/retrieved_im_fnames.pkl', 'wb') as f:
-        pickle.dump([retrieved_im_fnames], f)
-
-    with open('src/visualisation/retrieved_im_true_false.pkl', 'wb') as f:
-        pickle.dump([retrieved_im_true_false], f)
-
-
 def get_model(args, best_checkpoint):
     im_net = EncoderCNN(out_size=args.emb_size, attention=True)
     sk_net = EncoderCNN(out_size=args.emb_size, attention=True)

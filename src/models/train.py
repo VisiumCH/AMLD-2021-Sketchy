@@ -86,7 +86,8 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int, logger
             logger.add_scalar_training('loss_step', losses.avg)
             logger.add_scalar_training('loss_domain_step', losses_dom.avg)
             logger.add_scalar_training('loss_triplet_step', losses_spa.avg)
-
+        if i > 0:
+            break
     print('Epoch: [{0}] Average Loss {loss.avg:.4f} ({loss_dom.avg:.4f} + {loss_spa.avg:.4f}); \
            Avg Time x Batch {b_time.avg:.3f}'
           .format(epoch, loss=losses, loss_dom=losses_dom, loss_spa=losses_spa, b_time=batch_time))

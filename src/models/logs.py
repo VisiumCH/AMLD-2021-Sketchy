@@ -95,22 +95,17 @@ class InferenceLogger(object):
         self.dict_class = dict_class
         self.args = args
         sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, 'sketch')
-
         self.sk_log, self.sk_class_names, self.sk_indexes = select_images(
-            valid_sk_data, args.inference_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk, args)
+            valid_sk_data, args.inference_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
 
     def plot_inference(self, similarity, images_fnames, images_classes):
-        images_classes = np.reshape(images_classes, (len(images_fnames), -1))
-
+        images_fnames = [image for batch_image in images_fnames for image in batch_image]
         im_similarity = np.array([similarity[index, :] for index in self.sk_indexes])
-        images_fnames = [images_fnames[index] for index in self.sk_indexes]
-        images_classes = [images_classes[index, :] for index in self.sk_indexes]
-
         arg_sorted_sim = np.array([(-im_sim).argsort() for im_sim in im_similarity])
 
         for i, sk in enumerate(self.sk_log):
-            self.sorted_fnames = [images_fnames[i][j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
-            self.sorted_labels = [images_classes[i][j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
+            self.sorted_fnames = [images_fnames[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
+            self.sorted_classes = [images_classes[i] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
 
             fig, axes = plt.subplots(1, NUM_CLOSEST, figsize=(25, 12))
             axes[0].imshow(sk.permute(1, 2, 0).numpy())
@@ -120,14 +115,15 @@ class InferenceLogger(object):
             for j in range(1, NUM_CLOSEST):
                 dataset = self.sorted_fnames[j-1].split('/')[-4]
                 loader = get_loader(dataset)
-                dict_class = get_dict(dataset, self.dict_class)
-                class_name = list(dict_class.keys())[list(dict_class.values()).index(self.sorted_labels[j-1])]
 
+                dict_class = get_dict(dataset, self.dict_class)
+                class_name = list(dict_class.keys())[list(dict_class.values()).index(self.sorted_classes[j-1])]
                 im = loader(self.sorted_fnames[j-1])
+
                 axes[j].imshow(im)
                 axes[j].set(title='Closest image ' + str(j) + '\n Label: ' + class_name)
-
                 axes[j].axis('off')
+
             plt.subplots_adjust(wspace=0.25, hspace=-0.35)
 
             fig.canvas.draw()
@@ -144,20 +140,24 @@ class EmbeddingLogger(object):
 
     def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
         self.logger = logger
+
         sketchy_limit_im, tuberlin_limit_im = get_limits(args.dataset, valid_im_data, 'image')
         sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, 'sketch')
 
         self.sk_log, self.sk_class_names, _ = select_images(
-            valid_sk_data, args.embedding_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk, args)
+            valid_sk_data, args.embedding_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
         self.im_log, self.im_class_names, _ = select_images(
-            valid_im_data, args.embedding_number, dict_class, sketchy_limit_im, tuberlin_limit_im, args)
+            valid_im_data, args.embedding_number, dict_class, sketchy_limit_im, tuberlin_limit_im)
+
+        self.all_images = np.concatenate((self.sk_log, self.im_log), axis=0)
+        self.all_classes = np.concatenate((self.sk_class_names, self.im_class_names), axis=0)
 
     def plot_embeddings(self, im_net, sk_net):
-        im_embedding, _ = im_net(self.im_log)
         sk_embedding, _ = sk_net(self.sk_log)
+        im_embedding, _ = im_net(self.im_log)
 
-        self.logger.add_embedding(im_embedding, self.im_class_names, self.im_log)
-        self.logger.add_embedding(sk_embedding, self.sk_class_names, self.sk_log)
+        all_embeddings = np.concatenate((sk_embedding, im_embedding), axis=0)
+        self.logger.add_embedding(all_embeddings, self.all_classes, self.all_images)
 
 
 class AttentionLogger(object):
