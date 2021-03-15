@@ -100,12 +100,11 @@ class InferenceLogger(object):
 
     def plot_inference(self, similarity, images_fnames, images_classes):
         images_fnames = [image for batch_image in images_fnames for image in batch_image]
-        im_similarity = np.array([similarity[index, :] for index in self.sk_indexes])
-        arg_sorted_sim = np.array([(-im_sim).argsort() for im_sim in im_similarity])
+        arg_sorted_sim = np.array([(-(similarity[index, :])).argsort() for index in self.sk_indexes])
 
         for i, sk in enumerate(self.sk_log):
             self.sorted_fnames = [images_fnames[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
-            self.sorted_classes = [images_classes[i] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
+            self.sorted_classes = [images_classes[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
 
             fig, axes = plt.subplots(1, NUM_CLOSEST, figsize=(20, 8))
             axes[0].imshow(sk.permute(1, 2, 0).numpy())
