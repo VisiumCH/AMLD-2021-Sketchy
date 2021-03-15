@@ -20,9 +20,9 @@ class Options():
         parser.add_argument('--nopretrain', action='store_false', help='Loads a pretrained model (Default: True).')
         parser.add_argument('--training_split', type=float, default=0.8, help='Proportion of data in the training set')
         parser.add_argument('--valid_split', type=float, default=0.1, help='Proportion of data in the validation set')
-        parser.add_argument('--qd_training_split', type=float, default=0.95,
+        parser.add_argument('--qd_training_split', type=float, default=0.99,
                             help='Proportion of data in the training set of Quickdraw')
-        parser.add_argument('--qd_valid_split', type=float, default=0.025,
+        parser.add_argument('--qd_valid_split', type=float, default=0.005,
                             help='Proportion of data in the validation set of Quickdraw')
         # Optimization options
         parser.add_argument('--epochs', '-e', type=int, default=1000, help='Number of epochs to train.')
