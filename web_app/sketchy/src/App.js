@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
-import { Box, ChakraProvider, Button, Stack, Heading, HStack, StackDivider } from '@chakra-ui/react'
+import React, { useEffect, useState, useCallback } from 'react'
+import { Box, ChakraProvider, Button, Stack, Text, Heading, HStack, StackDivider, Grid, GridItem } from '@chakra-ui/react'
 import { useSvgDrawing } from 'react-hooks-svgdrawing'
 
 
 
 const App = () => {
   const [isSending, setIsSending] = useState(false)
-  const isMounted = useRef(true)
 
   const [
     divRef,
@@ -27,14 +26,7 @@ const App = () => {
     fetch('/api_list').then(response => console.log(response.json()))
   }, [])
 
-  // set isMounted to false when we unmount the component
-  useEffect(() => {
-    return () => {
-      isMounted.current = false
-    }
-  }, [])
-
-  const sendSketch = useCallback(async (svg) => {
+  const sendRequest = useCallback(async (svg) => {
     // don't send again while we are sending
     if (isSending) return
     // update state
@@ -49,72 +41,102 @@ const App = () => {
       body: JSON.stringify({ "sketch": svg })
     })
     if (response.ok) {
-      console.log('response worked')
-      const res = response.json()
+      console.log('response worked in sendRequest')
+      const res = await response.json()
       console.log(res)
-      console.log(res["image_label"])
+      // const label = res["image_label"]
+      // const image_base64 = res["image_base64"]
+
+      // const Example = ({ image_base64 }) => <img src={`data:image/jpeg;base64,${image_base64}`} />
+      // ReactDOM.render(<Example data={image_base64} />, document.getElementById('container'))
 
     } else {
-      console.log('response did not worked')
+      console.log('Response did not worked in sendRequest')
     }
 
     // once the request is sent, update state again
-    if (isMounted.current) // only update if we are still mounted
-      setIsSending(false)
+    setIsSending(false)
   }, [isSending]) // update the callback if the state changes
-
-
 
 
   return <ChakraProvider >
     <Stack
-      spacing={4}
+      spacing="0px"
       align="center">
-      <Heading fontSize="5xl" color="teal">
-        Draw Here:
-      </Heading>
-      <Box
-        h="75vh"
-        w="90vw"
-        bg="#d0d5d9"
-        borderRadius="md"
-        ref={divRef}
-      />
-
-      <HStack
-        divider={<StackDivider borderColor="gray.200" />}
-        spacing={4}
-        align="stretch"
+      <Grid
+        h="100vh"
+        w="100vw"
+        templateRows="repeat(12, 1fr)"
+        templateColumns="repeat(6, 1fr)"
+        gap={4}
+        align="center"
       >
-        <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
-          undo()
-        }>
-          Undo last line
-        </Button>
-        <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
-          clear()
-        }>
-          Erase everything
-        </Button>
-      </HStack>
+        <GridItem rowSpan={1} colSpan={4}  >
+          <Text fontSize="5xl" color="teal">
+            Draw Sketch Here:
+          </Text>
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={2}  >
+          <Text fontSize="5xl" color="teal">
+            Infered Image:
+          </Text>
+        </GridItem>
 
-      <HStack
-        divider={<StackDivider borderColor="gray.200" />}
-        spacing={4}
-        align="stretch"
-      >
-        <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
-          sendSketch(getSvgXML())
-        }>
-          Send Sketch
+        <GridItem rowSpan={9} colSpan={4} >
+          <Box
+            h="70vh"
+            w="60vw"
+            bg="#d0d5d9"
+            borderRadius="md"
+            ref={divRef}
+          />
+        </GridItem>
+        <GridItem rowSpan={9} colSpan={2}  >
+          <Box
+            h="70vh"
+            w="30vw"
+            bg="#d0d5d9"
+            borderRadius="md"
+            ref={divRef}
+          />
+        </GridItem>
+        <GridItem rowSpan={2} >
+          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
+            undo()
+          }>
+            Undo last line
         </Button>
-        <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
-          download('png')
-        }>
-          Download Sketch
+        </GridItem>
+        <GridItem rowSpan={2} >
+          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
+            clear()
+          }>
+            Erase everything
         </Button>
-      </HStack>
+        </GridItem>
+        <GridItem rowSpan={2}  >
+          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
+            sendRequest(getSvgXML())
+          }>
+            Send Sketch
+        </Button>
+        </GridItem>
+        <GridItem rowSpan={2} >
+          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
+            download('png')
+          }>
+            Download Sketch
+        </Button>
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={2} color='blue' >
+          <Text fontSize="3xl" color="teal">
+            Good guess ?
+          </Text>
+        </GridItem>
+
+      </Grid>
     </Stack>
+
   </ChakraProvider >
 }
 
