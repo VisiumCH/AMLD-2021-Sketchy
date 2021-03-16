@@ -63,21 +63,24 @@ const App = () => {
     <Stack
       spacing="0px"
       align="center">
+      <Heading fontSize="5xl" color="teal">
+        Sketchy App
+      </Heading>
       <Grid
-        h="100vh"
-        w="100vw"
+        h="95vh"
+        w="99vw"
         templateRows="repeat(12, 1fr)"
         templateColumns="repeat(6, 1fr)"
         gap={4}
         align="center"
       >
         <GridItem rowSpan={1} colSpan={4}  >
-          <Text fontSize="5xl" color="teal">
+          <Text fontSize="4xl" color="teal">
             Draw Sketch Here:
           </Text>
         </GridItem>
         <GridItem rowSpan={1} colSpan={2}  >
-          <Text fontSize="5xl" color="teal">
+          <Text fontSize="4xl" color="teal">
             Infered Image:
           </Text>
         </GridItem>
@@ -129,7 +132,7 @@ const App = () => {
         </Button>
         </GridItem>
         <GridItem rowSpan={1} colSpan={2} color='blue' >
-          <Text fontSize="3xl" color="teal">
+          <Text fontSize="2xl" color="teal">
             Good guess ?
           </Text>
         </GridItem>
