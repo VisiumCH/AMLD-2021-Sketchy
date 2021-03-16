@@ -1,5 +1,10 @@
-from flask import Flask, request, jsonify
+import io
+
+import base64
+from cairosvg import svg2png
+from flask import Flask, request, jsonify, make_response
 from flask_restful import Resource, Api
+import json
 
 from src.data.constants import Split
 from src.models.inference.inference import Inference
@@ -33,13 +38,26 @@ class InferImages(Resource):
 
     def post(self):
         json_data = request.get_json()
-        print('in here')
 
         # Verify the data
         if "sketch" not in json_data.keys():
-            return jsonify({"ERROR": "No sketch provided"}, 400)
+            return {"ERROR": "No sketch provided"}, 400
 
-        return jsonify({"OK": f"Sketch received {0} problem."}, 200)
+        sketch_fname = 'sketch.png'
+        svg2png(bytestring=json_data["sketch"], write_to=sketch_fname)
+        inference.inference_sketch(sketch_fname)
+
+        image, image_label = inference.return_closest_image()
+
+        rawBytes = io.BytesIO()
+        image.save(rawBytes, "JPEG")
+        rawBytes.seek(0)
+        img_base64 = base64.b64encode(rawBytes.read())
+
+        data = {'image_string': str(img_base64),
+                'image_label': image_label}
+
+        return make_response(json.dumps(data), 200)
 
 
 api.add_resource(APIList, "/api_list")

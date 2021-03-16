@@ -125,6 +125,7 @@ class Inference():
         for i in range(len(rand_samples_sk)):
             _, sketch_fname, _ = test_sk_loader[rand_samples_sk[i]]
             self.inference_sketch(sketch_fname)
+            self.plot_closest(sketch_fname)
 
     def inference_sketch(self, sketch_fname):
         ''' Find the closest images of a sketch and plot it '''
@@ -135,8 +136,6 @@ class Inference():
         if self.args.cuda:
             sketch_embedding = sketch_embedding.cpu()
         self.get_closest_images(sketch_embedding)
-
-        self.plot_closest(sketch_fname)
 
     def get_closest_images(self, sketch_embedding):
         '''
@@ -149,6 +148,16 @@ class Inference():
                               for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]]
         self.sorted_labels = [self.images_classes[i]
                               for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]]
+
+    def return_closest_image(self):
+        dataset = self.sorted_fnames[0].split('/')[-4]
+
+        loader = get_loader(dataset)
+        image = loader(self.sorted_fnames[0])
+
+        dict_class = get_dict(dataset, self.dict_class)
+        label = dict_class[str(self.sorted_labels[0])]
+        return image, label
 
     def plot_closest(self, sketch_fname):
         '''
