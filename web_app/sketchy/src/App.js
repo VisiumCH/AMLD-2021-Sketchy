@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { Box, ChakraProvider, Button, Stack, Heading, HStack, StackDivider } from '@chakra-ui/react'
 import { useSvgDrawing } from 'react-hooks-svgdrawing'
 
 
 
 const App = () => {
+  const [isSending, setIsSending] = useState(false)
+  const isMounted = useRef(true)
+
   const [
     divRef,
     {
@@ -24,14 +27,44 @@ const App = () => {
     fetch('/api_list').then(response => console.log(response.json()))
   }, [])
 
+  // set isMounted to false when we unmount the component
+  useEffect(() => {
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
 
-  // function SendSketch() {
-  //   const svgDrawing = getSvgXML()
-  //   console.log(getSvgXML())
-  // useEffect(() => {
-  //   fetch('/find_images').then(response => console.log(response.json()))
-  // }, [])
-  // }
+  const sendSketch = useCallback(async (svg) => {
+    // don't send again while we are sending
+    if (isSending) return
+    // update state
+    setIsSending(true)
+
+    // send the actual request
+    const response = await fetch('/find_images', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ "sketch": svg })
+    })
+    if (response.ok) {
+      console.log('response worked')
+      const res = response.json()
+      console.log(res)
+      console.log(res["image_label"])
+
+    } else {
+      console.log('response did not worked')
+    }
+
+    // once the request is sent, update state again
+    if (isMounted.current) // only update if we are still mounted
+      setIsSending(false)
+  }, [isSending]) // update the callback if the state changes
+
+
+
 
   return <ChakraProvider >
     <Stack
@@ -70,21 +103,9 @@ const App = () => {
         spacing={4}
         align="stretch"
       >
-        <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={async () => {
-          const response = await fetch('/find_images', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ "sketch": getSvgXML() })
-          })
-          if (response.ok) {
-            console.log('response worked')
-            console.log(response.json())
-          } else {
-            console.log('response did not worked')
-          }
-        }}>
+        <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
+          sendSketch(getSvgXML())
+        }>
           Send Sketch
         </Button>
         <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
