@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { Box, ChakraProvider, Button, Stack, Text, Heading, HStack, StackDivider, Grid, GridItem } from '@chakra-ui/react'
+import ReactDOM from "react-dom"
+import { Box, ChakraProvider, Button, Stack, Text, Heading, Image, StackDivider, Grid, GridItem } from '@chakra-ui/react'
 import { useSvgDrawing } from 'react-hooks-svgdrawing'
 
 
 
 const App = () => {
   const [isSending, setIsSending] = useState(false)
+  const [inferredImage, setInferredImage] = useState('')
+  const [inferredLabel, setInferredLabel] = useState('')
 
   const [
     divRef,
@@ -22,10 +25,6 @@ const App = () => {
     height: 300 // drawing area height
   })
 
-  useEffect(() => {
-    fetch('/api_list').then(response => console.log(response.json()))
-  }, [])
-
   const sendRequest = useCallback(async (svg) => {
     // don't send again while we are sending
     if (isSending) return
@@ -41,29 +40,22 @@ const App = () => {
       body: JSON.stringify({ "sketch": svg })
     })
     if (response.ok) {
-      console.log('response worked in sendRequest')
       const res = await response.json()
       console.log(res)
-      // const label = res["image_label"]
-      // const image_base64 = res["image_base64"]
-
-      // const Example = ({ image_base64 }) => <img src={`data:image/jpeg;base64,${image_base64}`} />
-      // ReactDOM.render(<Example data={image_base64} />, document.getElementById('container'))
-
+      setInferredImage(res["image_base64"].split('\'')[1])
+      setInferredLabel(res["image_label"])
     } else {
       console.log('Response did not worked in sendRequest')
     }
-
     // once the request is sent, update state again
     setIsSending(false)
   }, [isSending]) // update the callback if the state changes
-
 
   return <ChakraProvider >
     <Stack
       spacing="0px"
       align="center">
-      <Heading fontSize="5xl" color="teal">
+      <Heading fontSize="4xl" color="teal">
         Sketchy App
       </Heading>
       <Grid
@@ -99,9 +91,15 @@ const App = () => {
             h="70vh"
             w="30vw"
             bg="#d0d5d9"
-            borderRadius="md"
-            ref={divRef}
-          />
+            borderRadius="md">
+            <Text fontSize="2xl" color="teal">
+              Class: {inferredLabel}
+            </Text>
+            <Image
+              src={`data:image/jpeg;base64,${inferredImage}`}
+              boxSize="200px"
+            />
+          </Box>
         </GridItem>
         <GridItem rowSpan={2} >
           <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
