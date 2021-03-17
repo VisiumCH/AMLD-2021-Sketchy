@@ -1,8 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { Box, ChakraProvider, Button, Stack, Text, Heading, Grid, GridItem } from '@chakra-ui/react'
+import { Box, ChakraProvider, Button, Stack, Text, Heading, Grid, GridItem, CircularProgress } from '@chakra-ui/react'
 import { useSvgDrawing } from 'react-hooks-svgdrawing'
 
-
+const grey = "#d0d5d9"
+const buttonColor = "teal"
+const buttonHeight = "48px"
+const buttonWidth = "180px"
 
 const App = () => {
   const [isSending, setIsSending] = useState(false)
@@ -24,10 +27,6 @@ const App = () => {
     height: 300 // drawing area height
   })
 
-  useEffect(() => {
-    fetch('/api_list').then(response => console.log(response.json()))
-  }, [])
-
   async function setInference(svg) {
     // Check that there is visible data in the svg
     if (svg.length < 500) {
@@ -35,6 +34,9 @@ const App = () => {
       setInferredLabel([])
       return
     }
+    setInferredImage([<CircularProgress isIndeterminate color="green.300" />,
+    <CircularProgress isIndeterminate color="green.300" />])
+    setInferredLabel(['Guess 1: ???', 'Guess 2: ???'])
 
     // Send to back end
     const response = await fetch('/find_images', {
@@ -81,79 +83,74 @@ const App = () => {
   }, [sendRequest, svg])
 
   return <ChakraProvider >
+    <Heading fontSize="4xl" color={buttonColor}>
+      Sketchy App
+    </Heading>
     <Stack
       spacing="0px"
       align="center">
-      <Heading fontSize="4xl" color="teal">
-        Sketchy App
-      </Heading>
       <Grid
         h="95vh"
-        w="99vw"
+        w="95vw"
         templateRows="repeat(12, 1fr)"
         templateColumns="repeat(6, 1fr)"
         gap={4}
         align="center"
       >
         <GridItem rowSpan={1} colSpan={4}  >
-          <Text fontSize="4xl" color="teal">
+          <Text fontSize="4xl" color={buttonColor}>
             Draw Sketch Here:
           </Text>
         </GridItem>
         <GridItem rowSpan={1} colSpan={2}  >
-          <Text fontSize="4xl" color="teal">
+          <Text fontSize="4xl" color={buttonColor}>
             Inferred Images:
           </Text>
         </GridItem>
-
         <GridItem rowSpan={9} colSpan={4} >
-          <Box h="70vh" w="60vw" bg="#d0d5d9" borderRadius="md" ref={divRef}
+          <Box h="70vh" w="62vw" bg={grey} borderRadius="md" ref={divRef}
             // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
-            onMouseMove={() => setSvg(getSvgXML())}
+            onMouseMove={() => {
+              setSvg(getSvgXML())
+            }}
           >
           </Box>
         </GridItem>
         <GridItem rowSpan={9} colSpan={2}  >
-          <Box
-            h="70vh"
-            w="30vw"
-            bg="#d0d5d9"
-            borderRadius="md">
-            <Text fontSize="2xl" color="teal">
+          <Box h="70vh" w="30vw" bg={grey} borderRadius="md">
+            <Text fontSize="2xl" color={buttonColor}>
               {inferredLabel[0]}
             </Text>
-            {inferredImage[0]}
-
-            <Box bg="#d0d5d9" w="90%" p={4} color="teal">
-              ----------------------
+            <Box bg={grey} w="90%" h="30%" p={0} color={buttonColor}>
+              {inferredImage[0]}
             </Box>
-
-            <Text fontSize="2xl" color="teal">
+            <Box bg={grey} w="90%" p={10} color={buttonColor} />
+            <Text fontSize="2xl" color={buttonColor}>
               {inferredLabel[1]}
             </Text>
-            {inferredImage[1]}
+            <Box bg={grey} w="90%" h="30%" p={0} color={buttonColor}>
+              {inferredImage[1]}
+            </Box>
           </Box>
         </GridItem>
         <GridItem rowSpan={2} colSpan={4}>
-          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() => {
+          <Button colorScheme={buttonColor} size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
             undo()
             sendRequest(getSvgXML())
           }
           }>
             Undo last line
-        </Button>
+          </Button>
         </GridItem>
-        <GridItem rowSpan={2} colSpan={2} color='blue' >
-          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() => {
+        <GridItem rowSpan={2} colSpan={2} >
+          <Button colorScheme={buttonColor} size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
             clear()
             setInferredImage([])
             setInferredLabel([])
-          }
-          }>
+          }}>
             Restart!
           </Button>
         </GridItem>
-
       </Grid>
     </Stack>
 
