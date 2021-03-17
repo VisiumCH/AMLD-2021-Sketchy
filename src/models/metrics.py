@@ -58,8 +58,8 @@ def get_similarity(sk_embeddings, im_embeddings):
     Return:
         - similarity: similarity value between images and sketches embeddings [NxM]
     '''
-    return np.float16(1/(1 + cdist(np.float16(sk_embeddings),
-                                   np.float16(im_embeddings), 'euclidean')))
+    return np.float32(1/(1 + cdist(np.float32(sk_embeddings),
+                                   np.float32(im_embeddings), 'euclidean')))
 
 
 def compare_classes(class_im, class_sk):
@@ -92,7 +92,7 @@ def sort_by_similarity(similarity, class_matches):
         sorted_lst.append(class_matches[indx, arg_sorted_sim[indx, :]])
 
     del similarity, arg_sorted_sim
-    sorted_similarity = np.array(sorted_similarity, dtype=np.float16)
+    sorted_similarity = np.array(sorted_similarity)
     sorted_class_matches = np.array(sorted_lst)
 
     return sorted_similarity, sorted_class_matches
