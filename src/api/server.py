@@ -1,23 +1,13 @@
-import io
-
-import base64
-from cairosvg import svg2png
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 import json
 
+from src.api.utils import Args, svg_to_png, prepare_data
 from src.data.constants import Split
 from src.models.inference.inference import Inference
 
 app = Flask(__name__)
 api = Api(app)
-
-
-class Args:
-    dataset = "sketchy"
-    emb_size = 256
-    cuda = False
-    best_model = 'io/models/best_model/checkpoint.pth'
 
 
 class APIList(Resource):
@@ -44,18 +34,11 @@ class InferImages(Resource):
             return {"ERROR": "No sketch provided"}, 400
 
         sketch_fname = 'sketch.png'
-        svg2png(bytestring=json_data["sketch"], write_to=sketch_fname)
+        svg_to_png(json_data["sketch"], sketch_fname)
+
         inference.inference_sketch(sketch_fname)
-
-        image, image_label = inference.return_closest_image()
-
-        rawBytes = io.BytesIO()
-        image.save(rawBytes, "JPEG")
-        rawBytes.seek(0)
-        img_base64 = base64.b64encode(rawBytes.read())
-
-        data = {'image_base64': str(img_base64),
-                'image_label': image_label}
+        images, image_labels = inference.return_closest_images(2)
+        data = prepare_data(images, image_labels)
 
         return make_response(json.dumps(data), 200)
 

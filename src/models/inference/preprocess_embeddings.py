@@ -25,10 +25,10 @@ def save_data(args, fnames, embeddings, classes, dataset_type):
     '''
     df = pd.DataFrame(data=[fnames, classes]).T
     df.columns = ['fnames', 'classes']
-    meta_path = os.path.join(args.embedding_path, '_' + args.dataset + '_' + dataset_type + '_meta.csv')
+    meta_path = os.path.join(args.embedding_path, args.dataset + '_' + dataset_type + '_meta.csv')
     df.to_csv(meta_path, sep=' ', header=True)
 
-    array_path = os.path.join(args.embedding_path,  '_' + args.dataset + '_' + dataset_type + '_array.npy')
+    array_path = os.path.join(args.embedding_path,  args.dataset + '_' + dataset_type + '_array.npy')
     with open(array_path, 'wb') as f:
         np.save(f, embeddings)
 
@@ -44,7 +44,7 @@ def process_images(args, data, im_net):
 
 def save_dict(args, dict_class):
     ''' Saves the dictionnary mapping classes to numbers '''
-    dict_path = os.path.join(args.embedding_path, '_' + args.dataset + '_dict_class.json')
+    dict_path = os.path.join(args.embedding_path, args.dataset + '_dict_class.json')
     dict_class = {v: k for k, v in dict_class.items()}
     with open(dict_path, 'w') as fp:
         json.dump(dict_class, fp)

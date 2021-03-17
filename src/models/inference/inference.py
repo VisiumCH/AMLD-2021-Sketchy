@@ -60,15 +60,15 @@ class Inference():
             - classes of the images
             - images_embeddings: embeddings of the images
         '''
-        dict_path = os.path.join(self.embedding_path, '_' + args.dataset + '_dict_class.json')
+        dict_path = os.path.join(self.embedding_path, args.dataset + '_dict_class.json')
         with open(dict_path, 'r') as fp:
             dict_class = json.load(fp)
 
-        array_path = os.path.join(self.embedding_path,  '_' + args.dataset + '_' + dataset_type + '_array.npy')
+        array_path = os.path.join(self.embedding_path, args.dataset + '_' + dataset_type + '_array.npy')
         with open(array_path, 'rb') as f:
             images_embeddings = np.load(f)
 
-        meta_path = os.path.join(self.embedding_path, '_' + args.dataset + '_' + dataset_type + '_meta.csv')
+        meta_path = os.path.join(self.embedding_path, args.dataset + '_' + dataset_type + '_meta.csv')
         df = pd.read_csv(meta_path, sep=' ')
 
         return dict_class, df['fnames'].values, df['classes'].values, images_embeddings
@@ -129,10 +129,17 @@ class Inference():
 
     def inference_sketch(self, sketch_fname):
         ''' Find the closest images of a sketch and plot it '''
+        if os.path.isfile(sketch_fname):
+            print("File exist")
+        else:
+            print("File not exist")
         sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
+        print(sum(sum(sum(sum(sketch)))))
         if self.args.cuda:
             sketch = sketch.cuda()
         sketch_embedding, _ = self.sk_net(sketch)
+        print(sketch_embedding[0][0:10])
+
         if self.args.cuda:
             sketch_embedding = sketch_embedding.cpu()
         self.get_closest_images(sketch_embedding)
@@ -149,15 +156,24 @@ class Inference():
         self.sorted_labels = [self.images_classes[i]
                               for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]]
 
-    def return_closest_image(self):
-        dataset = self.sorted_fnames[0].split('/')[-4]
+    def prepare_image(self, index):
+        dataset = self.sorted_fnames[index].split('/')[-4]
 
         loader = get_loader(dataset)
-        image = loader(self.sorted_fnames[0])
+        image = loader(self.sorted_fnames[index])
 
         dict_class = get_dict(dataset, self.dict_class)
-        label = dict_class[str(self.sorted_labels[0])]
+        label = dict_class[str(self.sorted_labels[index])]
         return image, label
+
+    def return_closest_images(self, number):
+        images, labels = [], []
+        for index in range(number):
+            image, label = self.prepare_image(index)
+            images.append(image)
+            labels.append(label)
+
+        return images, labels
 
     def plot_closest(self, sketch_fname):
         '''
@@ -172,15 +188,10 @@ class Inference():
         axes[0].axis('off')
 
         for i in range(1, NUM_CLOSEST + 1):
-
-            dataset = self.sorted_fnames[i-1].split('/')[-4]
-            loader = get_loader(dataset)
-            dict_class = get_dict(dataset, self.dict_class)
-
-            im = loader(self.sorted_fnames[i-1])
+            im, label = self.prepare_image(i-1)
             axes[i].imshow(im)
             axes[i].set(title='Closest image ' + str(i) +
-                        '\n Label: ' + dict_class[str(self.sorted_labels[i-1])])
+                        '\n Label: ' + label)
 
             axes[i].axis('off')
         plt.subplots_adjust(wspace=0.25, hspace=-0.35)

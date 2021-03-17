@@ -56,7 +56,7 @@ class Options():
                             help='Number of embedding images and sketch to plot in latent space on tensorboard.')
         # Inference
         parser.add_argument('--best_model', type=str,
-                            default='io/models/best_model/checkpoint.pth', help='path to the best saved model')
+                            default='io/models/sk_training/checkpoint.pth', help='path to the best saved model')
         self.parser = parser
 
     def parse(self):

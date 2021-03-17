@@ -182,8 +182,8 @@ def main():
             logger.step()
 
         # Early-Stop
-        if map_valid > best_map:
-            best_map = map_valid
+        if map_valid_200 > best_map:
+            best_map = map_valid_200
             best_epoch = epoch + 1
             early_stop_counter = 0
             if args.save is not None:

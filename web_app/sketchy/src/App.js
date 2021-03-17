@@ -7,8 +7,8 @@ import { useSvgDrawing } from 'react-hooks-svgdrawing'
 
 const App = () => {
   const [isSending, setIsSending] = useState(false)
-  const [inferredImage, setInferredImage] = useState('')
-  const [inferredLabel, setInferredLabel] = useState('')
+  const [inferredImage, setInferredImage] = useState([])
+  const [inferredLabel, setInferredLabel] = useState([])
 
   const [
     divRef,
@@ -42,8 +42,14 @@ const App = () => {
     if (response.ok) {
       const res = await response.json()
       console.log(res)
-      setInferredImage(res["image_base64"].split('\'')[1])
-      setInferredLabel(res["image_label"])
+      let inferredImages = res["images_base64"]
+      let tempImage = ''
+      for (let i = 0; i < inferredImages.length; i++) {
+        tempImage = inferredImages[i].split('\'')[1]
+        inferredImages[i] = <img src={`data:image/jpeg;base64,${tempImage}`} />
+      }
+      setInferredImage(inferredImages)
+      setInferredLabel(res["images_label"])
     } else {
       console.log('Response did not worked in sendRequest')
     }
@@ -73,7 +79,7 @@ const App = () => {
         </GridItem>
         <GridItem rowSpan={1} colSpan={2}  >
           <Text fontSize="4xl" color="teal">
-            Infered Image:
+            Inferred Images:
           </Text>
         </GridItem>
 
@@ -93,12 +99,14 @@ const App = () => {
             bg="#d0d5d9"
             borderRadius="md">
             <Text fontSize="2xl" color="teal">
-              Class: {inferredLabel}
+              1. Class guessed: {inferredLabel[0]}
             </Text>
-            <Image
-              src={`data:image/jpeg;base64,${inferredImage}`}
-              boxSize="200px"
-            />
+            {inferredImage[0]}
+
+            <Text fontSize="2xl" color="teal">
+              2. Class guessed: {inferredLabel[1]}
+            </Text>
+            {inferredImage[1]}
           </Box>
         </GridItem>
         <GridItem rowSpan={2} >
@@ -130,9 +138,14 @@ const App = () => {
         </Button>
         </GridItem>
         <GridItem rowSpan={1} colSpan={2} color='blue' >
-          <Text fontSize="2xl" color="teal">
-            Good guess ?
-          </Text>
+          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() => {
+            clear()
+            setInferredImage([])
+            setInferredLabel([])
+          }
+          }>
+            Play Again!
+          </Button>
         </GridItem>
 
       </Grid>
