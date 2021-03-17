@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import ReactDOM from "react-dom"
-import { Box, ChakraProvider, Button, Stack, Text, Heading, Image, StackDivider, Grid, GridItem } from '@chakra-ui/react'
+import React, { useState, useCallback, useEffect } from 'react'
+import { Box, ChakraProvider, Button, Stack, Text, Heading, Grid, GridItem } from '@chakra-ui/react'
 import { useSvgDrawing } from 'react-hooks-svgdrawing'
 
 
@@ -9,6 +8,7 @@ const App = () => {
   const [isSending, setIsSending] = useState(false)
   const [inferredImage, setInferredImage] = useState([])
   const [inferredLabel, setInferredLabel] = useState([])
+  const [svg, setSvg] = useState('')
 
   const [
     divRef,
@@ -19,19 +19,23 @@ const App = () => {
       clear
     }
   ] = useSvgDrawing({
-    penWidth: 8,     // pen width
+    penWidth: 6,     // pen width
     penColor: '#000000', // pen color
     width: 300, // drawing area width
     height: 300 // drawing area height
   })
 
-  const sendRequest = useCallback(async (svg) => {
-    // don't send again while we are sending
-    if (isSending) return
-    // update state
-    setIsSending(true)
+  useEffect(() => {
+    fetch('/api_list').then(response => console.log(response.json()))
+  }, [])
 
-    // send the actual request
+  async function setInference(svg) {
+    // Check that there is data in the svg
+    if (svg.length < 50) {
+      return
+    }
+
+    // Send to back end
     const response = await fetch('/find_images', {
       method: 'POST',
       headers: {
@@ -39,23 +43,41 @@ const App = () => {
       },
       body: JSON.stringify({ "sketch": svg })
     })
+
+    // Receive response
     if (response.ok) {
       const res = await response.json()
-      console.log(res)
       let inferredImages = res["images_base64"]
+      let inferredLabels = res["images_label"]
       let tempImage = ''
       for (let i = 0; i < inferredImages.length; i++) {
         tempImage = inferredImages[i].split('\'')[1]
-        inferredImages[i] = <img src={`data:image/jpeg;base64,${tempImage}`} />
+        inferredImages[i] = <img src={`data:image/jpeg;base64,${tempImage}`} alt='inferred_image' />
+        inferredLabels[i] = `Guess ${i + 1}: ${inferredLabels[i]}`
       }
       setInferredImage(inferredImages)
-      setInferredLabel(res["images_label"])
-    } else {
-      console.log('Response did not worked in sendRequest')
+      setInferredLabel(inferredLabels)
     }
+  }
+
+
+  const sendRequest = useCallback(async (svg) => {
+    // don't send again while we are sending
+    if (isSending) return
+    // update state
+    setIsSending(true)
+
+    // set images and labels
+    setInference(svg)
+
     // once the request is sent, update state again
     setIsSending(false)
+
   }, [isSending]) // update the callback if the state changes
+
+  useEffect(() => {
+    sendRequest(svg)
+  }, [sendRequest, svg])
 
   return <ChakraProvider >
     <Stack
@@ -84,13 +106,11 @@ const App = () => {
         </GridItem>
 
         <GridItem rowSpan={9} colSpan={4} >
-          <Box
-            h="70vh"
-            w="60vw"
-            bg="#d0d5d9"
-            borderRadius="md"
-            ref={divRef}
-          />
+          <Box h="70vh" w="60vw" bg="#d0d5d9" borderRadius="md" ref={divRef}
+            // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
+            onMouseMove={() => setSvg(getSvgXML())}
+          >
+          </Box>
         </GridItem>
         <GridItem rowSpan={9} colSpan={2}  >
           <Box
@@ -99,46 +119,56 @@ const App = () => {
             bg="#d0d5d9"
             borderRadius="md">
             <Text fontSize="2xl" color="teal">
-              1. Class guessed: {inferredLabel[0]}
+              {inferredLabel[0]}
             </Text>
             {inferredImage[0]}
 
+            <Box bg="#d0d5d9" w="90%" p={4} color="teal">
+              ----------------------
+            </Box>
+
             <Text fontSize="2xl" color="teal">
-              2. Class guessed: {inferredLabel[1]}
+              {inferredLabel[1]}
             </Text>
             {inferredImage[1]}
           </Box>
         </GridItem>
         <GridItem rowSpan={2} >
-          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
+          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() => {
             undo()
+            sendRequest(getSvgXML())
+          }
+
           }>
             Undo last line
         </Button>
         </GridItem>
         <GridItem rowSpan={2} >
-          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
+          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() => {
             clear()
+            setInferredImage([])
+            setInferredLabel([])
+          }
           }>
-            Erase everything
-        </Button>
-        </GridItem>
-        <GridItem rowSpan={2}  >
-          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
-            sendRequest(getSvgXML())
-          }>
-            Send Sketch
+            Erase sketch
         </Button>
         </GridItem>
         <GridItem rowSpan={2} >
-          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() =>
+          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() =>
             download('png')
           }>
             Download Sketch
         </Button>
         </GridItem>
+        <GridItem rowSpan={2}  >
+          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() =>
+            sendRequest(getSvgXML())
+          }>
+            Find images
+        </Button>
+        </GridItem>
         <GridItem rowSpan={1} colSpan={2} color='blue' >
-          <Button colorScheme="teal" size="lg" height="48px" width="160px" onClick={() => {
+          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() => {
             clear()
             setInferredImage([])
             setInferredLabel([])
