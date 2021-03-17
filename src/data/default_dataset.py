@@ -78,9 +78,9 @@ class DefaultDataset(data.Dataset):
         self.image_type = image_type
 
         if dataset_folder == DatasetFolder.tuberlin:
-            self.loader_image = default_image_loader
-        else:
             self.loader_image = default_image_loader_tuberlin
+        else:
+            self.loader_image = default_image_loader
 
         self.dir_sketch = os.path.join(args.data_path, dataset_folder, ImageType.sketch)
         self.dir_image = os.path.join(args.data_path, dataset_folder, ImageType.image)
