@@ -14,7 +14,6 @@ const App = () => {
     divRef,
     {
       getSvgXML,
-      download,
       undo,
       clear
     }
@@ -30,8 +29,10 @@ const App = () => {
   }, [])
 
   async function setInference(svg) {
-    // Check that there is data in the svg
-    if (svg.length < 50) {
+    // Check that there is visible data in the svg
+    if (svg.length < 500) {
+      setInferredImage([])
+      setInferredLabel([])
       return
     }
 
@@ -133,48 +134,23 @@ const App = () => {
             {inferredImage[1]}
           </Box>
         </GridItem>
-        <GridItem rowSpan={2} >
+        <GridItem rowSpan={2} colSpan={4}>
           <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() => {
             undo()
             sendRequest(getSvgXML())
           }
-
           }>
             Undo last line
         </Button>
         </GridItem>
-        <GridItem rowSpan={2} >
+        <GridItem rowSpan={2} colSpan={2} color='blue' >
           <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() => {
             clear()
             setInferredImage([])
             setInferredLabel([])
           }
           }>
-            Erase sketch
-        </Button>
-        </GridItem>
-        <GridItem rowSpan={2} >
-          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() =>
-            download('png')
-          }>
-            Download Sketch
-        </Button>
-        </GridItem>
-        <GridItem rowSpan={2}  >
-          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() =>
-            sendRequest(getSvgXML())
-          }>
-            Find images
-        </Button>
-        </GridItem>
-        <GridItem rowSpan={1} colSpan={2} color='blue' >
-          <Button colorScheme="teal" size="lg" height="48px" width="180px" onClick={() => {
-            clear()
-            setInferredImage([])
-            setInferredLabel([])
-          }
-          }>
-            Play Again!
+            Restart!
           </Button>
         </GridItem>
 
