@@ -129,10 +129,6 @@ class Inference():
 
     def inference_sketch(self, sketch_fname):
         ''' Find the closest images of a sketch and plot it '''
-        if os.path.isfile(sketch_fname):
-            print("File exist")
-        else:
-            print("File not exist")
         sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
         print(sum(sum(sum(sum(sketch)))))
         if self.args.cuda:
