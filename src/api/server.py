@@ -54,7 +54,7 @@ class InferImages(Resource):
         rawBytes.seek(0)
         img_base64 = base64.b64encode(rawBytes.read())
 
-        data = {'image_string': str(img_base64),
+        data = {'image_base64': str(img_base64),
                 'image_label': image_label}
 
         return make_response(json.dumps(data), 200)
