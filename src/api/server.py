@@ -26,7 +26,7 @@ class APIList(Resource):
         return {"available-apis": [{"api-key": k, "description": v} for k, v in api_json.items()]}
 
 
-class InferImages(Resource):
+class Inferrence(Resource):
     """ Receives a sketch and returns its closest images. """
 
     def post(self):
@@ -36,19 +36,22 @@ class InferImages(Resource):
         if "sketch" not in json_data.keys():
             return {"ERROR": "No sketch provided"}, 400
 
-        sketch_fname = 'sketch' + str(random.random()) + '.png'
+        random_number = str(random.random())
+        sketch_fname = 'sketch' + random_number + '.png'
         svg_to_png(json_data["sketch"], sketch_fname)
 
         inference.inference_sketch(sketch_fname)
-        images, image_labels = inference.return_closest_images(2)
-        data = prepare_data(images, image_labels)
-        os.remove(sketch_fname)
+        images, image_labels = inference.get_closest(2)
+        attention = inference.get_attention(sketch_fname)
+
+        data = prepare_data(images, image_labels, attention)
+        # os.remove(sketch_fname)
 
         return make_response(json.dumps(data), 200)
 
 
 api.add_resource(APIList, "/api_list")
-api.add_resource(InferImages, "/find_images")
+api.add_resource(Inferrence, "/find_images")
 
 if __name__ == "__main__":
 

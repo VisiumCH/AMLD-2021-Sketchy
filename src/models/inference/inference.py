@@ -1,5 +1,6 @@
 import json
 import os
+import random
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -133,12 +134,40 @@ class Inference():
 
         if self.args.cuda:
             sketch = sketch.cuda()
-        sketch_embedding, attn_sk = self.sk_net(sketch)
-        self.attn_sk = normalise_attention(attn_sk, sketch)
+        sketch_embedding, self.attn_sk = self.sk_net(sketch)
 
         if self.args.cuda:
             sketch_embedding = sketch_embedding.cpu()
         self.get_closest_images(sketch_embedding)
+
+    def get_attention(self, sketch_fname):
+        ''' Find the closest images of a sketch and plot it '''
+        from PIL import Image
+        im = Image.open(sketch_fname)
+
+        sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
+
+        if self.args.cuda:
+            sketch = sketch.cuda()
+
+        attn_sk = normalise_attention(self.attn_sk, sketch)
+        heat_map = attn_sk.squeeze().detach().numpy()
+
+        sk = self.loader(sketch_fname)
+
+        fig, ax = plt.subplots(frameon=False)
+        ax.imshow(sk)
+        ax.imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r')
+        ax.axis('off')
+
+        attention_fname = 'sketch_attention_' + str(random.random()) + '.png'
+        plt.savefig(attention_fname)
+
+        attention = Image.open(attention_fname)
+        attention.resize(im.size)
+        os.remove(attention_fname)
+
+        return attention
 
     def get_closest_images(self, sketch_embedding):
         '''
@@ -162,7 +191,7 @@ class Inference():
         label = dict_class[str(self.sorted_labels[index])]
         return image, label
 
-    def return_closest_images(self, number):
+    def get_closest(self, number):
         images, labels = [], []
         for index in range(number):
             image, label = self.prepare_image(index)
@@ -183,7 +212,8 @@ class Inference():
         axes[0].set(title='Sketch \n Label: ' + sketch_fname.split('/')[-2])
         axes[0].axis('off')
 
-        heat_map = self.attn_sk.squeeze().detach().numpy()
+        attn_sk = normalise_attention(self.attn_sk, sketch)
+        heat_map = attn_sk.squeeze().detach().numpy()
         axes[1].imshow(sk)
         axes[1].imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r')
         axes[1].set(title=sketch_fname.split('/')[-2] + '\n Attention Map')

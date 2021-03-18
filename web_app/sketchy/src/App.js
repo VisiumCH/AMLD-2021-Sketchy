@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { Box, ChakraProvider, Button, Stack, Text, Heading, Grid, GridItem, CircularProgress } from '@chakra-ui/react'
+import { Box, ChakraProvider, Button, Stack, HStack, VStack, Text, Heading, Grid, GridItem, CircularProgress } from '@chakra-ui/react'
 import { useSvgDrawing } from 'react-hooks-svgdrawing'
 
 const grey = "#d0d5d9"
@@ -11,6 +11,7 @@ const App = () => {
   const [isSending, setIsSending] = useState(false)
   const [inferredImage, setInferredImage] = useState([])
   const [inferredLabel, setInferredLabel] = useState([])
+  const [attention, setAttention] = useState('')
   const [svg, setSvg] = useState('')
 
   const [
@@ -32,6 +33,7 @@ const App = () => {
     if (svg.length < 500) {
       setInferredImage([])
       setInferredLabel([])
+      setAttention('')
       return
     }
 
@@ -39,6 +41,7 @@ const App = () => {
     setInferredImage([<CircularProgress isIndeterminate color="green.300" />,
     <CircularProgress isIndeterminate color="green.300" />])
     setInferredLabel(['Guess 1: ???', 'Guess 2: ???'])
+    setAttention(<CircularProgress isIndeterminate color="green.300" />)
 
     // Send to back end
     const response = await fetch('/find_images', {
@@ -62,6 +65,9 @@ const App = () => {
       }
       setInferredImage(inferredImages)
       setInferredLabel(inferredLabels)
+
+      let tempAttention = res["attention"].split('\'')[1]
+      setAttention(<img src={`data:image/jpeg;base64,${tempAttention}`} alt='attention_image' />)
     }
   }
 
@@ -96,7 +102,7 @@ const App = () => {
         w="95vw"
         templateRows="repeat(12, 1fr)"
         templateColumns="repeat(6, 1fr)"
-        gap={4}
+        gap={2}
         align="center">
         <GridItem rowSpan={1} colSpan={4}  >
           <Text fontSize="4xl" color={buttonColor}>
@@ -116,23 +122,47 @@ const App = () => {
             }}>
           </Box>
         </GridItem>
-        <GridItem rowSpan={9} colSpan={2}  >
+
+
+        <GridItem rowSpan={4} colSpan={2}  >
+
           <Box h="70vh" w="30vw" bg={grey} borderRadius="md">
-            <Text fontSize="2xl" color={buttonColor}>
-              {inferredLabel[0]}
-            </Text>
-            <Box bg={grey} w="90%" h="30%" p={0} color={buttonColor}>
-              {inferredImage[0]}
-            </Box>
-            <Box bg={grey} w="90%" p={10} color={buttonColor} />
-            <Text fontSize="2xl" color={buttonColor}>
-              {inferredLabel[1]}
-            </Text>
-            <Box bg={grey} w="90%" h="30%" p={0} color={buttonColor}>
-              {inferredImage[1]}
-            </Box>
+            <HStack spacing="5px" align="center">
+              <Box h="35vh" w="15vw" bg={grey} borderRadius="md">
+                <VStack spacing="5px">
+                  <Text fontSize="2xl" color={buttonColor}>
+                    {inferredLabel[0]}
+                  </Text>
+                  <Box bg={grey} w="100%" h="35%" p={4} color={buttonColor}>
+                    {inferredImage[0]}
+                  </Box>
+                </VStack>
+              </Box>
+              <Box h="35vh" w="15vw" bg={grey} borderRadius="md">
+                <VStack spacing="5px">
+                  <Text fontSize="2xl" color={buttonColor}>
+                    {inferredLabel[1]}
+                  </Text>
+                  <Box bg={grey} w="100%" h="35%" p={4} color={buttonColor}>
+                    {inferredImage[1]}
+                  </Box>
+                </VStack>
+              </Box>
+            </HStack>
+            <Box bg={grey} w="90%" p={0} color={buttonColor} />
           </Box>
         </GridItem>
+        <GridItem rowSpan={1} colSpan={2} bg="white" >
+          <Text fontSize="4xl" color={buttonColor}>
+            Attention Map
+          </Text>
+        </GridItem>
+        <GridItem rowSpan={4} colSpan={2}  >
+          <Box bg={grey} w="40vh" color={buttonColor}>
+            {attention}
+          </Box>
+        </GridItem>
+
         <GridItem rowSpan={2} colSpan={4}>
           <Button colorScheme={buttonColor} size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
             undo()
@@ -146,6 +176,7 @@ const App = () => {
             clear()
             setInferredImage([])
             setInferredLabel([])
+            setAttention('')
           }}>
             Restart!
           </Button>

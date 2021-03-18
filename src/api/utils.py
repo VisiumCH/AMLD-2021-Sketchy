@@ -25,17 +25,24 @@ def svg_to_png(sketch, sketch_fname):
     im.convert("RGB").save(sketch_fname)
 
 
-def prepare_data(images, image_labels):
+def prepare_data(images, image_labels, attention):
     data = {}
     data['images_base64'] = []
     data['images_label'] = []
 
     for image, image_label in zip(images, image_labels):
         rawBytes = io.BytesIO()
-        image.save(rawBytes, "JPEG")
+        image.save(rawBytes, "PNG")
         rawBytes.seek(0)
         img_base64 = base64.b64encode(rawBytes.read())
 
         data['images_base64'].append(str(img_base64))
         data['images_label'].append(' '.join(image_label.split('_')))
+
+    rawBytes = io.BytesIO()
+    attention.save(rawBytes, "PNG")
+    rawBytes.seek(0)
+    attention_base64 = base64.b64encode(rawBytes.read())
+    data['attention'] = str(attention_base64)
+
     return data
