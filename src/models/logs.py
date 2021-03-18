@@ -9,7 +9,7 @@ import torch.nn as nn
 from src.data.constants import ImageType
 from src.data.utils import get_loader, get_dict, get_limits, get_dataset_dict
 
-NUM_CLOSEST = 4
+NUM_CLOSEST = 5
 
 
 class AverageMeter(object):
@@ -103,10 +103,11 @@ class InferenceLogger(object):
         arg_sorted_sim = np.array([(-(similarity[index, :])).argsort() for index in self.sk_indexes])
 
         for i, sk in enumerate(self.sk_log):
+            # inference
             self.sorted_fnames = [images_fnames[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
             self.sorted_classes = [images_classes[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
 
-            fig, axes = plt.subplots(1, NUM_CLOSEST, figsize=(20, 8))
+            fig, axes = plt.subplots(1, NUM_CLOSEST)
             axes[0].imshow(sk.permute(1, 2, 0).numpy())
             axes[0].set(title='Sketch \n Label: ' + self.sk_class_names[i])
             axes[0].axis('off')
@@ -138,6 +139,38 @@ class InferenceLogger(object):
             self.logger.add_image('Inference_{}_{}'.format(i, self.sk_class_names[i]), infer_plt)
 
 
+class AttentionLogger(object):
+    '''Logs some images to visulatise attenction module in tensorboard'''
+
+    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
+        self.logger = logger
+
+        sketchy_limit_im, tuberlin_limit_im = get_limits(args.dataset, valid_im_data, ImageType.image)
+        sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, ImageType.sketch)
+
+        self.sk_log, self.sk_class_names, _ = select_images(
+            valid_sk_data, args.attn_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
+        self.im_log, self.im_class_names, _ = select_images(
+            valid_im_data, args.attn_number, dict_class, sketchy_limit_im, tuberlin_limit_im)
+
+    def plot_attention(self, im_net, sk_net):
+        '''Log the attention images in tensorboard'''
+
+        _, attn_im = im_net(self.im_log)
+        attn_im = normalise_attention(attn_im, self.im_log)
+
+        _, attn_sk = im_net(self.sk_log)
+        attn_sk = normalise_attention(attn_sk, self.sk_log)
+
+        for i in range(self.im_log.size(0)):  # for each image-sketch pair
+
+            plt_im = add_heatmap_on_image(self.im_log[i], attn_im[i])
+            self.logger.add_image('im{}_{}'.format(i, self.im_class_names[i]), plt_im)
+
+            plt_sk = add_heatmap_on_image(self.sk_log[i], attn_sk[i])
+            self.logger.add_image('sk{}_{}'.format(i, self.sk_class_names[i]), plt_sk)
+
+
 class EmbeddingLogger(object):
     '''Logs the images in the latent space'''
 
@@ -163,69 +196,10 @@ class EmbeddingLogger(object):
         self.logger.add_embedding(all_embeddings, self.all_classes, self.all_images)
 
 
-class AttentionLogger(object):
-    '''Logs some images to visulatise attenction module in tensorboard'''
-
-    def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
-        self.logger = logger
-
-        sketchy_limit_im, tuberlin_limit_im = get_limits(args.dataset, valid_im_data, ImageType.image)
-        sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, ImageType.sketch)
-
-        self.sk_log, self.sk_class_names, _ = select_images(
-            valid_sk_data, args.attn_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
-        self.im_log, self.im_class_names, _ = select_images(
-            valid_im_data, args.attn_number, dict_class, sketchy_limit_im, tuberlin_limit_im)
-
-    def plot_attention(self, im_net, sk_net):
-        '''Log the attention images in tensorboard'''
-
-        attn_im = self.process_attention(im_net, self.im_log)
-        attn_sk = self.process_attention(sk_net, self.sk_log)
-
-        for i in range(self.im_log.size(0)):  # for each image-sketch pair
-
-            plt_im = self.add_heatmap_on_image(self.im_log[i], attn_im[i])
-            self.logger.add_image('im{}_{}'.format(i, self.im_class_names[i]), plt_im)
-
-            plt_sk = self.add_heatmap_on_image(self.sk_log[i], attn_sk[i])
-            self.logger.add_image('sk{}_{}'.format(i, self.sk_class_names[i]), plt_sk)
-
-    def process_attention(self, net, im):
-        _, attn = net(im)
-        attn = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn)
-        min_attn = attn.view((attn.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-        max_attn = attn.view((attn.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-        return (attn - min_attn) / (max_attn - min_attn)
-
-    def add_heatmap_on_image(self, im, attn):
-        heat_map = attn.squeeze().detach().numpy()
-        im = im.detach().numpy()
-        im = np.transpose(im, (1, 2, 0))
-
-        # Heatmap + Image on figure
-        fig, ax = plt.subplots()
-        ax.imshow(im)
-        ax.imshow(255 * heat_map, alpha=0.8, cmap='Spectral_r')
-        ax.axis('off')
-
-        # Get value from canvas to pytorch tensor format
-        fig.canvas.draw()
-        image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        image_from_plot = np.transpose(image_from_plot, (2, 0, 1))
-
-        # Close image
-        plt.cla()
-        plt.close(fig)
-
-        return torch.tensor(image_from_plot.copy())
-
-
 def select_images(valid_data, number_images, all_dict_class, sketchy_limit_im, tuberlin_limit_im):
     '''Select some random images/sketch for tensorboard plots '''
     class_names = []
-    rand_samples = np.random.randint(0, high=len(valid_data), size=number_images)
+    rand_samples = [1, 2, 3, 4, 5]  # np.random.randint(0, high=len(valid_data), size=number_images)
     for i in range(len(rand_samples)):
         im, _, label = valid_data[rand_samples[i]]
 
@@ -239,3 +213,45 @@ def select_images(valid_data, number_images, all_dict_class, sketchy_limit_im, t
         class_names.append(class_name)
 
     return im_log, class_names, rand_samples
+
+
+def normalise_attention(attn, im):
+    attn = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn)
+    min_attn = attn.view((attn.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+    max_attn = attn.view((attn.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+    return (attn - min_attn) / (max_attn - min_attn)
+
+
+def add_heatmap_on_image(im, attn):
+    heat_map = attn.squeeze().detach().numpy()
+    im = im.detach().numpy()
+    im = np.transpose(im, (1, 2, 0))
+
+    fig, axes = plt.subplots(1, 3, figsize=(20, 8))
+    # Image on figure
+    axes[0].imshow(im)
+    axes[0].set(title='Original')
+    axes[0].axis('off')
+
+    # Heatmap on figure
+    axes[1].imshow(255 * heat_map, cmap='Spectral_r')
+    axes[1].set(title='Heatmap')
+    axes[1].axis('off')
+
+    # Heatmap + Image on figure
+    axes[2].imshow(im)
+    axes[2].set(title='Original + Heatmap')
+    axes[2].imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r')
+    axes[2].axis('off')
+
+    # Get value from canvas to pytorch tensor format
+    fig.canvas.draw()
+    image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+    image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    image_from_plot = np.transpose(image_from_plot, (2, 0, 1))
+
+    # Close image
+    plt.cla()
+    plt.close(fig)
+
+    return torch.tensor(image_from_plot.copy())
