@@ -9,7 +9,7 @@ class Args:
     dataset = "sketchy"
     emb_size = 256
     cuda = False
-    best_model = 'io/models/sk_training/checkpoint.pth'
+    best_model = 'io/models/sktu_training_part_1/checkpoint.pth'
 
 
 def svg_to_png(sketch, sketch_fname):

@@ -21,7 +21,7 @@ const App = () => {
       clear
     }
   ] = useSvgDrawing({
-    penWidth: 6,     // pen width
+    penWidth: 3,     // pen width (similar as database width)
     penColor: '#000000', // pen color
     width: 300, // drawing area width
     height: 300 // drawing area height
@@ -97,8 +97,7 @@ const App = () => {
         templateRows="repeat(12, 1fr)"
         templateColumns="repeat(6, 1fr)"
         gap={4}
-        align="center"
-      >
+        align="center">
         <GridItem rowSpan={1} colSpan={4}  >
           <Text fontSize="4xl" color={buttonColor}>
             Draw Sketch Here:
@@ -114,8 +113,7 @@ const App = () => {
             // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
             onMouseMove={() => {
               setSvg(getSvgXML())
-            }}
-          >
+            }}>
           </Box>
         </GridItem>
         <GridItem rowSpan={9} colSpan={2}  >
@@ -139,8 +137,7 @@ const App = () => {
           <Button colorScheme={buttonColor} size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
             undo()
             sendRequest(getSvgXML())
-          }
-          }>
+          }}>
             Undo last line
           </Button>
         </GridItem>
@@ -155,7 +152,6 @@ const App = () => {
         </GridItem>
       </Grid>
     </Stack>
-
   </ChakraProvider >
 }
 

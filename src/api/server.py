@@ -1,6 +1,9 @@
+import os
+
 from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 import json
+import random
 
 from src.api.utils import Args, svg_to_png, prepare_data
 from src.data.constants import Split
@@ -33,12 +36,13 @@ class InferImages(Resource):
         if "sketch" not in json_data.keys():
             return {"ERROR": "No sketch provided"}, 400
 
-        sketch_fname = 'sketch.png'
+        sketch_fname = 'sketch' + str(random.random()) + '.png'
         svg_to_png(json_data["sketch"], sketch_fname)
 
         inference.inference_sketch(sketch_fname)
         images, image_labels = inference.return_closest_images(2)
         data = prepare_data(images, image_labels)
+        os.remove(sketch_fname)
 
         return make_response(json.dumps(data), 200)
 
