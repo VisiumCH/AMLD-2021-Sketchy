@@ -4,10 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorboardX import SummaryWriter
 import torch
-import torch.nn as nn
 
 from src.data.constants import ImageType
 from src.data.utils import get_loader, get_dict, get_limits, get_dataset_dict
+from src.models.utils import normalise_attention
 
 NUM_CLOSEST = 5
 
@@ -213,13 +213,6 @@ def select_images(valid_data, number_images, all_dict_class, sketchy_limit_im, t
         class_names.append(class_name)
 
     return im_log, class_names, rand_samples
-
-
-def normalise_attention(attn, im):
-    attn = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn)
-    min_attn = attn.view((attn.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    max_attn = attn.view((attn.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-    return (attn - min_attn) / (max_attn - min_attn)
 
 
 def add_heatmap_on_image(im, attn):

@@ -12,7 +12,7 @@ from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_loader, get_dict
 from src.options import Options
-from src.models.utils import get_model
+from src.models.utils import get_model, normalise_attention
 from src.models.metrics import get_similarity
 
 NUM_CLOSEST = 4

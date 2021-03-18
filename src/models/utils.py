@@ -68,3 +68,10 @@ def get_model(args, best_checkpoint):
         im_net, sk_net = im_net.cuda(), sk_net.cuda()
 
     return im_net, sk_net
+
+
+def normalise_attention(attn, im):
+    attn = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn)
+    min_attn = attn.view((attn.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+    max_attn = attn.view((attn.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+    return (attn - min_attn) / (max_attn - min_attn)
