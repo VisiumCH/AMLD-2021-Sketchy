@@ -34,6 +34,8 @@ const App = () => {
       setInferredLabel([])
       return
     }
+
+    // Show that we are processing the request
     setInferredImage([<CircularProgress isIndeterminate color="green.300" />,
     <CircularProgress isIndeterminate color="green.300" />])
     setInferredLabel(['Guess 1: ???', 'Guess 2: ???'])
