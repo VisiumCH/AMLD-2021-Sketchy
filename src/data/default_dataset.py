@@ -50,7 +50,6 @@ def DefaultDataset_Extended(args, dataset_folder, transform):
                                     test_data, transform, ImageType.sketch)
     test_im_loader = DefaultDataset(args, dataset_folder, Split.test, dicts_class,
                                     test_data, transform, ImageType.image)
-
     return train_loader, [valid_sk_loader, valid_im_loader], [test_sk_loader, test_im_loader], dicts_class
 
 

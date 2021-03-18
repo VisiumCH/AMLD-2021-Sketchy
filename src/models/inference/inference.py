@@ -12,7 +12,7 @@ from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_loader, get_dict
 from src.options import Options
-from src.models.utils import get_model
+from src.models.utils import get_model, normalise_attention
 from src.models.metrics import get_similarity
 
 NUM_CLOSEST = 4
@@ -130,9 +130,11 @@ class Inference():
     def inference_sketch(self, sketch_fname):
         ''' Find the closest images of a sketch and plot it '''
         sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
+
         if self.args.cuda:
             sketch = sketch.cuda()
-        sketch_embedding, _ = self.sk_net(sketch)
+        sketch_embedding, attn_sk = self.sk_net(sketch)
+        self.attn_sk = normalise_attention(attn_sk, sketch)
 
         if self.args.cuda:
             sketch_embedding = sketch_embedding.cpu()
@@ -174,19 +176,23 @@ class Inference():
         Plots a sketch with its closest images in the embedding space.
         The images are stored in the same folder as the best model in a subfolder called 'predictions'
         '''
-        fig, axes = plt.subplots(1, NUM_CLOSEST + 1, figsize=(20, 8))
+        fig, axes = plt.subplots(1, NUM_CLOSEST + 2, figsize=(20, 8))
 
         sk = mpimg.imread(sketch_fname)
         axes[0].imshow(sk)
         axes[0].set(title='Sketch \n Label: ' + sketch_fname.split('/')[-2])
         axes[0].axis('off')
 
-        for i in range(1, NUM_CLOSEST + 1):
+        heat_map = self.attn_sk.squeeze().detach().numpy()
+        axes[1].imshow(sk)
+        axes[1].imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r')
+        axes[1].set(title=sketch_fname.split('/')[-2] + '\n Attention Map')
+        axes[1].axis('off')
+
+        for i in range(2, NUM_CLOSEST + 2):
             im, label = self.prepare_image(i-1)
             axes[i].imshow(im)
-            axes[i].set(title='Closest image ' + str(i) +
-                        '\n Label: ' + label)
-
+            axes[i].set(title='Closest image ' + str(i) + '\n Label: ' + label)
             axes[i].axis('off')
         plt.subplots_adjust(wspace=0.25, hspace=-0.35)
 

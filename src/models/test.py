@@ -52,7 +52,7 @@ def get_test_data(data_loader, model, args):
     return fnames, embeddings, classes
 
 
-def test(im_loader, sk_loader, model, args, inference_logger, dict_class=None):
+def test(im_loader, sk_loader, model, args, inference_logger=None, dict_class=None):
     '''
     Get data and computes metrics on the model
     '''
@@ -78,7 +78,7 @@ def test(im_loader, sk_loader, model, args, inference_logger, dict_class=None):
     map_200, prec_200 = get_map_prec_200(similarity, class_matches, num_cores)
     ap_all, map_all = get_map_all(similarity, class_matches, num_cores)
 
-    if args.log:
+    if inference_logger:
         inference_logger.plot_inference(similarity, im_fnames, im_class)
 
     # Measure elapsed time

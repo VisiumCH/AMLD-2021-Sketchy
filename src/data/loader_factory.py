@@ -9,7 +9,7 @@ from src.data.constants import DatasetName, DatasetFolder, ImageType
 from src.data.utils import get_dataset_dict, get_limits
 
 
-def load_data(args, transform=None):
+def load_data(args, transform):
     """
     Load the data of the appropriate dataset
     Args:
