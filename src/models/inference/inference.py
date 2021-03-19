@@ -212,7 +212,7 @@ class Inference():
         axes[0].set(title='Sketch \n Label: ' + sketch_fname.split('/')[-2])
         axes[0].axis('off')
 
-        attn_sk = normalise_attention(self.attn_sk, sketch)
+        attn_sk = normalise_attention(self.attn_sk, sk)
         heat_map = attn_sk.squeeze().detach().numpy()
         axes[1].imshow(sk)
         axes[1].imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r')
