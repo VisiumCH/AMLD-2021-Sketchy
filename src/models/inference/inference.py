@@ -176,7 +176,7 @@ class Inference():
         Plots a sketch with its closest images in the embedding space.
         The images are stored in the same folder as the best model in a subfolder called 'predictions'
         '''
-        fig, axes = plt.subplots(1, NUM_CLOSEST + 2, figsize=(20, 8))
+        fig, axes = plt.subplots(1, NUM_CLOSEST + 2, figsize=((NUM_CLOSEST+1)*4, 8))
 
         sk = mpimg.imread(sketch_fname)
         axes[0].imshow(sk)

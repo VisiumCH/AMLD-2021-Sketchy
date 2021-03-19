@@ -24,7 +24,7 @@ def get_file_list(dir_skim, class_list, skim):
     fnames_cls = []
     for cls in class_list:
         path_file = glob(os.path.join(dir_skim, cls, _ext))
-        fnames += [os.path.basename(x) for x in path_file]
+        fnames += [x for x in path_file]
         fnames_cls += [cls] * len(path_file)
     return fnames, fnames_cls
 
