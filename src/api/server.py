@@ -45,7 +45,7 @@ class Inferrence(Resource):
         attention = inference.get_attention(sketch_fname)
 
         data = prepare_data(images, image_labels, attention)
-        # os.remove(sketch_fname)
+        os.remove(sketch_fname)
 
         return make_response(json.dumps(data), 200)
 

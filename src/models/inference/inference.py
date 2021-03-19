@@ -156,12 +156,12 @@ class Inference():
         sk = self.loader(sketch_fname)
 
         fig, ax = plt.subplots(frameon=False)
-        ax.imshow(sk)
-        ax.imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r')
+        ax.imshow(sk, aspect='auto')
+        ax.imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r', aspect='auto')
         ax.axis('off')
 
         attention_fname = 'sketch_attention_' + str(random.random()) + '.png'
-        plt.savefig(attention_fname)
+        plt.savefig(attention_fname, bbox_inches='tight')
 
         attention = Image.open(attention_fname)
         attention.resize(im.size)

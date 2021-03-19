@@ -91,7 +91,7 @@ const App = () => {
   }, [sendRequest, svg])
 
   return <ChakraProvider >
-    <Heading fontSize="4xl" color={buttonColor}>
+    <Heading fontSize="4xl" color={buttonColor} align="center">
       Sketchy App
     </Heading>
     <Stack
@@ -100,7 +100,7 @@ const App = () => {
       <Grid
         h="95vh"
         w="95vw"
-        templateRows="repeat(12, 1fr)"
+        templateRows="repeat(14, 1fr)"
         templateColumns="repeat(6, 1fr)"
         gap={2}
         align="center">
@@ -114,7 +114,7 @@ const App = () => {
             Inferred Images:
           </Text>
         </GridItem>
-        <GridItem rowSpan={9} colSpan={4} >
+        <GridItem rowSpan={11} colSpan={4} >
           <Box h="70vh" w="62vw" bg={grey} borderRadius="md" ref={divRef}
             // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
             onMouseMove={() => {
@@ -124,7 +124,7 @@ const App = () => {
         </GridItem>
 
 
-        <GridItem rowSpan={4} colSpan={2}  >
+        <GridItem rowSpan={5} colSpan={2}  >
 
           <Box h="70vh" w="30vw" bg={grey} borderRadius="md">
             <HStack spacing="5px" align="center">
@@ -157,8 +157,8 @@ const App = () => {
             Attention Map
           </Text>
         </GridItem>
-        <GridItem rowSpan={4} colSpan={2}  >
-          <Box bg={grey} w="40vh" color={buttonColor}>
+        <GridItem rowSpan={5} colSpan={2}  >
+          <Box bg={grey} w="37vh" color={buttonColor}>
             {attention}
           </Box>
         </GridItem>
