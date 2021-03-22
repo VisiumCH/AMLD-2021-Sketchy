@@ -8,7 +8,7 @@ const App = () => {
 
   return (
     <Switch>
-      <Route exact path="/">
+      <Route path="/drawing">
         <Drawing />
       </Route>
       <Route path="/embeddings">

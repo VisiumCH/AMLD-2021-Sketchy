@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
+// import { Link as ReachLink } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { Box, ChakraProvider, Button, HStack, VStack, Text, Heading, Grid, GridItem, CircularProgress } from '@chakra-ui/react'
 import { useSvgDrawing } from 'react-hooks-svgdrawing'
@@ -185,7 +186,9 @@ function Drawing() {
               </Button>
                     </GridItem>
                     <GridItem rowSpan={2} colSpan={2}>
-                        <Link to="embeddings" className="embeddings_link">See Embedddings</Link>
+                        <Link to="/embeddings" className="embeddings_link">
+                            <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg"> See Embeddings</Button>
+                        </Link>
                     </GridItem>
                 </Grid>
             </Box>

@@ -2,14 +2,8 @@ import io
 
 import base64
 from cairosvg import svg2png
+import pandas as pd
 from PIL import Image
-
-
-class Args:
-    dataset = "sketchy"
-    emb_size = 256
-    cuda = False
-    best_model = 'io/models/sktu_training_part_1/checkpoint.pth'
 
 
 def svg_to_png(sketch, sketch_fname):
@@ -44,5 +38,15 @@ def prepare_data(images, image_labels, attention):
     rawBytes.seek(0)
     attention_base64 = base64.b64encode(rawBytes.read())
     data['attention'] = str(attention_base64)
+
+    return data
+
+
+def prepare_embeddings(df):
+    data = {}
+    data['x'] = list(df['embeddings_1'])
+    data['y'] = list(df['embeddings_2'])
+    data['z'] = list(df['embeddings_1'])
+    data['classes'] = list(df['classes'])
 
     return data

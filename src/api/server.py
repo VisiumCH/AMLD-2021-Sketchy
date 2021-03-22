@@ -1,16 +1,25 @@
 import os
 
+import pandas as pd
 from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 import json
 import random
 
-from src.api.utils import Args, svg_to_png, prepare_data
+from src.api.utils import svg_to_png, prepare_data, prepare_embeddings
 from src.data.constants import Split
 from src.models.inference.inference import Inference
 
 app = Flask(__name__)
 api = Api(app)
+
+
+class Args:
+    dataset = "sketchy"
+    emb_size = 256
+    cuda = False
+    best_model = 'io/models/sktu_training_part_1/checkpoint.pth'
+    embeddings_path = 'io/models/2021_03_19_10h13min/00000/default/embeddings_pca.csv'
 
 
 class APIList(Resource):
@@ -50,8 +59,22 @@ class Inferrence(Resource):
         return make_response(json.dumps(data), 200)
 
 
+class Embeddings(Resource):
+    """ Receives a sketch and returns its closest images. """
+
+    def post(self):
+        print('in post')
+
+        args = Args()
+        df = pd.read_csv(args.embeddings_path)
+        data = prepare_embeddings(df)
+
+        return make_response(json.dumps(data), 200)
+
+
 api.add_resource(APIList, "/api_list")
 api.add_resource(Inferrence, "/find_images")
+api.add_resource(Embeddings, "/get_embeddings")
 
 if __name__ == "__main__":
 
