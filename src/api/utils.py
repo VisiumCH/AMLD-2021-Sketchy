@@ -46,7 +46,7 @@ def prepare_embeddings(df):
     data = {}
     data['x'] = list(df['embeddings_1'])
     data['y'] = list(df['embeddings_2'])
-    data['z'] = list(df['embeddings_1'])
+    data['z'] = list(df['embeddings_3'])
     data['classes'] = list(df['classes'])
 
     return data
