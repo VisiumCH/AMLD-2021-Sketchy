@@ -68,7 +68,7 @@ class Embeddings(Resource):
         args = Args()
         df = pd.read_csv(args.embeddings_path)
         data = prepare_embeddings(df)
-
+        print(len(data['x']))
         return make_response(json.dumps(data), 200)
 
 
