@@ -43,10 +43,14 @@ def prepare_data(images, image_labels, attention):
 
 
 def prepare_embeddings(df):
+    df.sort_values(by=['classes'])
+    class_set = sorted(list(set(df['classes'])))
+
     data = {}
-    data['x'] = list(df['embeddings_1'])
-    data['y'] = list(df['embeddings_2'])
-    data['z'] = list(df['embeddings_3'])
-    data['classes'] = list(df['classes'])
+    for _class in class_set:
+        data[_class] = {}
+        data[_class]['x'] = list(df[df["classes"] == _class]["embeddings_1"])
+        data[_class]['y'] = list(df[df["classes"] == _class]["embeddings_2"])
+        data[_class]['z'] = list(df[df["classes"] == _class]["embeddings_3"])
 
     return data
