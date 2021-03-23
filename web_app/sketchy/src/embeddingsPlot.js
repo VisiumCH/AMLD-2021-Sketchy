@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Plot from 'react-plotly.js'
-import { Box, ChakraProvider, Button, Text, Heading, VStack, HStack } from '@chakra-ui/react'
+import { Box, ChakraProvider, Button, Text, Heading, VStack, Grid, GridItem, Stack } from '@chakra-ui/react'
 
 const gray = "#F7FAFC"
 const darkGray = "#A3A8B0"
@@ -128,79 +128,97 @@ function Embeddings() {
                     <Heading fontSize="4xl" color={textColor} align="center">
                         AMLD 2021 Visium's Sketchy App
                 </Heading>
-                    <Text fontSize="xs" color={textColor} align="center">
-                        --------------------------------------------------------
-                </Text>
                     <Text fontSize="2xl" color={textColor} align="center">
                         Embeddings: Images and Sketches in latent space
                 </Text>
-                    <Plot
-                        data={traces}
-                        layout={{
-                            width: 1200,
-                            height: 645,
-                            showlegend: true,
-                            margin: {
-                                l: 0,
-                                r: 0,
-                                b: 0,
-                                t: 0
-                            },
-                            legend: {
-                                title: {
-                                    text: 'Categories',
+                </VStack>
+
+                <Grid h="90vh" w="98vw" gap={4} align="center"
+                    templateRows="repeat(1, 1fr)" templateColumns="repeat(7, 1fr)">
+                    <GridItem rowSpan={1} colSpan={1}  >
+                        <VStack spacing={3} direction="row" align="center">
+                            <Text fontSize="2xl" color={textColor} align="center">
+                                Select a dimension for the graph
+                        </Text>
+                            <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+                                setNbDimensions(2)
+                            }}>
+                                2D
+                    </Button>
+                            <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+                                setNbDimensions(3)
+                            }}>
+                                3D
+                    </Button>
+                            <Text fontSize="2xl" color={textColor} align="center">
+                                --------------------------
+                        </Text>
+                            <Text fontSize="2xl" color={textColor} align="center">
+                                Load the graph
+                        </Text>
+                            <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+                                sendRequest(getEmbeddings)
+                            }}>
+                                Load Graph
+                    </Button>
+                            <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+                                sendRequest(addSketch)
+                            }}>
+                                Add My Sketch
+                    </Button>
+                            <Text fontSize="2xl" color={textColor} align="center">
+                                --------------------------
+                        </Text>
+                            <Text fontSize="2xl" color={textColor} align="center">
+                                Go back to drawing
+                        </Text>
+                            <Link to="/drawing" className="drawing_link">
+                                <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth}> Back to Drawing</Button>
+                            </Link>
+
+                        </VStack>
+                    </GridItem>
+                    <GridItem rowSpan={1} colSpan={6}  >
+                        <Plot
+                            data={traces}
+                            layout={{
+                                width: 1300,
+                                height: 700,
+                                showlegend: true,
+                                margin: {
+                                    l: 0,
+                                    r: 0,
+                                    b: 0,
+                                    t: 0
+                                },
+                                legend: {
+                                    title: {
+                                        text: 'Categories',
+                                        font: {
+                                            size: 20,
+                                            color: backgroundColor
+                                        },
+                                    },
                                     font: {
-                                        size: 20,
+                                        size: 16,
                                         color: backgroundColor
                                     },
+                                    orientation: 'v',
+                                    itemsizing: "constant",
+                                    x: 0.9,
+                                    y: 0.5
                                 },
                                 font: {
-                                    size: 16,
                                     color: backgroundColor
                                 },
-                                orientation: 'v',
-                                itemsizing: "constant",
-                                x: 0.9,
-                                y: 0.5
-                            },
-                            font: {
-                                color: backgroundColor
-                            },
-                            paper_bgcolor: gray
-                        }}
-                    />
-                    <HStack
-                        spacing={40}
-                        align="center"
-                    >
-                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
-                            setNbDimensions(2)
-                        }}>
-                            2D
-                    </Button>
-                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
-                            setNbDimensions(3)
-                        }}>
-                            3D
-                    </Button>
-                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
-                            sendRequest(getEmbeddings)
-                        }}>
-                            Load Graph
-                    </Button>
-                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
-                            sendRequest(addSketch)
-                        }}>
-                            Add My Sketch
-                    </Button>
-                        <Link to="/drawing" className="drawing_link">
-                            <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg"> Back to Drawing</Button>
-                        </Link>
-                    </HStack>
-                    <Text fontSize="xs" color={textColor} align="center">
+                                paper_bgcolor: gray
+                            }}
+                        />
+                    </GridItem>
 
+                    <Text fontSize="xs" color={textColor} align="center">
                     </Text>
-                </VStack>
+                </Grid>
             </Box>
         </ChakraProvider >
     )
