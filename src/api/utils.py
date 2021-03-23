@@ -61,8 +61,8 @@ def read_class_tsv_file(fpath):
 
 def process_embeddings(embeddings_path, n_components, sketch_emb):
     # File names
-    tensors_path = embeddings_path.replace('embeddings.csv', 'tensors.tsv')
-    tsv_path = embeddings_path.replace('embeddings.csv', 'metadata.tsv')
+    tensors_path = embeddings_path + 'tensors.tsv'
+    tsv_path = embeddings_path + 'metadata.tsv'
 
     tensors = read_tensor_tsv_file(tensors_path)
     if (type(sketch_emb) != bool):
@@ -80,15 +80,17 @@ def process_embeddings(embeddings_path, n_components, sketch_emb):
     if (type(sketch_emb) != bool):
         classes.append('My Custom Sketch')
 
-    # Save dataframe
-    d = {'x': list(X[:, 0]), 'y': list(X[:, 1]), 'z': list(X[:, 2]), 'classes': classes}
+    # Process in dataframe
+    if n_components == 3:
+        d = {'x': list(X[:, 0]), 'y': list(X[:, 1]), 'z': list(X[:, 2]), 'classes': classes}
+    else:
+        d = {'x': list(X[:, 0]), 'y': list(X[:, 1]), 'classes': classes}
     df = pd.DataFrame(data=d)
-    df.to_csv(embeddings_path, header=True, index=False)
+
+    return df
 
 
-def prepare_embeddings_data(embeddings_path):
-    # Read and sort df
-    df = pd.read_csv(embeddings_path)
+def prepare_embeddings_data(df, nb_dimensions):
     df.sort_values(by=['classes'])
     class_set = sorted(list(set(df['classes'])))
 
@@ -98,6 +100,7 @@ def prepare_embeddings_data(embeddings_path):
         data[_class] = {}
         data[_class]['x'] = list(df[df["classes"] == _class]["x"])
         data[_class]['y'] = list(df[df["classes"] == _class]["y"])
-        data[_class]['z'] = list(df[df["classes"] == _class]["z"])
+        if nb_dimensions == 3:
+            data[_class]['z'] = list(df[df["classes"] == _class]["z"])
 
     return data

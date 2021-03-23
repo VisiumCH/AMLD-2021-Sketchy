@@ -17,6 +17,7 @@ function Embeddings() {
     const { state } = useLocation()
     const [isSending, setIsSending] = useState(false)
     const [result, setResult] = useState({})
+    const [nbDimensions, setNbDimensions] = useState(3)
     let traces = []
 
     useEffect(() => {
@@ -29,7 +30,9 @@ function Embeddings() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ "body": "body" })
+            body: JSON.stringify({
+                "nb_dim": nbDimensions
+            })
         })
 
         if (response.ok) {
@@ -39,14 +42,16 @@ function Embeddings() {
     }
 
     async function addSketch() {
-        console.log('Add sketch')
         // Send to back end
-        const response = await fetch('/get_sketch_embeddings', {
+        const response = await fetch('/get_embeddings', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ "sketch": state })
+            body: JSON.stringify({
+                "sketch": state,
+                "nb_dim": nbDimensions
+            })
         })
         if (response.ok) {
             const res = await response.json()
@@ -69,33 +74,50 @@ function Embeddings() {
 
     }, [isSending]) // update the callback if the state changes
 
-    let marker_size = 4
-    let i = 0
-    for (let key in result) {
-        if (key == "My Custom Sketch") {
-            marker_size = 8
-        } else {
-            marker_size = 4
+    function fillTraces() {
+        let marker_size = 4
+        let i = 0
+        for (let key in result) {
+            if (key === "My Custom Sketch") {
+                marker_size = 8
+            } else {
+                marker_size = 4
+            }
+            let trace = {}
+            if (nbDimensions === 3) {
+                trace = {
+                    x: result[key]['x'],
+                    y: result[key]['y'],
+                    z: result[key]['z'],
+                    name: key,
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    marker: {
+                        color: colors[i],
+                        size: marker_size
+                    },
+                    hoverinfo: "name",
+                    hovermode: "closest"
+                }
+            } else {
+                trace = {
+                    x: result[key]['x'],
+                    y: result[key]['y'],
+                    name: key,
+                    type: 'scatter',
+                    mode: 'markers',
+                    marker: {
+                        color: colors[i],
+                        size: marker_size * 2
+                    },
+                    hoverinfo: "name"
+                }
+            }
+            traces.push(trace)
+            i = i + 1
         }
-        let trace = {
-            x: result[key]['x'],
-            y: result[key]['y'],
-            z: result[key]['z'],
-            name: key,
-            type: 'scatter3d',
-            mode: 'markers',
-            marker: {
-                color: colors[i],
-                size: marker_size
-            },
-            hoverinfo: "name",
-            hovermode: "closest"
-        }
-        traces.push(trace)
-        i = i + 1
     }
-
-
+    fillTraces()
 
     return (
         <ChakraProvider >
@@ -138,7 +160,7 @@ function Embeddings() {
                                 },
                                 orientation: 'v',
                                 itemsizing: "constant",
-                                x: 0.8,
+                                x: 0.9,
                                 y: 0.5
                             },
                             font: {
@@ -151,6 +173,16 @@ function Embeddings() {
                         spacing={40}
                         align="center"
                     >
+                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+                            setNbDimensions(2)
+                        }}>
+                            2D
+                    </Button>
+                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+                            setNbDimensions(3)
+                        }}>
+                            3D
+                    </Button>
                         <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
                             sendRequest(getEmbeddings)
                         }}>

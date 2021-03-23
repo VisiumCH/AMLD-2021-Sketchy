@@ -18,7 +18,7 @@ class Args:
     emb_size = 256
     cuda = False
     best_model = 'io/models/sktu_training_part_1/checkpoint.pth'
-    embeddings_path = 'io/models/2021_03_19_10h13min/00027/default/embeddings.csv'
+    embeddings_path = 'io/models/2021_03_19_10h13min/00027/default/'
 
 
 class APIList(Resource):
@@ -62,36 +62,29 @@ class Embeddings(Resource):
     """ Receives a sketch and returns its closest images. """
 
     def post(self):
+        json_data = request.get_json()
 
         args = Args()
 
-        process_embeddings(args.embeddings_path, n_components=3, sketch_emb=False)
-        data = prepare_embeddings_data(args.embeddings_path)
-
-        return make_response(json.dumps(data), 200)
-
-
-class EmbeddingsSketch(Resource):
-    """ Receives a sketch and returns its closest images. """
-
-    def post(self):
-        json_data = request.get_json()
+        if "nb_dim" not in json_data.keys():
+            return {"ERROR": "Number of dimensions not provided"}, 400
+        nb_dimensions = json_data["nb_dim"]
 
         # Verify the data
         if "sketch" not in json_data.keys():
-            return {"ERROR": "No sketch provided"}, 400
+            df = process_embeddings(args.embeddings_path,
+                                    n_components=nb_dimensions, sketch_emb=False)
+        else:
+            random_number = str(random.random())
+            sketch_fname = 'sketch' + random_number + '.png'
+            svg_to_png(json_data["sketch"], sketch_fname)
 
-        random_number = str(random.random())
-        sketch_fname = 'sketch' + random_number + '.png'
-        svg_to_png(json_data["sketch"], sketch_fname)
+            sketch_embedding = inference.inference_sketch(sketch_fname)
+            df = process_embeddings(args.embeddings_path,
+                                    n_components=nb_dimensions, sketch_emb=sketch_embedding)
+            os.remove(sketch_fname)
 
-        sketch_embedding = inference.inference_sketch(sketch_fname)
-
-        args = Args()
-        process_embeddings(args.embeddings_path, n_components=3, sketch_emb=sketch_embedding)
-        data = prepare_embeddings_data(args.embeddings_path)
-
-        os.remove(sketch_fname)
+        data = prepare_embeddings_data(df, nb_dimensions)
 
         return make_response(json.dumps(data), 200)
 
@@ -99,7 +92,6 @@ class EmbeddingsSketch(Resource):
 api.add_resource(APIList, "/api_list")
 api.add_resource(Inferrence, "/find_images")
 api.add_resource(Embeddings, "/get_embeddings")
-api.add_resource(EmbeddingsSketch, "/get_sketch_embeddings")
 
 if __name__ == "__main__":
 
