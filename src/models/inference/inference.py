@@ -139,6 +139,7 @@ class Inference():
         if self.args.cuda:
             sketch_embedding = sketch_embedding.cpu()
         self.get_closest_images(sketch_embedding)
+        return sketch_embedding
 
     def get_attention(self, sketch_fname):
         ''' Find the closest images of a sketch and plot it '''

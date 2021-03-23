@@ -186,7 +186,10 @@ function Drawing() {
               </Button>
                     </GridItem>
                     <GridItem rowSpan={2} colSpan={2}>
-                        <Link to="/embeddings" className="embeddings_link">
+                        <Link to={{
+                            pathname: "/embeddings",
+                            state: svg
+                        }} >
                             <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg"> See Embeddings</Button>
                         </Link>
                     </GridItem>

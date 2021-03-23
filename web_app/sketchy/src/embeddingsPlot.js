@@ -1,22 +1,26 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import Plot from 'react-plotly.js'
-import { Box, ChakraProvider, Button, Text, Heading, VStack } from '@chakra-ui/react'
+import { Box, ChakraProvider, Button, Text, Heading, VStack, HStack } from '@chakra-ui/react'
 
+const gray = "#F7FAFC"
 const darkGray = "#A3A8B0"
 const textColor = "#FFFFFF"
 const backgroundColor = "#1A365D"
 const buttonHeight = "48px"
 const buttonWidth = "180px"
 
-const colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52',
-    '#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52']
-
+const colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
+    '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#000000']
 
 function Embeddings() {
+    const { state } = useLocation()
     const [isSending, setIsSending] = useState(false)
     const [result, setResult] = useState({})
     let traces = []
+
+    useEffect(() => {
+    }, [state])
 
     async function getEmbeddings() {
         // Send to back end
@@ -30,63 +34,49 @@ function Embeddings() {
 
         if (response.ok) {
             const res = await response.json()
-            console.log(res)
             setResult(res)
-            for (let key in res) {
-                console.log(key)
-                // console.log(res[key]['x'])
-                const trace1 = {
-                    x: [1, 2, 4],
-                    y: [4, 5, 6],
-                    z: [7, 8, 9],
-                    name: 'trace1',
-                    type: 'scatter3d',
-                    mode: 'markers',
-                    marker: {
-                        color: 'red',
-                        size: 4
-                    }
-                }
-                const trace2 = {
-                    x: [7, 2, 4],
-                    y: [8, 5, 1],
-                    z: [9, 6, 9],
-                    name: 'trace2',
-                    type: 'scatter3d',
-                    mode: 'markers',
-                    marker: {
-                        color: 'green',
-                        size: 4
-                    }
-                }
-                traces = [trace1, trace2]
-            }
+        }
+    }
+
+    async function addSketch() {
+        console.log('Add sketch')
+        // Send to back end
+        const response = await fetch('/get_sketch_embeddings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ "sketch": state })
+        })
+        if (response.ok) {
+            const res = await response.json()
+            setResult(res)
         }
     }
 
 
-    const sendRequest = useCallback(async (svg) => {
+    const sendRequest = useCallback(async (my_function) => {
         // don't send again while we are sending
         if (isSending) return
         // update state
         setIsSending(true)
 
         // set images and labels
-        getEmbeddings()
+        my_function()
 
         // once the request is sent, update state again
         setIsSending(false)
 
     }, [isSending]) // update the callback if the state changes
 
-
-
-    useEffect(() => {
-        sendRequest()
-    }, [sendRequest])
-
+    let marker_size = 4
     let i = 0
     for (let key in result) {
+        if (key == "My Custom Sketch") {
+            marker_size = 8
+        } else {
+            marker_size = 4
+        }
         let trace = {
             x: result[key]['x'],
             y: result[key]['y'],
@@ -96,45 +86,85 @@ function Embeddings() {
             mode: 'markers',
             marker: {
                 color: colors[i],
-                size: 4
-            }
+                size: marker_size
+            },
+            hoverinfo: "name",
+            hovermode: "closest"
         }
         traces.push(trace)
         i = i + 1
     }
+
+
 
     return (
         <ChakraProvider >
             <Box bg={backgroundColor}>
                 <VStack
                     spacing={4}
-                    align="center"
-                >
+                    align="center">
                     <Heading fontSize="4xl" color={textColor} align="center">
                         AMLD 2021 Visium's Sketchy App
                 </Heading>
                     <Text fontSize="xs" color={textColor} align="center">
                         --------------------------------------------------------
                 </Text>
-                    <Text fontSize="xl" color={textColor} align="center">
+                    <Text fontSize="2xl" color={textColor} align="center">
                         Embeddings: Images and Sketches in latent space
                 </Text>
                     <Plot
                         data={traces}
                         layout={{
                             width: 1200,
-                            height: 650,
-                            showlegend: true
+                            height: 645,
+                            showlegend: true,
+                            margin: {
+                                l: 0,
+                                r: 0,
+                                b: 0,
+                                t: 0
+                            },
+                            legend: {
+                                title: {
+                                    text: 'Categories',
+                                    font: {
+                                        size: 20,
+                                        color: backgroundColor
+                                    },
+                                },
+                                font: {
+                                    size: 16,
+                                    color: backgroundColor
+                                },
+                                orientation: 'v',
+                                itemsizing: "constant",
+                                x: 0.8,
+                                y: 0.5
+                            },
+                            font: {
+                                color: backgroundColor
+                            },
+                            paper_bgcolor: gray
                         }}
                     />
-                    <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
-                        sendRequest()
-                    }}>
-                        Load Graph
+                    <HStack
+                        spacing={40}
+                        align="center"
+                    >
+                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+                            sendRequest(getEmbeddings)
+                        }}>
+                            Load Graph
                     </Button>
-                    <Link to="/drawing" className="drawing_link">
-                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg"> Back to Drawing</Button>
-                    </Link>
+                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+                            sendRequest(addSketch)
+                        }}>
+                            Add My Sketch
+                    </Button>
+                        <Link to="/drawing" className="drawing_link">
+                            <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg"> Back to Drawing</Button>
+                        </Link>
+                    </HStack>
                     <Text fontSize="xs" color={textColor} align="center">
 
                     </Text>

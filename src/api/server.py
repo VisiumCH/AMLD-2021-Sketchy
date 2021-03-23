@@ -1,12 +1,11 @@
 import os
 
-import pandas as pd
 from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 import json
 import random
 
-from src.api.utils import svg_to_png, prepare_data, prepare_embeddings
+from src.api.utils import svg_to_png, prepare_images_data, prepare_embeddings_data, process_embeddings
 from src.data.constants import Split
 from src.models.inference.inference import Inference
 
@@ -19,7 +18,7 @@ class Args:
     emb_size = 256
     cuda = False
     best_model = 'io/models/sktu_training_part_1/checkpoint.pth'
-    embeddings_path = 'io/models/2021_03_19_10h13min/00000/default/embeddings_pca.csv'
+    embeddings_path = 'io/models/2021_03_19_10h13min/00027/default/embeddings.csv'
 
 
 class APIList(Resource):
@@ -53,7 +52,7 @@ class Inferrence(Resource):
         images, image_labels = inference.get_closest(2)
         attention = inference.get_attention(sketch_fname)
 
-        data = prepare_data(images, image_labels, attention)
+        data = prepare_images_data(images, image_labels, attention)
         os.remove(sketch_fname)
 
         return make_response(json.dumps(data), 200)
@@ -63,11 +62,36 @@ class Embeddings(Resource):
     """ Receives a sketch and returns its closest images. """
 
     def post(self):
-        print('in post')
 
         args = Args()
-        df = pd.read_csv(args.embeddings_path)
-        data = prepare_embeddings(df)
+
+        process_embeddings(args.embeddings_path, n_components=3, sketch_emb=False)
+        data = prepare_embeddings_data(args.embeddings_path)
+
+        return make_response(json.dumps(data), 200)
+
+
+class EmbeddingsSketch(Resource):
+    """ Receives a sketch and returns its closest images. """
+
+    def post(self):
+        json_data = request.get_json()
+
+        # Verify the data
+        if "sketch" not in json_data.keys():
+            return {"ERROR": "No sketch provided"}, 400
+
+        random_number = str(random.random())
+        sketch_fname = 'sketch' + random_number + '.png'
+        svg_to_png(json_data["sketch"], sketch_fname)
+
+        sketch_embedding = inference.inference_sketch(sketch_fname)
+
+        args = Args()
+        process_embeddings(args.embeddings_path, n_components=3, sketch_emb=sketch_embedding)
+        data = prepare_embeddings_data(args.embeddings_path)
+
+        os.remove(sketch_fname)
 
         return make_response(json.dumps(data), 200)
 
@@ -75,6 +99,7 @@ class Embeddings(Resource):
 api.add_resource(APIList, "/api_list")
 api.add_resource(Inferrence, "/find_images")
 api.add_resource(Embeddings, "/get_embeddings")
+api.add_resource(EmbeddingsSketch, "/get_sketch_embeddings")
 
 if __name__ == "__main__":
 
