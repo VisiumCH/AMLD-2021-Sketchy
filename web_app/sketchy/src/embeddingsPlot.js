@@ -9,13 +9,12 @@ const backgroundColor = "#1A365D"
 const buttonHeight = "48px"
 const buttonWidth = "180px"
 
+const colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52',
+    '#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52']
+
 
 function Embeddings() {
     const [isSending, setIsSending] = useState(false)
-    const [x, setX] = useState([1, 2, 3])
-    const [y, setY] = useState([4, 5, 6])
-    const [z, setZ] = useState([7, 8, 9])
-    const [legend, setLegend] = useState('Random Point')
     const [result, setResult] = useState({})
     let traces = []
 
@@ -86,53 +85,23 @@ function Embeddings() {
         sendRequest()
     }, [sendRequest])
 
-    console.log("3")
-    console.log(result)
-
-
-    let trace1 = {
-        x: result['candle']['x'],
-        y: result['candle']['y'],
-        z: result['candle']['z'],
-        name: 'candlde',
-        type: 'scatter3d',
-        mode: 'markers',
-        marker: {
-            color: 'red',
-            size: 4
+    let i = 0
+    for (let key in result) {
+        let trace = {
+            x: result[key]['x'],
+            y: result[key]['y'],
+            z: result[key]['z'],
+            name: key,
+            type: 'scatter3d',
+            mode: 'markers',
+            marker: {
+                color: colors[i],
+                size: 4
+            }
         }
+        traces.push(trace)
+        i = i + 1
     }
-    let trace2 = {
-        x: result['cup']['x'],
-        y: result['cup']['y'],
-        z: result['cup']['z'],
-        name: 'cup',
-        type: 'scatter3d',
-        mode: 'markers',
-        marker: {
-            color: 'green',
-            size: 4
-        }
-    }
-    traces = [trace1, trace2]
-    console.log(traces)
-
-    // traces.push(
-    //     Array(3).fill(0).map((_, i) => {
-    //         return {
-    //             x: [4, 6, 8],
-    //             y: [9, 6, 2],
-    //             z: [5, 1, 4],
-    //             name: 'haha',
-    //             type: 'scatter3d',
-    //             mode: 'markers',
-    //             marker: {
-    //                 color: 'green',
-    //                 size: 4
-    //             },
-    //         }
-    //     })
-    // )
 
     return (
         <ChakraProvider >
@@ -176,95 +145,3 @@ function Embeddings() {
 }
 
 export default Embeddings
-
-
-
-// const sendRequest = useCallback(async () => {
-    //     // don't send again while we are sending
-    //     if (isSending) return
-    //     // update state
-    //     setIsSending(true)
-
-    //     // set images and labels
-    //     // Send to back end
-    //     const response = await fetch('/get_embeddings', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         },
-    //         body: JSON.stringify({ "body": "body" })
-    //     })
-
-    //     // Receive response
-    //     if (response.ok) {
-    //         const res = await response.json()
-    //         console.log(res)
-
-    //         for (let key in res) {
-    //             let class_res = res[key]
-    //             console.log(key)
-    //             console.log(class_res)
-    //     setX(class_res["x"])
-    //     setY(class_res["y"])
-    //     setZ(class_res["z"])
-    //     setLegend(key)
-
-    //     console.log(x)
-    //     console.log(legend)
-    //     // console.log(y)
-    //     // console.log(z)
-    //     let trace = Array(3).fill(0).map((_, i) => {
-    //         return {
-    //             x: x,
-    //             y: y,
-    //             z: z,
-    //             name: legend,
-    //             type: 'scatter3d',
-    //             mode: 'markers',
-    //             marker: {
-    //                 color: 'red',
-    //                 size: 4
-    //             },
-    //         }
-    //     })
-    //     traces.push(trace)
-    // }
-    // }
-
-    //     // once the request is sent, update state again
-    //     setIsSending(false)
-    // }, [isSending])
-
-
-
-
-
-
-        // function isEmptyObject(obj) {
-    //     return JSON.stringify(obj) === '{}';
-    // }
-
-    // if (isEmptyObject(res)) {
-    //     console.log('Empty')
-    //     console.log(res)
-    // } else {
-
-    //     console.log('not empty')
-    //     console.log(res)
-    // }
-
-
-    // let traces = Array(3).fill(0).map((_, i) => {
-    //     return {
-    //         x: x,
-    //         y: y,
-    //         z: z,
-    //         name: legend,
-    //         type: 'scatter3d',
-    //         mode: 'markers',
-    //         marker: {
-    //             color: 'red',
-    //             size: 4
-    //         },
-    //     }
-    // })
