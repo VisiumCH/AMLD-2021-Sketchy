@@ -19,8 +19,167 @@ function Embeddings() {
     const [result, setResult] = useState({})
     let traces = []
 
+    async function getEmbeddings() {
+        // Send to back end
+        const response = await fetch('/get_embeddings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ "body": "body" })
+        })
 
-    // const sendRequest = useCallback(async () => {
+        if (response.ok) {
+            const res = await response.json()
+            console.log(res)
+            setResult(res)
+            for (let key in res) {
+                console.log(key)
+                // console.log(res[key]['x'])
+                const trace1 = {
+                    x: [1, 2, 4],
+                    y: [4, 5, 6],
+                    z: [7, 8, 9],
+                    name: 'trace1',
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    marker: {
+                        color: 'red',
+                        size: 4
+                    }
+                }
+                const trace2 = {
+                    x: [7, 2, 4],
+                    y: [8, 5, 1],
+                    z: [9, 6, 9],
+                    name: 'trace2',
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    marker: {
+                        color: 'green',
+                        size: 4
+                    }
+                }
+                traces = [trace1, trace2]
+            }
+        }
+    }
+
+
+    const sendRequest = useCallback(async (svg) => {
+        // don't send again while we are sending
+        if (isSending) return
+        // update state
+        setIsSending(true)
+
+        // set images and labels
+        getEmbeddings()
+
+        // once the request is sent, update state again
+        setIsSending(false)
+
+    }, [isSending]) // update the callback if the state changes
+
+
+
+    useEffect(() => {
+        sendRequest()
+    }, [sendRequest])
+
+    console.log("3")
+    console.log(result)
+
+
+    let trace1 = {
+        x: result['candle']['x'],
+        y: result['candle']['y'],
+        z: result['candle']['z'],
+        name: 'candlde',
+        type: 'scatter3d',
+        mode: 'markers',
+        marker: {
+            color: 'red',
+            size: 4
+        }
+    }
+    let trace2 = {
+        x: result['cup']['x'],
+        y: result['cup']['y'],
+        z: result['cup']['z'],
+        name: 'cup',
+        type: 'scatter3d',
+        mode: 'markers',
+        marker: {
+            color: 'green',
+            size: 4
+        }
+    }
+    traces = [trace1, trace2]
+    console.log(traces)
+
+    // traces.push(
+    //     Array(3).fill(0).map((_, i) => {
+    //         return {
+    //             x: [4, 6, 8],
+    //             y: [9, 6, 2],
+    //             z: [5, 1, 4],
+    //             name: 'haha',
+    //             type: 'scatter3d',
+    //             mode: 'markers',
+    //             marker: {
+    //                 color: 'green',
+    //                 size: 4
+    //             },
+    //         }
+    //     })
+    // )
+
+    return (
+        <ChakraProvider >
+            <Box bg={backgroundColor}>
+                <VStack
+                    spacing={4}
+                    align="center"
+                >
+                    <Heading fontSize="4xl" color={textColor} align="center">
+                        AMLD 2021 Visium's Sketchy App
+                </Heading>
+                    <Text fontSize="xs" color={textColor} align="center">
+                        --------------------------------------------------------
+                </Text>
+                    <Text fontSize="xl" color={textColor} align="center">
+                        Embeddings: Images and Sketches in latent space
+                </Text>
+                    <Plot
+                        data={traces}
+                        layout={{
+                            width: 1200,
+                            height: 650,
+                            showlegend: true
+                        }}
+                    />
+                    <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+                        sendRequest()
+                    }}>
+                        Load Graph
+                    </Button>
+                    <Link to="/drawing" className="drawing_link">
+                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg"> Back to Drawing</Button>
+                    </Link>
+                    <Text fontSize="xs" color={textColor} align="center">
+
+                    </Text>
+                </VStack>
+            </Box>
+        </ChakraProvider >
+    )
+}
+
+export default Embeddings
+
+
+
+// const sendRequest = useCallback(async () => {
     //     // don't send again while we are sending
     //     if (isSending) return
     //     // update state
@@ -76,51 +235,12 @@ function Embeddings() {
     //     setIsSending(false)
     // }, [isSending])
 
-    async function getEmbeddings() {
-        // Send to back end
-        const response = await fetch('/get_embeddings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ "body": "body" })
-        })
-
-        if (response.ok) {
-            const res = await response.json()
-            console.log(res)
-            for (let key in res) {
-                console.log(key)
-                console.log(res[key]['x'])
-            }
-        }
-
-    }
 
 
 
 
-    const sendRequest = useCallback(async (svg) => {
-        // don't send again while we are sending
-        if (isSending) return
-        // update state
-        setIsSending(true)
 
-        // set images and labels
-        getEmbeddings()
-
-        // once the request is sent, update state again
-        setIsSending(false)
-
-    }, [isSending]) // update the callback if the state changes
-
-
-
-    useEffect(() => {
-        sendRequest()
-    }, [sendRequest])
-
-    // function isEmptyObject(obj) {
+        // function isEmptyObject(obj) {
     //     return JSON.stringify(obj) === '{}';
     // }
 
@@ -148,46 +268,3 @@ function Embeddings() {
     //         },
     //     }
     // })
-
-    return (
-        <ChakraProvider >
-            <Box bg={backgroundColor}>
-                <VStack
-                    spacing={4}
-                    align="center"
-                >
-                    <Heading fontSize="4xl" color={textColor} align="center">
-                        AMLD 2021 Visium's Sketchy App
-                </Heading>
-                    <Text fontSize="xs" color={textColor} align="center">
-                        --------------------------------------------------------
-                </Text>
-                    <Text fontSize="xl" color={textColor} align="center">
-                        Embeddings: Images and Sketches in latent space
-                </Text>
-                    <Plot
-                        data={traces}
-                        layout={{
-                            width: 1200,
-                            height: 650,
-                            showlegend: true
-                        }}
-                    />
-                    <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
-                        sendRequest()
-                    }}>
-                        Load Graph
-                    </Button>
-                    <Link to="/drawing" className="drawing_link">
-                        <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg"> Back to Drawing</Button>
-                    </Link>
-                    <Text fontSize="xs" color={textColor} align="center">
-
-                    </Text>
-                </VStack>
-            </Box>
-        </ChakraProvider >
-    )
-}
-
-export default Embeddings
