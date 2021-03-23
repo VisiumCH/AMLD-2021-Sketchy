@@ -1,17 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Plot from 'react-plotly.js'
-import { Box, ChakraProvider, Button, Text, Heading, VStack, Grid, GridItem, Stack } from '@chakra-ui/react'
+import { Box, ChakraProvider, Button, Text, Heading, VStack, Grid, GridItem } from '@chakra-ui/react'
+import { gray, darkGray, textColor, backgroundColor, buttonHeight, buttonWidth, colors } from "./constants"
 
-const gray = "#F7FAFC"
-const darkGray = "#A3A8B0"
-const textColor = "#FFFFFF"
-const backgroundColor = "#1A365D"
-const buttonHeight = "48px"
-const buttonWidth = "180px"
-
-const colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
-    '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#000000']
 
 function Embeddings() {
     const { state } = useLocation()
@@ -79,9 +71,9 @@ function Embeddings() {
         let i = 0
         for (let key in result) {
             if (key === "My Custom Sketch") {
-                marker_size = 8
+                marker_size = 10
             } else {
-                marker_size = 4
+                marker_size = 6
             }
             let trace = {}
             if (nbDimensions === 3) {
@@ -119,6 +111,21 @@ function Embeddings() {
     }
     fillTraces()
 
+    function getDimensionButton() {
+        let text = "Switch to 3D"
+        let dim = 3
+        if (nbDimensions === 3) {
+            text = "Switch to 2D"
+            dim = 2
+        }
+        return <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
+            setNbDimensions(dim)
+        }}>
+            {text}
+        </Button>
+    }
+
+
     return (
         <ChakraProvider >
             <Box bg={backgroundColor}>
@@ -138,23 +145,20 @@ function Embeddings() {
                     <GridItem rowSpan={1} colSpan={1}  >
                         <VStack spacing={3} direction="row" align="center">
                             <Text fontSize="2xl" color={textColor} align="center">
-                                Select a dimension for the graph
+                                --------------------------
                         </Text>
-                            <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
-                                setNbDimensions(2)
-                            }}>
-                                2D
-                    </Button>
-                            <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
-                                setNbDimensions(3)
-                            }}>
-                                3D
-                    </Button>
+                            <Text fontSize="2xl" color={textColor} align="center">
+                                Toggle dimension
+                        </Text>
+
+                            {getDimensionButton()}
+
+
                             <Text fontSize="2xl" color={textColor} align="center">
                                 --------------------------
                         </Text>
                             <Text fontSize="2xl" color={textColor} align="center">
-                                Load the graph
+                                Load graph
                         </Text>
                             <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
                                 sendRequest(getEmbeddings)
@@ -164,7 +168,7 @@ function Embeddings() {
                             <Button color={backgroundColor} border="2px" borderColor={darkGray} variant="solid" size="lg" height={buttonHeight} width={buttonWidth} onClick={() => {
                                 sendRequest(addSketch)
                             }}>
-                                Add My Sketch
+                                With My Drawing
                     </Button>
                             <Text fontSize="2xl" color={textColor} align="center">
                                 --------------------------
@@ -182,8 +186,8 @@ function Embeddings() {
                         <Plot
                             data={traces}
                             layout={{
-                                width: 1300,
-                                height: 700,
+                                width: 1350,
+                                height: 740,
                                 showlegend: true,
                                 margin: {
                                     l: 0,

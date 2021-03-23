@@ -3,13 +3,8 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, ChakraProvider, Button, HStack, VStack, Text, Heading, Grid, GridItem, CircularProgress } from '@chakra-ui/react'
 import { useSvgDrawing } from 'react-hooks-svgdrawing'
+import { gray, darkGray, textColor, backgroundColor, buttonHeight, buttonWidth } from "./constants"
 
-const gray = "#F7FAFC"
-const darkGray = "#A3A8B0"
-const textColor = "#FFFFFF"
-const backgroundColor = "#1A365D"
-const buttonHeight = "48px"
-const buttonWidth = "180px"
 const progress = <CircularProgress isIndeterminate color={backgroundColor} size="180px" thickness="4px" />
 
 function Drawing() {
