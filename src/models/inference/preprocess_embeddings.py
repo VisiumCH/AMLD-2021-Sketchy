@@ -9,7 +9,7 @@ from torchvision import transforms
 from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.models.test import get_test_data
-from src.models.utils import get_model
+from src.models.utils import get_model, get_parameters
 from src.options import Options
 
 
@@ -79,26 +79,21 @@ def preprocess_embeddings(args, im_net):
 
 
 if __name__ == '__main__':
-    # Parse options
-    args = Options(test=True).parse()
-    print('Parameters:\t' + str(args))
-
-    # Check cuda & Set random seed
-    args.cuda = args.ngpu > 0 and torch.cuda.is_available()
+    # Get parameters
+    args = get_parameters()
     args.pin_memory = args.cuda
 
-    # Check Test and Load
-    if args.best_model is None:
-        raise Exception('Cannot compute embeddins without a model.')
-
-    args.embedding_path = os.path.join(args.best_model.rstrip('checkpoint.pth'), 'precomputed_embeddings')
+    # Path to store embeddings
+    args.embedding_path = os.path.join(args.load.rstrip('checkpoint.pth'), 'precomputed_embeddings')
     if not os.path.exists(args.embedding_path):
         os.makedirs(args.embedding_path)
 
-    im_net, _ = get_model(args, args.best_model)
+    # Load image model
+    im_net, _ = get_model(args, args.load)
     im_net.eval()
     torch.set_grad_enabled(False)
 
+    # Compute embeddings on chosen dataset(s)
     dataset = args.dataset
     if dataset in [DatasetName.sketchy, DatasetName.tuberlin, DatasetName.quickdraw]:
         preprocess_embeddings(args, im_net)

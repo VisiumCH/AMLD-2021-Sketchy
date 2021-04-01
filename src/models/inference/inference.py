@@ -12,7 +12,7 @@ from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_loader, get_dict
 from src.options import Options
-from src.models.utils import get_model, normalise_attention
+from src.models.utils import get_model, normalise_attention, get_parameters
 from src.models.metrics import get_similarity
 
 NUM_CLOSEST = 4
@@ -33,22 +33,22 @@ class Inference():
         self.transform = transforms.Compose([transforms.ToTensor()])
         self.loader = default_image_loader
 
-        self.im_net, self.sk_net = get_model(args, args.best_model)
+        self.im_net, self.sk_net = get_model(args, args.load)
         self.im_net.eval()
         self.sk_net.eval()
         torch.set_grad_enabled(False)
 
-        self.prediction_folder = os.path.join(args.best_model.rstrip('checkpoint.pth'), 'predictions')
+        self.prediction_folder = os.path.join(args.load.rstrip('checkpoint.pth'), 'predictions')
         if not os.path.exists(self.prediction_folder):
             os.makedirs(self.prediction_folder)
 
-        self.embedding_path = os.path.join(args.best_model.rstrip('checkpoint.pth'), 'precomputed_embeddings')
+        self.embedding_path = os.path.join(args.load.rstrip('checkpoint.pth'), 'precomputed_embeddings')
         if not os.path.exists(self.embedding_path):
             os.makedirs(self.embedding_path)
 
-        self.get_data(dataset_type)
+        self.__get_data(dataset_type)
 
-    def get_processed_images(self, dataset_type):
+    def __get_processed_images(self, dataset_type):
         '''
         Get the data of images to match with the sketches
         Args:
@@ -72,7 +72,7 @@ class Inference():
 
         return dict_class, df['fnames'].values, df['classes'].values, images_embeddings
 
-    def get_data(self, dataset_type):
+    def __get_data(self, dataset_type):
         '''
         Loads the paths, classes and embeddings of the images of different datasets
         '''
@@ -80,20 +80,20 @@ class Inference():
 
         if dataset in [DatasetName.sketchy, DatasetName.tuberlin, DatasetName.quickdraw]:
             (self.dict_class, self.images_fnames,
-             self.images_classes, self.images_embeddings) = self.get_processed_images(dataset_type)
+             self.images_classes, self.images_embeddings) = self.__get_processed_images(dataset_type)
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
         elif dataset in [DatasetName.sktu, DatasetName.sktuqd]:
             self.args.dataset = DatasetName.sketchy
             (dict_class_sk, self.images_fnames,
-             self.images_classes, self.images_embeddings) = self.get_processed_images(dataset_type)
+             self.images_classes, self.images_embeddings) = self.__get_processed_images(dataset_type)
 
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
 
             self.args.dataset = DatasetName.tuberlin
-            dict_class_tu, images_fnames, images_classes, images_embeddings = self.get_processed_images(dataset_type)
+            dict_class_tu, images_fnames, images_classes, images_embeddings = self.__get_processed_images(dataset_type)
             self.dict_class = [dict_class_sk, dict_class_tu]
 
             self.images_fnames = np.concatenate((self.images_fnames, images_fnames), axis=0)
@@ -105,7 +105,7 @@ class Inference():
                 self.tuberlin_limit = len(self.images_fnames)
 
                 (dict_class_qd, images_fnames,
-                 images_classes, images_embeddings) = self.get_processed_images(dataset_type)
+                 images_classes, images_embeddings) = self.__get_processed_images(dataset_type)
                 self.dict_class.append(dict_class_qd)
 
                 self.images_fnames = np.concatenate((self.images_fnames, images_fnames), axis=0)
@@ -160,14 +160,6 @@ class Inference():
         label = dict_class[str(self.sorted_labels[index])]
         return image, label
 
-    def return_closest_images(self, number):
-        images, labels = [], []
-        for index in range(number):
-            image, label = self.prepare_image(index)
-            images.append(image)
-            labels.append(label)
-
-        return images, labels
 
     def plot_closest(self, sketch_fname):
         '''
@@ -181,6 +173,8 @@ class Inference():
         axes[0].set(title='Sketch \n Label: ' + sketch_fname.split('/')[-2])
         axes[0].axis('off')
 
+        if self.args.cuda:
+            self.attn_sk = self.attn_sk.cpu()
         heat_map = self.attn_sk.squeeze().detach().numpy()
         axes[1].imshow(sk)
         axes[1].imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r')
@@ -201,19 +195,10 @@ class Inference():
 
 def main(args):
     inference = Inference(args, Split.test)
-    inference.random_images_inference(number_images=NUMBER_RANDOM_IMAGES)
+    inference.random_images_inference(number_sketches=NUMBER_RANDOM_IMAGES)
 
 
 if __name__ == '__main__':
-    # Parse options
-    args = Options(test=True).parse()
-    print('Parameters:\t' + str(args))
-
-    # Check cuda & Set random seed
-    args.cuda = args.ngpu > 0 and torch.cuda.is_available()
-
-    # Check Test and Load
-    if args.best_model is None:
-        raise Exception('Cannot test without loading a model.')
-
+    
+    args = get_parameters()
     main(args)

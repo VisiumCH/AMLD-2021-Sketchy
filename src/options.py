@@ -7,12 +7,13 @@ class Options():
         # MODEL SETTINGS
         parser = argparse.ArgumentParser(description='Sketch Based Retrieval',
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-        parser.add_argument("name", type=str, help='Name')
+        parser.add_argument("name", type=str,
+                            help='Name of the training (the model and parameters will be saved in a folder with this name).')
 
         # Positional arguments
-        parser.add_argument("dataset", type=str, default='sk+tu+qd',
+        parser.add_argument("--dataset", type=str, default='sketchy',
                             help='Choose from \
-                                "Sketchy" (sketchy dataset only), \
+                                "sketchy" (sketchy dataset only), \
                                 "tuberlin"(tuberlin dataset only), \
                                 "quickdraw"(tuberlin dataset only), \
                                 "sk+tu"(sketchy and tuberlin), \

@@ -1,3 +1,4 @@
+import argparse
 import os
 import errno
 
@@ -5,6 +6,47 @@ import torch
 import torch.nn as nn
 
 from src.models.encoder import EncoderCNN
+
+
+def get_parameters():
+    parser = argparse.ArgumentParser(description='Sketch Based Retrieval Test and inference',
+                                    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("name", type=str, help='Name of the training folder of the model to test.')
+    argument = parser.parse_args()
+    
+    args = get_saved_params('io/models/' + argument.name)
+    args.cuda = args.ngpu > 0 and torch.cuda.is_available()
+    return args
+
+def get_saved_params(save_folder):
+    '''
+    Get the training parameters from the saved text file in the training folder
+    Args:
+        - save: folder of the desired training
+    Return:
+        - namespace of the arguments
+    '''
+    d = {}
+    d['save'] = save_folder
+    d['load'] = save_folder + '/checkpoint.pth'
+
+    with open(d['save'] + '/params.txt') as f:
+        for line in f:
+            line = line.rstrip('\n')
+            (key, val) = line.split(' ')
+            
+            try:
+                if '.' in val:
+                    d[key] = float(val)  # float
+                else:
+                    d[key] = int(val)    # int
+            except ValueError:
+                d[key] = val             # string
+    
+    args = argparse.Namespace(**d)
+
+
+    return args
 
 
 def save_checkpoint(state, directory, file_name):

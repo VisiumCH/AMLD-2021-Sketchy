@@ -1,4 +1,3 @@
-from datetime import datetime
 import numpy as np
 import time
 import os
@@ -234,8 +233,7 @@ if __name__ == '__main__':
 
     if args.log is not None:
         print('Initialize logger')
-        now = datetime.now()
-        args.save = args.log + now.strftime("%Y_%m_%d_%Hh%Mmin/")
+        args.save = args.log + args.name
 
         # Create logger
         print('Log dir:\t' + args.save)

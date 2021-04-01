@@ -12,7 +12,7 @@ from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
 from src.models.metrics import get_similarity, compare_classes, get_map_prec_200, get_map_all
-from src.models.utils import load_model
+from src.models.utils import load_model, get_parameters
 
 
 def get_test_data(data_loader, model, args):
@@ -124,24 +124,16 @@ def main():
     im_net, sk_net = load_model(args.load, im_net, sk_net)
 
     print('***Test***')
-    _, _, _ = test(test_im_loader, test_sk_loader, [im_net, sk_net], args, dict_class)
+    _, _, _ = test(test_im_loader, test_sk_loader, [im_net, sk_net], args, inference_logger=None, dict_class=dict_class)
 
 
 if __name__ == '__main__':
     # Parse options
-    args = Options(test=True).parse()
-    print('Parameters:\t' + str(args))
-
-    # Check cuda & Set random seed
-    args.cuda = args.ngpu > 0 and torch.cuda.is_available()
+    args = get_parameters()
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
-
-    # Check Test and Load
-    if args.load is None:
-        raise Exception('Cannot test without loading a model.')
 
     main()
