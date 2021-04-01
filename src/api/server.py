@@ -14,11 +14,11 @@ api = Api(app)
 
 
 class Args:
-    dataset = "sketchy"
+    dataset = "sk+tu"
     emb_size = 256
     cuda = False
-    best_model = 'io/models/sktu_copy/checkpoint.pth'
-    embeddings_path = 'io/models/sktu_copy/00053/default/'
+    best_model = 'io/models/sktu_training_part_2/checkpoint.pth'
+    embeddings_path = 'io/models/sktu_training_part_2/00053/default/'
 
 
 class APIList(Resource):
