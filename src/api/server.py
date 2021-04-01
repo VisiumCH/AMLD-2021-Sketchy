@@ -17,8 +17,8 @@ class Args:
     dataset = "sketchy"
     emb_size = 256
     cuda = False
-    best_model = 'io/models/sktu_training_part_1/checkpoint.pth'
-    embeddings_path = 'io/models/2021_03_19_10h13min/00027/default/'
+    best_model = 'io/models/sktu_training_part_2/checkpoint.pth'
+    embeddings_path = 'io/models/sktu_training_part_2/00053/default/'
 
 
 class APIList(Resource):
