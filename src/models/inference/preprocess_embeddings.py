@@ -9,11 +9,10 @@ from torchvision import transforms
 from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.models.test import get_test_data
-from src.models.utils import get_model
-from src.options import Options
+from src.models.utils import get_model, get_parameters
 
 
-def save_data(args, fnames, embeddings, classes, dataset_type):
+def save_embeddings(args, fnames, embeddings, classes, dataset_type):
     '''
     Saves the precomputed image data in the same folder as the model in a subfolder called 'precomputed_embeddings'
     Args:
@@ -33,8 +32,18 @@ def save_data(args, fnames, embeddings, classes, dataset_type):
         np.save(f, embeddings)
 
 
-def process_images(args, data, im_net):
-    ''' Loads all images path, embeddings and classes from a data loader '''
+def get_test_images(args, data, im_net):
+    '''
+    Loads all images path, embeddings and classes from a data loader
+    Args:
+        - args: arguments from the command line
+        - data: dataloader of the image of the dataset
+        - im_net: image model
+    Return:
+        - fnames: list of path to the images
+        - embeddings: array of embeddings [NxE] with N the number of images and E the embedding dimension
+        - classes: list of classes associated to each image
+    '''
     loader = DataLoader(data, batch_size=1, num_workers=args.prefetch,
                         pin_memory=args.pin_memory, drop_last=False)
     fnames, embeddings, classes = get_test_data(loader, im_net, args)
@@ -42,7 +51,7 @@ def process_images(args, data, im_net):
     return fnames, embeddings, classes
 
 
-def save_dict(args, dict_class):
+def save_class_dict(args, dict_class):
     ''' Saves the dictionnary mapping classes to numbers '''
     dict_path = os.path.join(args.embedding_path, args.dataset + '_dict_class.json')
     dict_class = {v: k for k, v in dict_class.items()}
@@ -57,39 +66,33 @@ def preprocess_embeddings(args, im_net):
     '''
     transform = transforms.Compose([transforms.ToTensor()])
     _, [_, valid_im_data], [_, test_im_data], dicts_class = load_data(args, transform)
-    save_dict(args, dicts_class)
+    save_class_dict(args, dicts_class)
 
-    # print('Valid')
-    # valid_fnames, valid_embeddings, valid_classes = process_images(args, valid_im_data, im_net)
-    # save_data(args, valid_fnames, valid_embeddings, valid_classes, Split.valid)
+    print('Valid')
+    valid_fnames, valid_embeddings, valid_classes = get_test_images(args, valid_im_data, im_net)
+    save_embeddings(args, valid_fnames, valid_embeddings, valid_classes, Split.valid)
 
     print('Test')
-    test_fnames, test_embeddings, test_classes = process_images(args, test_im_data, im_net)
-    save_data(args, test_fnames, test_embeddings, test_classes, Split.test)
+    test_fnames, test_embeddings, test_classes = get_test_images(args, test_im_data, im_net)
+    save_embeddings(args, test_fnames, test_embeddings, test_classes, Split.test)
 
 
 if __name__ == '__main__':
-    # Parse options
-    args = Options(test=True).parse()
-    print('Parameters:\t' + str(args))
-
-    # Check cuda & Set random seed
-    args.cuda = args.ngpu > 0 and torch.cuda.is_available()
-    args.cuda = False
+    # Get parameters
+    args = get_parameters()
     args.pin_memory = args.cuda
 
-    # Check Test and Load
-    if args.best_model is None:
-        raise Exception('Cannot compute embeddins without a model.')
-
-    args.embedding_path = os.path.join(args.best_model.rstrip('checkpoint.pth'), 'precomputed_embeddings')
+    # Path to store embeddings
+    args.embedding_path = os.path.join(args.save, 'precomputed_embeddings')
     if not os.path.exists(args.embedding_path):
         os.makedirs(args.embedding_path)
 
-    im_net, _ = get_model(args, args.best_model)
+    # Load image model
+    im_net, _ = get_model(args, args.load)
     im_net.eval()
     torch.set_grad_enabled(False)
 
+    # Compute embeddings on chosen dataset(s)
     dataset = args.dataset
     if dataset in [DatasetName.sketchy, DatasetName.tuberlin, DatasetName.quickdraw]:
         preprocess_embeddings(args, im_net)

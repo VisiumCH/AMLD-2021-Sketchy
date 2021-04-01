@@ -9,7 +9,7 @@ from src.data.utils import (default_image_loader, default_image_loader_tuberlin,
                             get_random_file_from_path, dataset_split, get_class_dict)
 
 
-def DefaultDataset_Extended(args, dataset_folder, transform):
+def make_default_dataset(args, dataset_folder, transform):
     '''
     Creates all the data loaders for any single dataset (Sketchy, TU_Berlin or Quickdraw)
     Args:

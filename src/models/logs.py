@@ -107,9 +107,9 @@ class InferenceLogger(object):
             self.sorted_fnames = [images_fnames[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
             self.sorted_classes = [images_classes[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]]
 
-            fig, axes = plt.subplots(1, NUM_CLOSEST)
+            fig, axes = plt.subplots(1, NUM_CLOSEST, figsize=(NUM_CLOSEST*4, 10))
             axes[0].imshow(sk.permute(1, 2, 0).numpy())
-            axes[0].set(title='Sketch \n Label: ' + self.sk_class_names[i])
+            axes[0].set_title('Sketch \n Label: ' + self.sk_class_names[i], fontsize=16)
             axes[0].axis('off')
 
             for j in range(1, NUM_CLOSEST):
@@ -121,7 +121,7 @@ class InferenceLogger(object):
                 im = loader(self.sorted_fnames[j-1])
 
                 axes[j].imshow(im)
-                axes[j].set(title='Closest image ' + str(j) + '\n Label: ' + class_name)
+                axes[j].set_title('Closest image ' + str(j) + '\n Label: ' + class_name, fontsize=16)
                 axes[j].axis('off')
 
             plt.subplots_adjust(wspace=0.25, hspace=-0.35)
@@ -180,10 +180,10 @@ class EmbeddingLogger(object):
         sketchy_limit_im, tuberlin_limit_im = get_limits(args.dataset, valid_im_data, ImageType.image)
         sketchy_limit_sk, tuberlin_limit_sk = get_limits(args.dataset, valid_sk_data, ImageType.sketch)
 
-        self.sk_log, self.sk_class_names, _ = select_images(
-            valid_sk_data, args.embedding_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
-        self.im_log, self.im_class_names, _ = select_images(
-            valid_im_data, args.embedding_number, dict_class, sketchy_limit_im, tuberlin_limit_im)
+        self.sk_log, self.sk_class_names = select_images_from_class(
+            args, valid_sk_data, args.embedding_number, dict_class, sketchy_limit_sk, tuberlin_limit_sk)
+        self.im_log, self.im_class_names = select_images_from_class(
+            args, valid_im_data, args.embedding_number, dict_class, sketchy_limit_im, tuberlin_limit_im)
 
         self.all_images = np.concatenate((self.sk_log, self.im_log), axis=0)
         self.all_classes = np.concatenate((self.sk_class_names, self.im_class_names), axis=0)
@@ -199,7 +199,7 @@ class EmbeddingLogger(object):
 def select_images(valid_data, number_images, all_dict_class, sketchy_limit_im, tuberlin_limit_im):
     '''Select some random images/sketch for tensorboard plots '''
     class_names = []
-    rand_samples = [1, 2, 3, 4, 5]  # np.random.randint(0, high=len(valid_data), size=number_images)
+    rand_samples = np.random.randint(0, high=len(valid_data), size=number_images)
     for i in range(len(rand_samples)):
         im, _, label = valid_data[rand_samples[i]]
 
@@ -216,6 +216,14 @@ def select_images(valid_data, number_images, all_dict_class, sketchy_limit_im, t
 
 
 def add_heatmap_on_image(im, attn):
+    '''
+    Creates a plot with three subplots: the image, the heatmap of the attention and both superposed
+    Args:
+        - im: image to plot with attention
+        - attn: attention values on image
+    Return:
+        - tensor of image to show in tensorboard
+    '''
     heat_map = attn.squeeze().detach().numpy()
     im = im.detach().numpy()
     im = np.transpose(im, (1, 2, 0))
@@ -248,3 +256,30 @@ def add_heatmap_on_image(im, attn):
     plt.close(fig)
 
     return torch.tensor(image_from_plot.copy())
+
+
+def select_images_from_class(args, valid_data, number_images, all_dict_class, sketchy_limit_im, tuberlin_limit_im):
+    '''Select some random images/sketch for tensorboard plots '''
+    class_names = []
+
+    embedding_file = os.path.join(args.data_path, 'embeddings_class.txt')
+    with open(embedding_file, "r") as f:
+        embedding_classes = f.read()
+        embedding_classes = embedding_classes.split("\n")
+
+    while (len(class_names) < number_images):
+        random_sample = np.random.randint(0, high=len(valid_data))
+        im, _, label = valid_data[random_sample]
+
+        dict_class = get_dataset_dict(all_dict_class, random_sample, sketchy_limit_im, tuberlin_limit_im)
+        class_name = list(dict_class.keys())[list(dict_class.values()).index(label)]
+
+        if class_name in embedding_classes:
+            class_names.append(class_name)
+
+            if len(class_names) == 1:
+                im_log = im.unsqueeze(0)
+            else:
+                im_log = torch.cat((im_log, im.unsqueeze(0)), dim=0)
+
+    return im_log, class_names
