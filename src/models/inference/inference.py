@@ -26,7 +26,7 @@ class Inference():
         '''
         Initialises the inference with the trained model and precomputed embeddings
         Args:
-            - args: arguments reveived from the command line (argparse)
+            - args: arguments received from the command line (argparse)
             - dataset_type: dataset split ('train', 'valid' or 'test')
         '''
         self.args = args
@@ -48,11 +48,10 @@ class Inference():
 
         self.get_data(dataset_type)
 
-    def get_processed_images(self, args, dataset_type):
+    def get_processed_images(self, dataset_type):
         '''
         Get the data of images to match with the sketches
         Args:
-            - args: arguments reveived from the command line (argparse)
             - dataset_type: dataset split ('train', 'valid' or 'test')
         Return:
             - dict_class: dictionnary mapping numbers to classes names
@@ -60,15 +59,15 @@ class Inference():
             - classes of the images
             - images_embeddings: embeddings of the images
         '''
-        dict_path = os.path.join(self.embedding_path, args.dataset + '_dict_class.json')
+        dict_path = os.path.join(self.embedding_path, self.args.dataset + '_dict_class.json')
         with open(dict_path, 'r') as fp:
             dict_class = json.load(fp)
 
-        array_path = os.path.join(self.embedding_path, args.dataset + '_' + dataset_type + '_array.npy')
+        array_path = os.path.join(self.embedding_path, self.args.dataset + '_' + dataset_type + '_array.npy')
         with open(array_path, 'rb') as f:
             images_embeddings = np.load(f)
 
-        meta_path = os.path.join(self.embedding_path, args.dataset + '_' + dataset_type + '_meta.csv')
+        meta_path = os.path.join(self.embedding_path, self.args.dataset + '_' + dataset_type + '_meta.csv')
         df = pd.read_csv(meta_path, sep=' ')
 
         return dict_class, df['fnames'].values, df['classes'].values, images_embeddings
@@ -81,21 +80,20 @@ class Inference():
 
         if dataset in [DatasetName.sketchy, DatasetName.tuberlin, DatasetName.quickdraw]:
             (self.dict_class, self.images_fnames,
-             self.images_classes, self.images_embeddings) = self.get_processed_images(self.args, dataset_type)
+             self.images_classes, self.images_embeddings) = self.get_processed_images(dataset_type)
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
         elif dataset in [DatasetName.sktu, DatasetName.sktuqd]:
             self.args.dataset = DatasetName.sketchy
-            dict_class_sk, self.images_fnames, self.images_classes, self.images_embeddings = self.get_processed_images(
-                self.args, dataset_type)
+            (dict_class_sk, self.images_fnames,
+             self.images_classes, self.images_embeddings) = self.get_processed_images(dataset_type)
 
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
 
             self.args.dataset = DatasetName.tuberlin
-            dict_class_tu, images_fnames, images_classes, images_embeddings = self.get_processed_images(
-                self.args, dataset_type)
+            dict_class_tu, images_fnames, images_classes, images_embeddings = self.get_processed_images(dataset_type)
             self.dict_class = [dict_class_sk, dict_class_tu]
 
             self.images_fnames = np.concatenate((self.images_fnames, images_fnames), axis=0)
@@ -106,20 +104,20 @@ class Inference():
                 self.args.dataset = DatasetName.quickdraw
                 self.tuberlin_limit = len(self.images_fnames)
 
-                dict_class_qd, images_fnames, images_classes, images_embeddings = self.get_processed_images(
-                    self.args, dataset_type)
+                (dict_class_qd, images_fnames,
+                 images_classes, images_embeddings) = self.get_processed_images(dataset_type)
                 self.dict_class.append(dict_class_qd)
 
                 self.images_fnames = np.concatenate((self.images_fnames, images_fnames), axis=0)
                 self.images_classes = np.concatenate((self.images_classes, images_classes), axis=0)
                 self.images_embeddings = np.concatenate((self.images_embeddings, images_embeddings), axis=0)
         else:
-            raise Exception(args.dataset + ' not implemented.')
+            raise Exception(self.args.dataset + ' not implemented.')
         self.args.dataset = dataset
 
-    def random_images_inference(self, args, number_sketches):
+    def random_images_inference(self, number_sketches):
         ''' Selects number_sketches random sketched and find the closest images '''
-        _, _, [test_sk_loader, _], _ = load_data(args, self.transform)
+        _, _, [test_sk_loader, _], _ = load_data(self.args, self.transform)
         rand_samples_sk = np.random.randint(0, high=len(test_sk_loader), size=number_sketches)
 
         for i in range(len(rand_samples_sk)):
@@ -202,8 +200,8 @@ class Inference():
 
 
 def main(args):
-    inference_test = Inference(args, Split.test)
-    inference_test.random_images_inference(args, number_images=NUMBER_RANDOM_IMAGES)
+    inference = Inference(args, Split.test)
+    inference.random_images_inference(number_images=NUMBER_RANDOM_IMAGES)
 
 
 if __name__ == '__main__':

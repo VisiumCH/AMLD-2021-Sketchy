@@ -50,7 +50,7 @@ def get_random_file_from_path(file_path):
 
 
 def get_class_dict(args, dataset_folder):
-    ''' Get a directory of the class based on the folders' classes '''
+    ''' Get a dictionnary of the class based on the folders' classes '''
     class_directories = glob(os.path.join(args.data_path, dataset_folder, "images/*/"))
     list_class = [class_path.split("/")[-2] for class_path in class_directories]
     dicts_class = create_dict_texts(list_class)

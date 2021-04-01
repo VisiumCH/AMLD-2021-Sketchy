@@ -1,18 +1,22 @@
 import argparse
-from src.data.constants import DatasetName
 
 
 class Options():
 
     def __init__(self, test=False):
         # MODEL SETTINGS
-        parser = argparse.ArgumentParser(description='Zero-shot Sketch Based Retrieval',
+        parser = argparse.ArgumentParser(description='Sketch Based Retrieval',
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        parser.add_argument("name", type=str, help='Name')
+
         # Positional arguments
-        parser.add_argument("dataset", type=str,
-                            choices=[DatasetName.sketchy, DatasetName.tuberlin, DatasetName.quickdraw,
-                                     DatasetName.sktu, DatasetName.sktuqd],
-                            help="Choose a dataset.")
+        parser.add_argument("dataset", type=str, default='sk+tu+qd',
+                            help='Choose from \
+                                "Sketchy" (sketchy dataset only), \
+                                "tuberlin"(tuberlin dataset only), \
+                                "quickdraw"(tuberlin dataset only), \
+                                "sk+tu"(sketchy and tuberlin), \
+                                "sk+tu+qd"(sketchy, tuberlin and quickdraw)')
         # Model parameters
         parser.add_argument('--data_path', '-dp', type=str, default='io/data/raw', help='Dataset root path.')
         parser.add_argument('--emb_size', type=int, default=256, help='Embedding Size.')
@@ -20,9 +24,9 @@ class Options():
         parser.add_argument('--nopretrain', action='store_false', help='Loads a pretrained model (Default: True).')
         parser.add_argument('--training_split', type=float, default=0.8, help='Proportion of data in the training set')
         parser.add_argument('--valid_split', type=float, default=0.1, help='Proportion of data in the validation set')
-        parser.add_argument('--qd_training_split', type=float, default=0.99,
+        parser.add_argument('--qd_training_split', type=float, default=0.995,
                             help='Proportion of data in the training set of Quickdraw')
-        parser.add_argument('--qd_valid_split', type=float, default=0.005,
+        parser.add_argument('--qd_valid_split', type=float, default=0.0025,
                             help='Proportion of data in the validation set of Quickdraw')
         # Optimization options
         parser.add_argument('--epochs', '-e', type=int, default=1000, help='Number of epochs to train.')
@@ -37,8 +41,7 @@ class Options():
         parser.add_argument('--gamma', type=float, default=0.1, help='LR is multiplied by gamma on schedule.')
         parser.add_argument('--seed', type=int, default=42, help='Random seed.')
         parser.add_argument('--save', '-s', type=str, default='io/models', help='Folder to save checkpoints.')
-        parser.add_argument('--load', '-l', type=str,
-                            default="io/models/sktu_training_part_1/checkpoint.pth", help='path to the model to retrain')
+        parser.add_argument('--load', '-l', type=str, default=None, help='path to the model to retrain')
 
         parser.add_argument('--early_stop', '-es', type=int, default=10, help='Early stopping epochs.')
         # Acceleration

@@ -5,6 +5,7 @@ class DatasetName:
     quickdraw = 'quickdraw'
     sktu = 'sk+tu'
     sktuqd = 'sk+tu+qd'
+    _list = [sketchy, tuberlin, quickdraw, sktu, sktuqd]
 
 
 class DatasetFolder:

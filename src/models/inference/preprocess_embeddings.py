@@ -13,7 +13,7 @@ from src.models.utils import get_model
 from src.options import Options
 
 
-def save_data(args, fnames, embeddings, classes, dataset_type):
+def save_embeddings(args, fnames, embeddings, classes, dataset_type):
     '''
     Saves the precomputed image data in the same folder as the model in a subfolder called 'precomputed_embeddings'
     Args:
@@ -33,8 +33,18 @@ def save_data(args, fnames, embeddings, classes, dataset_type):
         np.save(f, embeddings)
 
 
-def process_images(args, data, im_net):
-    ''' Loads all images path, embeddings and classes from a data loader '''
+def get_test_images(args, data, im_net):
+    '''
+    Loads all images path, embeddings and classes from a data loader
+    Args:
+        - args: arguments from the command line
+        - data: dataloader of the image of the dataset
+        - im_net: image model
+    Return:
+        - fnames: list of path to the images
+        - embeddings: array of embeddings [NxE] with N the number of images and E the embedding dimension
+        - classes: list of classes associated to each image
+    '''
     loader = DataLoader(data, batch_size=1, num_workers=args.prefetch,
                         pin_memory=args.pin_memory, drop_last=False)
     fnames, embeddings, classes = get_test_data(loader, im_net, args)
@@ -42,7 +52,7 @@ def process_images(args, data, im_net):
     return fnames, embeddings, classes
 
 
-def save_dict(args, dict_class):
+def save_class_dict(args, dict_class):
     ''' Saves the dictionnary mapping classes to numbers '''
     dict_path = os.path.join(args.embedding_path, args.dataset + '_dict_class.json')
     dict_class = {v: k for k, v in dict_class.items()}
@@ -57,15 +67,15 @@ def preprocess_embeddings(args, im_net):
     '''
     transform = transforms.Compose([transforms.ToTensor()])
     _, [_, valid_im_data], [_, test_im_data], dicts_class = load_data(args, transform)
-    save_dict(args, dicts_class)
+    save_class_dict(args, dicts_class)
 
     print('Valid')
-    valid_fnames, valid_embeddings, valid_classes = process_images(args, valid_im_data, im_net)
-    save_data(args, valid_fnames, valid_embeddings, valid_classes, Split.valid)
+    valid_fnames, valid_embeddings, valid_classes = get_test_images(args, valid_im_data, im_net)
+    save_embeddings(args, valid_fnames, valid_embeddings, valid_classes, Split.valid)
 
     print('Test')
-    test_fnames, test_embeddings, test_classes = process_images(args, test_im_data, im_net)
-    save_data(args, test_fnames, test_embeddings, test_classes, Split.test)
+    test_fnames, test_embeddings, test_classes = get_test_images(args, test_im_data, im_net)
+    save_embeddings(args, test_fnames, test_embeddings, test_classes, Split.test)
 
 
 if __name__ == '__main__':

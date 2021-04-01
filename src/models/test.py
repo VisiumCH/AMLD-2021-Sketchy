@@ -26,6 +26,9 @@ def get_test_data(data_loader, model, args):
         - embeddings: list of the associated embeddings
         - classes: list of the associated target classes
     '''
+    if args.cuda:
+        model = model.cuda()
+
     fnames = []
     for i, (image, fname, target) in tqdm(enumerate(data_loader)):
         # Data to Variable

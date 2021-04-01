@@ -216,6 +216,14 @@ def select_images(valid_data, number_images, all_dict_class, sketchy_limit_im, t
 
 
 def add_heatmap_on_image(im, attn):
+    '''
+    Creates a plot with three subplots: the image, the heatmap of the attention and both superposed
+    Args:
+        - im: image to plot with attention
+        - attn: attention values on image
+    Return:
+        - tensor of image to show in tensorboard
+    '''
     heat_map = attn.squeeze().detach().numpy()
     im = im.detach().numpy()
     im = np.transpose(im, (1, 2, 0))

@@ -8,6 +8,13 @@ from src.models.encoder import EncoderCNN
 
 
 def save_checkpoint(state, directory, file_name):
+    '''
+    Saves the checkpoint of the best trained model with its state
+    Args:
+        - state: dict state of the checkpoint (epoch, map, criterion and networks variable)
+        - directory: directory were to same the checkpoint
+        - file_name: name of the checkpoint
+    '''
     if not os.path.isdir(directory):
         os.makedirs(directory)
     checkpoint_file = os.path.join(directory, file_name + '.pth')
@@ -15,6 +22,13 @@ def save_checkpoint(state, directory, file_name):
 
 
 def load_checkpoint(model_file):
+    '''
+    Loads the checkpoint (networks variables + state)  stored in model_file
+    Args:
+        - model_file: path to the checkpoint
+    Return:
+        - a checkpoint
+    '''
     if os.path.isfile(model_file):
         print("=> loading model '{}'".format(model_file))
         checkpoint = torch.load(model_file)
@@ -28,7 +42,18 @@ def load_checkpoint(model_file):
 
 def load_model(model_path, im_net, sk_net, criterion=None):
     '''
-    Load model parameters from a checkpoint
+    Load model parameters in the network from a checkpoint
+    Args:
+        - model_path: path to the checkpoint
+        - im_net: images network
+        - sk_net: sketches network
+        - criterion: training loss
+    Return:
+        - im_net: images network with the weight loaded from the checkpoint
+        - sk_net: sketches network with the weight loaded from the checkpoint
+        - criterion: criterion from the checkpoint
+        - epoch: epoch at which the checkpoint was saved
+        - best_map: mean average precision of model saved in checkpoint
     '''
     checkpoint = load_checkpoint(model_path)
 
@@ -47,6 +72,16 @@ def load_model(model_path, im_net, sk_net, criterion=None):
 
 
 def get_model(args, best_checkpoint):
+    '''
+    Load a trained model.
+    Get architecture and loads weights, criterion and information from the 'best checkpoint'.
+    Args:
+        - args: arguments to define structure of network
+        - best_checkpoint:
+    Return:
+        - im_net: images network with the weight loaded from the checkpoint
+        - sk_net: sketches network with the weight loaded from the checkpoint
+    '''
     im_net = EncoderCNN(out_size=args.emb_size, attention=True)
     sk_net = EncoderCNN(out_size=args.emb_size, attention=True)
 
@@ -71,6 +106,9 @@ def get_model(args, best_checkpoint):
 
 
 def normalise_attention(attn, im):
+    '''
+    Gets the feature map of the attention and does a min-max normalisation (for further plots)
+    '''
     attn = nn.Upsample(size=(im[0].size(1), im[0].size(2)), mode='bilinear', align_corners=False)(attn)
     min_attn = attn.view((attn.size(0), -1)).min(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
     max_attn = attn.view((attn.size(0), -1)).max(-1)[0].unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
