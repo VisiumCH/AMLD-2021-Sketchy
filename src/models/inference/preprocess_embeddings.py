@@ -10,7 +10,6 @@ from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.models.test import get_test_data
 from src.models.utils import get_model, get_parameters
-from src.options import Options
 
 
 def save_embeddings(args, fnames, embeddings, classes, dataset_type):
@@ -84,7 +83,7 @@ if __name__ == '__main__':
     args.pin_memory = args.cuda
 
     # Path to store embeddings
-    args.embedding_path = os.path.join(args.load.rstrip('checkpoint.pth'), 'precomputed_embeddings')
+    args.embedding_path = os.path.join(args.save, 'precomputed_embeddings')
     if not os.path.exists(args.embedding_path):
         os.makedirs(args.embedding_path)
 

@@ -8,7 +8,7 @@ class Options():
         parser = argparse.ArgumentParser(description='Sketch Based Retrieval',
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         parser.add_argument("name", type=str,
-                            help='Name of the training (the model and parameters will be saved in a folder with this name).')
+                            help='Name of the training (model and parameters are  saved in a folder with this name).')
 
         # Positional arguments
         parser.add_argument("--dataset", type=str, default='sketchy',
