@@ -1,6 +1,8 @@
 export const gray = "#F7FAFC";
+export const black = "#000000";
+export const white = "#FFFFFF";
 export const darkGray = "#A3A8B0";
-export const textColor = "#FFFFFF";
+export const textColor = white;
 export const backgroundColor = "#1A365D";
 export const buttonHeight = "48px";
 export const buttonWidth = "180px";
