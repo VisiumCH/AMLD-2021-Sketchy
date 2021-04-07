@@ -234,6 +234,8 @@ if __name__ == '__main__':
     if args.log is not None:
         print('Initialize logger')
         args.save = args.log + args.name
+        if os.path.exists(args.save):
+            raise FileExistsError(f'{args.save} directory already exists.')
 
         # Create logger
         print('Log dir:\t' + args.save)
