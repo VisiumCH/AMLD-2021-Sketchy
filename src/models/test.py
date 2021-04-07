@@ -222,7 +222,6 @@ def main():
 if __name__ == "__main__":
     # Parse options
     args = get_parameters()
-    args.cuda=False
     print(args)
 
     np.random.seed(args.seed)
