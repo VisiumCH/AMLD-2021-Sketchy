@@ -89,7 +89,8 @@ class DetangledJoinDomainLoss(nn.Module):
         elif epoch < 5:
             lmb = 0
         else:
-            lmb = (epoch-5)/20.0
+            lmb = (epoch - 5) / 20.0
+        
         loss_dom = self.domain_loss_mu(grad_reverse(sk_sem, lambd=lmb), targetSK)
         loss_dom += self.domain_loss_mu(grad_reverse(im_pos_sem, lambd=lmb), targetIM)
         loss_dom += self.domain_loss_mu(grad_reverse(im_neg_sem, lambd=lmb), targetIM)
