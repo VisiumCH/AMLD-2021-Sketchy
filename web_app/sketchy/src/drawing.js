@@ -41,12 +41,14 @@ function Drawing() {
   const [inferredLabel, setInferredLabel] = useState([]);
   const [attention, setAttention] = useState("");
   const [svg, setSvg] = useState("");
-  const [drawingMode, setDrawingMode] = useState("drawing")
-  const [disableDrawing, setDisableDrawing] = useState(true)
-  const [disableErasing, setDisableErasing] = useState(false)
+  const [drawingMode, setDrawingMode] = useState("drawing");
+  const [disableDrawing, setDisableDrawing] = useState(true);
+  const [disableErasing, setDisableErasing] = useState(false);
 
-
-  const [divRef, { getSvgXML, changePenColor, changePenWidth, undo, clear }] = useSvgDrawing({
+  const [
+    divRef,
+    { getSvgXML, changePenColor, changePenWidth, undo, clear },
+  ] = useSvgDrawing({
     penWidth: 3, // pen width (similar as database width)
     penColor: black, // pen color
     width: 300, // drawing area width
@@ -55,25 +57,24 @@ function Drawing() {
 
   function changeDrawingMode() {
     if (drawingMode === "drawing") {
-      changePenColor(white)
-      changePenWidth(25)
-      setDrawingMode("erasing")
-      setDisableDrawing(false)
-      setDisableErasing(true)
-    }
-    if (drawingMode === "erasing") {
-      changePenColor(black)
-      changePenWidth(3)
-      setDrawingMode("drawing")
-      setDisableDrawing(true)
-      setDisableErasing(false)
+      changePenColor(white);
+      changePenWidth(25);
+      setDrawingMode("erasing");
+      setDisableDrawing(false);
+      setDisableErasing(true);
+    } else if (drawingMode === "erasing") {
+      changePenColor(black);
+      changePenWidth(3);
+      setDrawingMode("drawing");
+      setDisableDrawing(true);
+      setDisableErasing(false);
     }
   }
 
   async function setInference(svg) {
     // Check that there is visible data in the svg
-    console.log(svg)
-    if (svg == "null" || svg.length < 500) {
+    console.log(svg);
+    if (svg === "null" || svg.length < 500) {
       setInferredImage([]);
       setInferredLabel([]);
       setAttention("");
@@ -184,10 +185,12 @@ function Drawing() {
               borderRadius="lg"
               borderColor="#A3A8B0"
               ref={divRef}
-              _hover={{
-                //TODO: change cursor when drawing or erasing
-                //cursor: "url(https://i.stack.imgur.com/bUGV0.png),auto"
-              }}
+              _hover={
+                {
+                  //TODO: change cursor when drawing or erasing
+                  //cursor: "url(https://i.stack.imgur.com/bUGV0.png),auto"
+                }
+              }
               // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
               onMouseMove={() => {
                 setSvg(getSvgXML());
@@ -260,7 +263,7 @@ function Drawing() {
               width={buttonWidth}
               onClick={() => {
                 if (drawingMode === "erasing") {
-                  changeDrawingMode()
+                  changeDrawingMode();
                 }
               }}
             >
@@ -280,7 +283,7 @@ function Drawing() {
               width={buttonWidth}
               onClick={() => {
                 if (drawingMode === "drawing") {
-                  changeDrawingMode()
+                  changeDrawingMode();
                 }
               }}
             >
