@@ -1,7 +1,6 @@
 import numpy as np
 import time
 import multiprocessing
-from tqdm import tqdm
 
 import torch
 from torchvision import transforms
@@ -34,7 +33,7 @@ def get_test_data(data_loader, model, args):
         model = model.cuda()
 
     fnames = []
-    for i, (image, fname, target) in tqdm(enumerate(data_loader)):
+    for i, (image, fname, target) in enumerate(data_loader):
         # Data to Variable
         if args.cuda:
             image, target = image.cuda(), target.cuda()
@@ -59,6 +58,55 @@ def get_test_data(data_loader, model, args):
     return fnames, embeddings, classes
 
 
+def get_part_of_test_data(data_loader, model, args, part_index):
+    """
+    Get features, paths and target class of all images (or sketches) of data loader
+    Args:
+        - data_loader: loader of the validation or test set
+        - model: encoder from images (or sketches) to embeddings
+    Return:
+        - fnames: list of the path to the images (or sketches)
+        - embeddings: list of the associated embeddings
+        - classes: list of the associated target classes
+    """
+    if args.cuda:
+        model = model.cuda()
+
+    images_indexes_min = part_index * args.max_images_test
+    images_indexes_max = (part_index + 1) * args.max_images_test
+
+    fnames = []
+    for i, (image, fname, target) in enumerate(data_loader):
+
+        if i < images_indexes_min:
+            continue
+        elif i > images_indexes_max:
+            break
+
+        # Data to Variable
+        if args.cuda:
+            image, target = image.cuda(), target.cuda()
+
+        # Process
+        out_features, _ = model(image)
+
+        # Filename of the images for qualitative
+        fnames.append(fname)
+
+        if args.cuda:
+            out_features = out_features.cpu().data.numpy()
+            target = target.cpu().data.numpy()
+
+        if i == images_indexes_min:
+            embeddings = out_features
+            classes = target
+        else:
+            embeddings = np.concatenate((embeddings, out_features), axis=0)
+            classes = np.concatenate((classes, target), axis=0)
+
+    return fnames, embeddings, classes
+
+
 def test(im_loader, sk_loader, model, args, inference_logger=None, dict_class=None):
     """
     Get data and computes metrics on the model
@@ -72,18 +120,31 @@ def test(im_loader, sk_loader, model, args, inference_logger=None, dict_class=No
     sk_net.eval()
     torch.set_grad_enabled(False)
 
-    im_fnames, im_embeddings, im_class = get_test_data(im_loader, im_net, args)
-    sk_fnames, sk_embeddings, sk_class = get_test_data(sk_loader, sk_net, args)
-
-    # Similarity
-    similarity = get_similarity(sk_embeddings, im_embeddings)
-    class_matches = compare_classes(im_class, sk_class)
-    del sk_embeddings, im_embeddings
-
-    # Mean average precision
     num_cores = min(multiprocessing.cpu_count(), 32)
-    map_200, prec_200 = get_map_prec_200(similarity, class_matches, num_cores)
-    ap_all, map_all = get_map_all(similarity, class_matches, num_cores)
+    map_200_list, prec_200_list, map_all_list = [], [], []
+
+    nb_iterations = len(sk_loader) // args.max_images_test + 1
+    for part_index in range(nb_iterations):
+        im_fnames, im_embeddings, im_class = get_part_of_test_data(
+            im_loader, im_net, args, part_index
+        )
+        sk_fnames, sk_embeddings, sk_class = get_part_of_test_data(
+            sk_loader, sk_net, args, part_index
+        )
+
+        # Similarity
+        similarity = get_similarity(sk_embeddings, im_embeddings)
+        class_matches = compare_classes(im_class, sk_class)
+
+        # Mean average precision
+        map_200, prec_200 = get_map_prec_200(similarity, class_matches, num_cores)
+        _, map_all = get_map_all(similarity, class_matches, num_cores)
+
+        map_200_list.append(map_200)
+        prec_200_list.append(prec_200)
+        map_all_list.append(map_all)
+
+    map_200, prec_200, map_all = np.mean(map_200_list), np.mean(prec_200_list), np.mean(map_all_list)
 
     if inference_logger:
         inference_logger.plot_inference(similarity, im_fnames, im_class)
@@ -161,6 +222,7 @@ def main():
 if __name__ == "__main__":
     # Parse options
     args = get_parameters()
+    print(args)
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)

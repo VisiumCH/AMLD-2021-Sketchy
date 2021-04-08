@@ -35,9 +35,6 @@ class Logger(object):
     '''Logs Scalars in tensorboard'''
 
     def __init__(self, log_dir, force=False):
-        # clean previous logged data under the same directory name
-        self._remove(log_dir, force)
-
         # create the summary writer object
         self._writer = SummaryWriter(log_dir)
 
@@ -70,21 +67,6 @@ class Logger(object):
 
     def step(self):
         self.global_step += 1
-
-    @staticmethod
-    def _remove(path, force):
-        """ param <path> could either be relative or absolute. """
-        if not os.path.exists(path):
-            return
-        elif os.path.isfile(path) and force:
-            os.remove(path)  # remove the file
-        elif os.path.isdir(path) and force:
-            import shutil
-            shutil.rmtree(path)  # remove dir and all contains
-        else:
-            print('Logdir contains data. Please, set `force` flag to overwrite it.')
-            import sys
-            sys.exit(0)
 
 
 class InferenceLogger(object):

@@ -60,6 +60,9 @@ class Options():
                             help='Number of inference to plot attention on tensorboard.')
         parser.add_argument('--embedding_number', type=int, default=250,
                             help='Number of embedding images and sketch to plot in latent space on tensorboard.')
+        # Inference
+        parser.add_argument('--max_image_test', type=int, default=1000,
+                            help='Maximum sketches in metrics computation (to avoid memory error).')
         self.parser = parser
 
     def parse(self):
