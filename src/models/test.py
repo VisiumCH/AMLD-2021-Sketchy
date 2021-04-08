@@ -96,6 +96,8 @@ def get_part_of_test_data(data_loader, model, args, part_index):
         if args.cuda:
             out_features = out_features.cpu().data.numpy()
             target = target.cpu().data.numpy()
+        else:
+            out_features = out_features.detach().numpy()
 
         if i == images_indexes_min:
             embeddings = out_features

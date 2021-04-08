@@ -91,7 +91,6 @@ def sort_by_similarity(similarity, class_matches):
         sorted_similarity.append(similarity[indx, arg_sorted_sim[indx, :]])
         sorted_lst.append(class_matches[indx, arg_sorted_sim[indx, :]])
 
-    del similarity, arg_sorted_sim
     sorted_similarity = np.array(sorted_similarity)
     sorted_class_matches = np.array(sorted_lst)
 
