@@ -208,6 +208,15 @@ class Inference:
 
         return attention
 
+    def get_closest(self, number):
+        images, labels = [], []
+        for index in range(number):
+            image, label = self.prepare_image(index)
+            images.append(image)
+            labels.append(label)
+        return images, labels
+        
+
     def get_closest_images(self, sketch_embedding):
         """
         Based on a sketch embedding, retrieve the index of the closest images
@@ -256,7 +265,7 @@ class Inference:
         axes[1].axis("off")
 
         for i in range(2, NUM_CLOSEST + 2):
-            im, label = self.prepare_image(i - 1)
+            im, label = self.prepare_image(i - 2)
             axes[i].imshow(im)
             axes[i].set(title='Closest image ' + str(i) + '\n Label: ' + label)
             axes[i].axis('off')
