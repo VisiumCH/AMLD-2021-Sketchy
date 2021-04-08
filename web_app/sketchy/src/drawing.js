@@ -21,7 +21,10 @@ import {
   backgroundColor,
   buttonHeight,
   buttonWidth,
+  white,
+  black,
 } from "./constants";
+import { BiPencil, BiEraser } from "react-icons/bi";
 
 const progress = (
   <CircularProgress
@@ -38,17 +41,39 @@ function Drawing() {
   const [inferredLabel, setInferredLabel] = useState([]);
   const [attention, setAttention] = useState("");
   const [svg, setSvg] = useState("");
+  const [drawingMode, setDrawingMode] = useState("drawing")
+  const [disableDrawing, setDisableDrawing] = useState(true)
+  const [disableErasing, setDisableErasing] = useState(false)
 
-  const [divRef, { getSvgXML, undo, clear }] = useSvgDrawing({
+
+  const [divRef, { getSvgXML, changePenColor, changePenWidth, undo, clear }] = useSvgDrawing({
     penWidth: 3, // pen width (similar as database width)
-    penColor: "#000000", // pen color
+    penColor: black, // pen color
     width: 300, // drawing area width
     height: 300, // drawing area height
   });
 
+  function changeDrawingMode() {
+    if (drawingMode === "drawing") {
+      changePenColor(white)
+      changePenWidth(25)
+      setDrawingMode("erasing")
+      setDisableDrawing(false)
+      setDisableErasing(true)
+    }
+    if (drawingMode === "erasing") {
+      changePenColor(black)
+      changePenWidth(3)
+      setDrawingMode("drawing")
+      setDisableDrawing(true)
+      setDisableErasing(false)
+    }
+  }
+
   async function setInference(svg) {
     // Check that there is visible data in the svg
-    if (svg.length < 500) {
+    console.log(svg)
+    if (svg == "null" || svg.length < 500) {
       setInferredImage([]);
       setInferredLabel([]);
       setAttention("");
@@ -134,31 +159,35 @@ function Drawing() {
           gap={4}
           align="center"
           templateRows="repeat(14, 1fr)"
-          templateColumns="repeat(6, 1fr)"
+          templateColumns="repeat(12, 1fr)"
         >
-          <GridItem rowSpan={1} colSpan={4}>
+          <GridItem rowSpan={1} colSpan={8}>
             <Text fontSize="4xl" color={textColor}>
               {" "}
               Draw Sketch Here:
             </Text>
           </GridItem>
 
-          <GridItem rowSpan={1} colSpan={2}>
+          <GridItem rowSpan={1} colSpan={4}>
             <Text fontSize="4xl" color={textColor}>
               {" "}
               Closest Images:{" "}
             </Text>
           </GridItem>
 
-          <GridItem rowSpan={11} colSpan={4}>
+          <GridItem rowSpan={11} colSpan={8}>
             <Box
               h="74vh"
               w="62vw"
-              bg={gray}
+              bg={white}
               borderWidth="5px"
               borderRadius="lg"
               borderColor="#A3A8B0"
               ref={divRef}
+              _hover={{
+                //TODO: change cursor when drawing or erasing
+                //cursor: "url(https://i.stack.imgur.com/bUGV0.png),auto"
+              }}
               // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
               onMouseMove={() => {
                 setSvg(getSvgXML());
@@ -166,7 +195,7 @@ function Drawing() {
             ></Box>
           </GridItem>
 
-          <GridItem rowSpan={5} colSpan={2}>
+          <GridItem rowSpan={5} colSpan={4}>
             <Box>
               <HStack
                 align="center"
@@ -199,7 +228,7 @@ function Drawing() {
             </Box>
           </GridItem>
 
-          <GridItem rowSpan={1} colSpan={2} bg={backgroundColor}>
+          <GridItem rowSpan={1} colSpan={4} bg={backgroundColor}>
             <Text fontSize="4xl" color={textColor}>
               Attention Map
             </Text>
@@ -207,7 +236,7 @@ function Drawing() {
 
           <GridItem
             rowSpan={5}
-            colSpan={2}
+            colSpan={4}
             borderWidth="5px"
             borderRadius="lg"
             borderColor="#A3A8B0"
@@ -218,6 +247,46 @@ function Drawing() {
             </Box>
           </GridItem>
 
+          <GridItem rowSpan={2} colSpan={2}>
+            <Button
+              disabled={disableDrawing}
+              leftIcon={<BiPencil />}
+              color={backgroundColor}
+              border="2px"
+              borderColor={darkGray}
+              variant="solid"
+              size="lg"
+              height={buttonHeight}
+              width={buttonWidth}
+              onClick={() => {
+                if (drawingMode === "erasing") {
+                  changeDrawingMode()
+                }
+              }}
+            >
+              Drawing
+            </Button>
+          </GridItem>
+          <GridItem rowSpan={2} colSpan={2}>
+            <Button
+              disabled={disableErasing}
+              leftIcon={<BiEraser />}
+              color={backgroundColor}
+              border="2px"
+              borderColor={darkGray}
+              variant="solid"
+              size="lg"
+              height={buttonHeight}
+              width={buttonWidth}
+              onClick={() => {
+                if (drawingMode === "drawing") {
+                  changeDrawingMode()
+                }
+              }}
+            >
+              Erasing
+            </Button>
+          </GridItem>
           <GridItem rowSpan={2} colSpan={2}>
             <Button
               color={backgroundColor}
@@ -232,7 +301,7 @@ function Drawing() {
                 sendRequest(getSvgXML());
               }}
             >
-              Undo last line
+              Undo
             </Button>
           </GridItem>
           <GridItem rowSpan={2} colSpan={2}>
@@ -254,7 +323,7 @@ function Drawing() {
               Restart!
             </Button>
           </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
+          <GridItem rowSpan={2} colSpan={4}>
             <Link
               to={{
                 pathname: "/embeddings",
