@@ -73,7 +73,6 @@ function Drawing() {
 
   async function setInference(svg) {
     // Check that there is visible data in the svg
-    console.log(svg);
     if (svg === "null" || svg.length < 500) {
       setInferredImage([]);
       setInferredLabel([]);

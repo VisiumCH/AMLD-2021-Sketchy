@@ -52,9 +52,9 @@ class Inferrence(Resource):
         inference.inference_sketch(sketch_fname)
         images, image_labels = inference.get_closest(2)
         attention = inference.get_attention(sketch_fname)
+        os.remove(sketch_fname)
 
         data = prepare_images_data(images, image_labels, attention)
-        os.remove(sketch_fname)
 
         return make_response(json.dumps(data), 200)
 
@@ -64,7 +64,7 @@ class Embeddings(Resource):
 
     def post(self):
         json_data = request.get_json()
-
+        print(json_data)
         args = Args()
 
         if "nb_dim" not in json_data.keys():
@@ -81,10 +81,11 @@ class Embeddings(Resource):
             svg_to_png(json_data["sketch"], sketch_fname)
 
             sketch_embedding = inference.inference_sketch(sketch_fname)
-            df = process_embeddings(args.embeddings_path,
-                                    n_components=nb_dimensions, sketch_emb=sketch_embedding)
             os.remove(sketch_fname)
 
+            df = process_embeddings(args.embeddings_path,
+                                    n_components=nb_dimensions, sketch_emb=sketch_embedding)
+            
         data = prepare_embeddings_data(df, nb_dimensions)
 
         return make_response(json.dumps(data), 200)

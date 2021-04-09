@@ -2,10 +2,14 @@ import json
 import os
 import random
 
+import matplotlib
 import matplotlib.pyplot as plt
+#plt.ioff()
 import matplotlib.image as mpimg
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 import numpy as np
 import pandas as pd
+from PIL import Image
 import torch
 from torchvision import transforms
 
@@ -181,7 +185,7 @@ class Inference:
 
     def get_attention(self, sketch_fname):
         ''' Find the closest images of a sketch and plot it '''
-        from PIL import Image
+        
         im = Image.open(sketch_fname)
 
         sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
@@ -195,17 +199,21 @@ class Inference:
         sk = self.loader(sketch_fname)
 
         fig, ax = plt.subplots(frameon=False)
+
         ax.imshow(sk, aspect='auto')
         ax.imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r', aspect='auto')
         ax.axis('off')
+        plt.tight_layout()
 
-        attention_fname = 'sketch_attention_' + str(random.random()) + '.png'
-        plt.savefig(attention_fname, bbox_inches='tight')
-
-        attention = Image.open(attention_fname)
-        attention.resize(im.size)
-        os.remove(attention_fname)
-
+        fig.canvas.draw()
+        attention = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+        
+        attention = attention.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        plt.show()
+        
+        fig.clf()
+        plt.close('all')
+        
         return attention
 
     def get_closest(self, number):
@@ -273,6 +281,8 @@ class Inference:
 
         img_name = "_".join(sketch_fname.split("/")[-2:])
         plt.savefig(os.path.join(self.prediction_folder, img_name))
+        plt.close(fig)
+
 
 
 def main(args):

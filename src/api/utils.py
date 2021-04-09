@@ -35,8 +35,9 @@ def prepare_images_data(images, image_labels, attention):
         data['images_base64'].append(str(img_base64))
         data['images_label'].append(' '.join(image_label.split('_')))
 
+    im = Image.fromarray(attention.astype("uint8"))
     rawBytes = io.BytesIO()
-    attention.save(rawBytes, "PNG")
+    im.save(rawBytes, "PNG")
     rawBytes.seek(0)
     attention_base64 = base64.b64encode(rawBytes.read())
     data['attention'] = str(attention_base64)
