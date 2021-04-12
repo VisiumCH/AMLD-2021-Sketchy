@@ -226,7 +226,7 @@ function Embeddings() {
                 --------------------------
               </Text>
               <Text fontSize="2xl" color={textColor} align="center">
-                Go back to drawing
+                Change page
               </Text>
               <Link to="/drawing" className="drawing_link">
                 <Button
@@ -239,7 +239,21 @@ function Embeddings() {
                   width={buttonWidth}
                 >
                   {" "}
-                  Back to Drawing
+                  Draw a sketch
+                </Button>
+              </Link>
+              <Link to="/" className="explore_link">
+                <Button
+                  color={backgroundColor}
+                  border="2px"
+                  borderColor={darkGray}
+                  variant="solid"
+                  size="lg"
+                  height={buttonHeight}
+                  width={buttonWidth}
+                >
+                  {" "}
+                  Explore dataset
                 </Button>
               </Link>
             </VStack>

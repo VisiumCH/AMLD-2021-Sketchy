@@ -154,7 +154,7 @@ function Dataset() {
                 size="lg"
               >
                 {" "}
-                Go to Drawing
+                Draw a sketch
               </Button>
             </Link>
           </GridItem>

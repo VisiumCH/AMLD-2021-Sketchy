@@ -327,7 +327,7 @@ function Drawing() {
               Restart!
             </Button>
           </GridItem>
-          <GridItem rowSpan={2} colSpan={4}>
+          <GridItem rowSpan={2} colSpan={2}>
             <Link
               to={{
                 pathname: "/embeddings",
@@ -343,6 +343,24 @@ function Drawing() {
               >
                 {" "}
                 See Embeddings
+              </Button>
+            </Link>
+          </GridItem>
+          <GridItem rowSpan={2} colSpan={2}>
+            <Link
+              to={{
+                pathname: "/",
+              }}
+            >
+              <Button
+                color={backgroundColor}
+                border="2px"
+                borderColor={darkGray}
+                variant="solid"
+                size="lg"
+              >
+                {" "}
+                Explore Dataset
               </Button>
             </Link>
           </GridItem>
