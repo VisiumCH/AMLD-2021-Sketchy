@@ -90,10 +90,23 @@ class Embeddings(Resource):
 
         return make_response(json.dumps(data), 200)
 
+class Dataset(Resource):
+    """ Receives a category and returns associated images. """
+
+    def post(self):
+        json_data = request.get_json()
+        print(json_data)
+
+        if "category" not in json_data.keys():
+            return {"ERROR": "Category not provided"}, 400
+        category = json_data["category"]
+
+
 
 api.add_resource(APIList, "/api_list")
 api.add_resource(Inferrence, "/find_images")
 api.add_resource(Embeddings, "/get_embeddings")
+api.add_resource(Dataset, "/get_dataset_images")
 
 if __name__ == "__main__":
 

@@ -1,15 +1,15 @@
+import React, { useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Box,
   ChakraProvider,
   Text,
   Heading,
-  FormControl,
-  FormLabel,
   Select,
   Button,
   Grid,
   GridItem,
+  FormControl,
 } from "@chakra-ui/react";
 import {
   textColor,
@@ -23,9 +23,36 @@ import {
 } from "./constants";
 
 function Dataset() {
+  const [isSending, setIsSending] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState("pineapple");
   const categoriesOptions = categories.map((category) => (
     <option>{category}</option>
   ));
+
+  async function getImages(currentCategory) {
+    // Send to back end
+    const response = await fetch("/get_dataset_images", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ category: currentCategory }),
+    });
+  }
+
+  const sendRequest = useCallback(
+    async (currentCategory) => {
+      if (isSending) return;
+      setIsSending(true);
+      getImages(currentCategory);
+      setIsSending(false);
+    },
+    [isSending]
+  );
+
+  useEffect(() => {
+    sendRequest(currentCategory);
+  }, [sendRequest, currentCategory]);
 
   return (
     <ChakraProvider>
@@ -38,6 +65,9 @@ function Dataset() {
         </Text>
         <Text fontSize="xs" color={backgroundColor} align="center">
           .
+        </Text>
+        <Text fontSize="xs" color={textColor} align="center">
+          {currentCategory}
         </Text>
         <Grid
           h="92vh"
@@ -53,23 +83,40 @@ function Dataset() {
             </Text>
           </GridItem>
           <GridItem rowSpan={1} colSpan={1} align="left">
-            <FormControl
-              id="country"
-              color={backgroundColor}
-              width={formLabelWidth}
-              bg={white}
-            >
-              <Select placeholder="pineapple" color={backgroundColor}>
-                {categoriesOptions}
-              </Select>
-            </FormControl>
+            <form>
+              <FormControl
+                id="country"
+                color={backgroundColor}
+                width={formLabelWidth}
+                bg={white}
+              >
+                <Select
+                  placeholder="pineapple"
+                  value={currentCategory}
+                  color={backgroundColor}
+                  onChange={(e) => setCurrentCategory(e.target.value)}
+                >
+                  {categoriesOptions}
+                </Select>
+              </FormControl>
+            </form>
           </GridItem>
-          <GridItem rowSpan={10} colSpan={1}>
+          <GridItem rowSpan={1} colSpan={1}>
+            <Text fontSize="2xl" color={textColor}>
+              Sketches
+            </Text>
+          </GridItem>
+          <GridItem rowSpan={1} colSpan={1}>
+            <Text fontSize="2xl" color={textColor}>
+              Images
+            </Text>
+          </GridItem>
+          <GridItem rowSpan={9} colSpan={1}>
             <Text fontSize="2xl" color={textColor}>
               ...
             </Text>
           </GridItem>
-          <GridItem rowSpan={10} colSpan={1}>
+          <GridItem rowSpan={9} colSpan={1}>
             <Text fontSize="2xl" color={textColor}>
               ...
             </Text>
