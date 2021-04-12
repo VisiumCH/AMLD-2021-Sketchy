@@ -124,7 +124,6 @@ function Dataset() {
                 bg={white}
               >
                 <Select
-                  placeholder="pineapple"
                   value={currentCategory}
                   color={backgroundColor}
                   onChange={(e) => setCurrentCategory(e.target.value)}

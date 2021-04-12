@@ -1,5 +1,6 @@
 import io
 import os
+import random
 import sys
 
 import base64
@@ -9,6 +10,9 @@ import pandas as pd
 from PIL import Image
 from sklearn.decomposition import PCA
 
+from src.data.utils import default_image_loader
+
+NB_DATASET_IMAGES = 5
 
 def get_image(folder_path, ending):
     files = [
@@ -16,7 +20,16 @@ def get_image(folder_path, ending):
         for f in os.listdir(folder_path)
         if f.endswith(ending)
     ]
-    return np.random.choice(files, 5)
+    return np.random.choice(files, NB_DATASET_IMAGES)
+
+
+def base64_encoding(image, bytes_type):
+    rawBytes = io.BytesIO()
+    image.save(rawBytes, bytes_type)
+    rawBytes.seek(0)
+    img_base64 = base64.b64encode(rawBytes.read())
+
+    return str(img_base64)
 
 
 def prepare_dataset_data(dataset_path, image_type, category):
@@ -34,21 +47,19 @@ def prepare_dataset_data(dataset_path, image_type, category):
     data = {}
     images_folder_path = os.path.join(dataset_path, image_type, category)
     images_paths = get_image(images_folder_path, ending)
-    print(images_paths)
+
     for i, image_path in enumerate(images_paths):
         image = Image.open(image_path)
-
-        rawBytes = io.BytesIO()
-        image.save(rawBytes, bytes_type)
-        rawBytes.seek(0)
-        img_base64 = base64.b64encode(rawBytes.read())
-
-        data[f"{image_type}_{i}_base64"] = str(img_base64)
+        data[f"{image_type}_{i}_base64"] = base64_encoding(image, bytes_type)
 
     return data
 
 
-def svg_to_png(sketch, sketch_fname):
+def svg_to_png(sketch):
+    # random name
+    random_number = str(random.random())
+    sketch_fname = "sketch" + random_number + ".png"
+
     # make png
     svg2png(bytestring=sketch, write_to=sketch_fname)
 
@@ -57,8 +68,12 @@ def svg_to_png(sketch, sketch_fname):
     im = im.convert("RGBA")
     background = Image.new(im.mode[:-1], im.size, (255, 255, 255))
     background.paste(im, im.split()[-1])  # omit transparency
-    im = background
-    im.convert("RGB").save(sketch_fname)
+    background.convert("RGB").save(sketch_fname)
+
+    sketch = default_image_loader(sketch_fname)
+    os.remove(sketch_fname)
+
+    return sketch
 
 
 def prepare_images_data(images, image_labels, attention):
@@ -67,20 +82,11 @@ def prepare_images_data(images, image_labels, attention):
     data["images_label"] = []
 
     for image, image_label in zip(images, image_labels):
-        rawBytes = io.BytesIO()
-        image.save(rawBytes, "PNG")
-        rawBytes.seek(0)
-        img_base64 = base64.b64encode(rawBytes.read())
-
-        data["images_base64"].append(str(img_base64))
+        data["images_base64"].append(base64_encoding(image, "PNG"))
         data["images_label"].append(" ".join(image_label.split("_")))
 
     im = Image.fromarray(attention.astype("uint8"))
-    rawBytes = io.BytesIO()
-    im.save(rawBytes, "PNG")
-    rawBytes.seek(0)
-    attention_base64 = base64.b64encode(rawBytes.read())
-    data["attention"] = str(attention_base64)
+    data["attention"] = base64_encoding(im, "PNG")
 
     return data
 

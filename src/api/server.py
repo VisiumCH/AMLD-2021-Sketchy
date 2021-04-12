@@ -3,7 +3,6 @@ import os
 from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 import json
-import random
 
 from src.api.utils import (
     svg_to_png,
@@ -55,15 +54,12 @@ class Inferrence(Resource):
         # Verify the data
         if "sketch" not in json_data.keys():
             return {"ERROR": "No sketch provided"}, 400
-
-        random_number = str(random.random())
-        sketch_fname = "sketch" + random_number + ".png"
-        svg_to_png(json_data["sketch"], sketch_fname)
-
-        inference.inference_sketch(sketch_fname)
+        
+        sketch = svg_to_png(json_data["sketch"])
+        
+        inference.inference_sketch(sketch)
         images, image_labels = inference.get_closest(2)
-        attention = inference.get_attention(sketch_fname)
-        os.remove(sketch_fname)
+        attention = inference.get_attention(sketch)
 
         data = prepare_images_data(images, image_labels, attention)
 
