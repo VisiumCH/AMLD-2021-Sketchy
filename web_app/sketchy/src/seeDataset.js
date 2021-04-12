@@ -10,6 +10,7 @@ import {
   Grid,
   GridItem,
   FormControl,
+  HStack,
 } from "@chakra-ui/react";
 import {
   textColor,
@@ -86,7 +87,7 @@ function Dataset() {
   ));
 
   const renderSketches = sketches.map((sketch) => (
-    <Box w="100%" h="35%">
+    <Box w="30%" h="35%">
       {sketch}
     </Box>
   ));
@@ -108,7 +109,7 @@ function Dataset() {
           w="98vw"
           gap={4}
           align="center"
-          templateRows="repeat(13, 1fr)"
+          templateRows="repeat(9, 1fr)"
           templateColumns="repeat(2, 1fr)"
         >
           <GridItem rowSpan={1} colSpan={1} align="right">
@@ -119,7 +120,7 @@ function Dataset() {
           <GridItem rowSpan={1} colSpan={1} align="left">
             <form>
               <FormControl
-                id="country"
+                id="category"
                 color={backgroundColor}
                 width={formLabelWidth}
                 bg={white}
@@ -135,25 +136,11 @@ function Dataset() {
               </FormControl>
             </form>
           </GridItem>
-          <GridItem rowSpan={1} colSpan={1}>
-            <Text fontSize="2xl" color={textColor}>
-              Sketches
-            </Text>
+          <GridItem rowSpan={4} colSpan={2}>
+            <HStack>{renderImages}</HStack>
           </GridItem>
-          <GridItem rowSpan={1} colSpan={1}>
-            <Text fontSize="2xl" color={textColor}>
-              Images
-            </Text>
-          </GridItem>
-          <GridItem rowSpan={9} colSpan={1}>
-            {console.log("In dataset")}
-            {console.log(images[0])}
-            <Box w="100%" h="35%">
-              {renderImages}
-            </Box>
-          </GridItem>
-          <GridItem rowSpan={9} colSpan={1}>
-            {renderSketches}
+          <GridItem rowSpan={4} colSpan={2}>
+            <HStack>{renderSketches}</HStack>
           </GridItem>
           <GridItem rowSpan={1} colSpan={1}>
             <Link to="/drawing" className="drawing_link">
@@ -190,6 +177,11 @@ function Dataset() {
                 See Embeddings
               </Button>
             </Link>
+          </GridItem>
+          <GridItem rowSpan={1} colSpan={2} align="right">
+            <Text fontSize="xs" color={textColor}>
+              .....
+            </Text>
           </GridItem>
         </Grid>
       </Box>
