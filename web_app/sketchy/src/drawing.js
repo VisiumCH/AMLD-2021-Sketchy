@@ -213,8 +213,6 @@ function Drawing() {
                     </Text>
                     <Box w="100%" h="35%">
                       {inferredImage[0]}
-                      {console.log("In drawing")}
-                      {console.log(inferredImage[0])}
                     </Box>
                   </VStack>
                 </Box>

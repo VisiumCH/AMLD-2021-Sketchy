@@ -5,7 +5,13 @@ from flask_restful import Resource, Api
 import json
 import random
 
-from src.api.utils import svg_to_png, prepare_images_data, prepare_embeddings_data, process_embeddings, prepare_dataset_data
+from src.api.utils import (
+    svg_to_png,
+    prepare_images_data,
+    prepare_embeddings_data,
+    process_embeddings,
+    prepare_dataset_data,
+)
 from src.data.constants import Split
 from src.models.inference.inference import Inference
 
@@ -17,9 +23,9 @@ class Args:
     dataset = "sketchy"
     emb_size = 256
     cuda = False
-    save = 'io/models/sktu_copy/'
-    load = save + 'checkpoint.pth'
-    embeddings_path = save + '00053/default/'
+    save = "io/models/sktu_copy/"
+    load = save + "checkpoint.pth"
+    embeddings_path = save + "00053/default/"
 
 
 class APIList(Resource):
@@ -28,11 +34,16 @@ class APIList(Resource):
     """
 
     def get(self):
-        api_json = {"cmd: /api_list": "return the list of available commands.",
-                    "cmd: /find_images": "receives a sketch and returns its closest images."
-                    }
-        print('In api list function of server')
-        return {"available-apis": [{"api-key": k, "description": v} for k, v in api_json.items()]}
+        api_json = {
+            "cmd: /api_list": "return the list of available commands.",
+            "cmd: /find_images": "receives a sketch and returns its closest images.",
+        }
+        print("In api list function of server")
+        return {
+            "available-apis": [
+                {"api-key": k, "description": v} for k, v in api_json.items()
+            ]
+        }
 
 
 class Inferrence(Resource):
@@ -46,7 +57,7 @@ class Inferrence(Resource):
             return {"ERROR": "No sketch provided"}, 400
 
         random_number = str(random.random())
-        sketch_fname = 'sketch' + random_number + '.png'
+        sketch_fname = "sketch" + random_number + ".png"
         svg_to_png(json_data["sketch"], sketch_fname)
 
         inference.inference_sketch(sketch_fname)
@@ -72,22 +83,27 @@ class Embeddings(Resource):
 
         # Verify the data
         if "sketch" not in json_data.keys():
-            df = process_embeddings(args.embeddings_path,
-                                    n_components=nb_dimensions, sketch_emb=False)
+            df = process_embeddings(
+                args.embeddings_path, n_components=nb_dimensions, sketch_emb=False
+            )
         else:
             random_number = str(random.random())
-            sketch_fname = 'sketch' + random_number + '.png'
+            sketch_fname = "sketch" + random_number + ".png"
             svg_to_png(json_data["sketch"], sketch_fname)
 
             sketch_embedding = inference.inference_sketch(sketch_fname)
             os.remove(sketch_fname)
 
-            df = process_embeddings(args.embeddings_path,
-                                    n_components=nb_dimensions, sketch_emb=sketch_embedding)
-            
+            df = process_embeddings(
+                args.embeddings_path,
+                n_components=nb_dimensions,
+                sketch_emb=sketch_embedding,
+            )
+
         data = prepare_embeddings_data(df, nb_dimensions)
 
         return make_response(json.dumps(data), 200)
+
 
 class Dataset(Resource):
     """ Receives a category and returns associated images. """
@@ -99,18 +115,14 @@ class Dataset(Resource):
             return {"ERROR": "Category not provided"}, 400
         category = json_data["category"]
 
-        dataset_path = 'io/data/raw/Quickdraw/'
+        dataset_path = "io/data/raw/Quickdraw/"
 
-        data_sketches = prepare_dataset_data(dataset_path, 'sketches', category)
-        data_images = prepare_dataset_data(dataset_path, 'images', category)
+        data_sketches = prepare_dataset_data(dataset_path, "sketches", category)
+        data_images = prepare_dataset_data(dataset_path, "images", category)
 
         data = {**data_sketches, **data_images}
 
         return make_response(json.dumps(data), 200)
-        
-
-
-
 
 
 api.add_resource(APIList, "/api_list")

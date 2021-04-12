@@ -1,15 +1,11 @@
 import json
 import os
-import random
 
-import matplotlib
 import matplotlib.pyplot as plt
-#plt.ioff()
+
 import matplotlib.image as mpimg
-from matplotlib.backends.backend_agg import FigureCanvasAgg
 import numpy as np
 import pandas as pd
-from PIL import Image
 import torch
 from torchvision import transforms
 
@@ -184,9 +180,11 @@ class Inference:
         return sketch_embedding
 
     def get_attention(self, sketch_fname):
-        ''' Find the closest images of a sketch and plot it '''
+        """ Find the closest images of a sketch and plot it """
 
-        sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
+        sketch = self.transform(self.loader(sketch_fname)).unsqueeze(
+            0
+        )  # unsqueeze because 1 sketch (no batch)
 
         if self.args.cuda:
             sketch = sketch.cuda()
@@ -198,20 +196,20 @@ class Inference:
 
         fig, ax = plt.subplots(frameon=False)
 
-        ax.imshow(sk, aspect='auto')
-        ax.imshow(255 * heat_map, alpha=0.7, cmap='Spectral_r', aspect='auto')
-        ax.axis('off')
+        ax.imshow(sk, aspect="auto")
+        ax.imshow(255 * heat_map, alpha=0.7, cmap="Spectral_r", aspect="auto")
+        ax.axis("off")
         plt.tight_layout()
 
         fig.canvas.draw()
         attention = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        
+
         attention = attention.reshape(fig.canvas.get_width_height()[::-1] + (3,))
         plt.show()
-        
+
         fig.clf()
-        plt.close('all')
-        
+        plt.close("all")
+
         return attention
 
     def get_closest(self, number):
@@ -221,7 +219,6 @@ class Inference:
             images.append(image)
             labels.append(label)
         return images, labels
-        
 
     def get_closest_images(self, sketch_embedding):
         """
@@ -233,10 +230,10 @@ class Inference:
         arg_sorted_sim = (-similarity).argsort()
 
         self.sorted_fnames = [
-            self.images_fnames[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
+            self.images_fnames[i] for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]
         ]
         self.sorted_labels = [
-            self.images_classes[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
+            self.images_classes[i] for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]
         ]
 
     def prepare_image(self, index):
@@ -273,14 +270,13 @@ class Inference:
         for i in range(2, NUM_CLOSEST + 2):
             im, label = self.prepare_image(i - 2)
             axes[i].imshow(im)
-            axes[i].set(title='Closest image ' + str(i) + '\n Label: ' + label)
-            axes[i].axis('off')
+            axes[i].set(title="Closest image " + str(i) + "\n Label: " + label)
+            axes[i].axis("off")
         plt.subplots_adjust(wspace=0.25, hspace=-0.35)
 
         img_name = "_".join(sketch_fname.split("/")[-2:])
         plt.savefig(os.path.join(self.prediction_folder, img_name))
         plt.close(fig)
-
 
 
 def main(args):

@@ -61,8 +61,6 @@ function Dataset() {
       }
       setImages(tmpImages);
       setSketches(tmpSketches);
-
-      console.log(images);
     }
   }
 
