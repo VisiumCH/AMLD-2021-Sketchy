@@ -30,6 +30,7 @@ export const colors = [
   "#808080",
   "#000000",
 ];
+export const nb_to_show = 5;
 export const categories = [
   //quickdraw classes
   "sea_turtle",

@@ -185,8 +185,6 @@ class Inference:
 
     def get_attention(self, sketch_fname):
         ''' Find the closest images of a sketch and plot it '''
-        
-        im = Image.open(sketch_fname)
 
         sketch = self.transform(self.loader(sketch_fname)).unsqueeze(0)  # unsqueeze because 1 sketch (no batch)
 

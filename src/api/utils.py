@@ -1,4 +1,5 @@
 import io
+import os
 
 import base64
 from cairosvg import svg2png
@@ -6,6 +7,40 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 from sklearn.decomposition import PCA
+
+
+def get_image(folder_path, ending):
+    files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith(ending)]
+    return np.random.choice(files, 5)
+
+
+def prepare_dataset_data(dataset_path, image_type, category):
+
+    if image_type == 'images':
+        ending = '.jpg'
+        bytes_type = 'JPEG'
+    elif image_type == 'sketches':
+        ending = '.png'
+        bytes_type = 'PNG'
+    else:
+        print('Type must be either images or sketches.')
+        sys.exit()
+    
+    data = {}
+    images_folder_path = os.path.join(dataset_path, image_type, category)
+    images_paths = get_image(images_folder_path, ending)
+    print(images_paths)
+    for i, image_path in enumerate(images_paths):
+        image = Image.open(image_path)
+        
+        rawBytes = io.BytesIO()
+        image.save(rawBytes, bytes_type)
+        rawBytes.seek(0)
+        img_base64 = base64.b64encode(rawBytes.read())
+
+        data[f'{image_type}_{i}_base64'] = str(img_base64)
+    
+    return data
 
 
 def svg_to_png(sketch, sketch_fname):

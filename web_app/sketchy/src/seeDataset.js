@@ -20,11 +20,14 @@ import {
   buttonWidth,
   formLabelWidth,
   white,
+  nb_to_show,
 } from "./constants";
 
 function Dataset() {
   const [isSending, setIsSending] = useState(false);
   const [currentCategory, setCurrentCategory] = useState("pineapple");
+  const [images, setImages] = useState([]);
+  const [sketches, setSketches] = useState([]);
   const categoriesOptions = categories.map((category) => (
     <option>{category}</option>
   ));
@@ -38,6 +41,28 @@ function Dataset() {
       },
       body: JSON.stringify({ category: currentCategory }),
     });
+
+    if (response.ok) {
+      let tmpImages = [];
+      let tmpSketches = [];
+      let tmpImage = "";
+      let tmpSketch = "";
+      const res = await response.json();
+      for (let i = 0; i < nb_to_show; i++) {
+        tmpImage = res["images_" + i + "_base64"].split("'")[1];
+        tmpImages[i] = (
+          <img src={`data:image/jpeg;base64,${tmpImage}`} alt="image" />
+        );
+        tmpSketch = res["sketches_" + i + "_base64"].split("'")[1];
+        tmpSketches[i] = (
+          <img src={`data:image/jpeg;base64,${tmpSketch}`} alt="sketch" />
+        );
+      }
+      setImages(tmpImages);
+      setSketches(tmpSketches);
+
+      console.log(images);
+    }
   }
 
   const sendRequest = useCallback(
@@ -54,6 +79,18 @@ function Dataset() {
     sendRequest(currentCategory);
   }, [sendRequest, currentCategory]);
 
+  const renderImages = images.map((image) => (
+    <Box w="100%" h="35%">
+      {image}
+    </Box>
+  ));
+
+  const renderSketches = sketches.map((sketch) => (
+    <Box w="100%" h="35%">
+      {sketch}
+    </Box>
+  ));
+
   return (
     <ChakraProvider>
       <Box bg={backgroundColor}>
@@ -65,9 +102,6 @@ function Dataset() {
         </Text>
         <Text fontSize="xs" color={backgroundColor} align="center">
           .
-        </Text>
-        <Text fontSize="xs" color={textColor} align="center">
-          {currentCategory}
         </Text>
         <Grid
           h="92vh"
@@ -112,14 +146,14 @@ function Dataset() {
             </Text>
           </GridItem>
           <GridItem rowSpan={9} colSpan={1}>
-            <Text fontSize="2xl" color={textColor}>
-              ...
-            </Text>
+            {console.log("In dataset")}
+            {console.log(images[0])}
+            <Box w="100%" h="35%">
+              {renderImages}
+            </Box>
           </GridItem>
           <GridItem rowSpan={9} colSpan={1}>
-            <Text fontSize="2xl" color={textColor}>
-              ...
-            </Text>
+            {renderSketches}
           </GridItem>
           <GridItem rowSpan={1} colSpan={1}>
             <Link to="/drawing" className="drawing_link">

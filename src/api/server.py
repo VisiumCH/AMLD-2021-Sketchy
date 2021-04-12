@@ -5,7 +5,7 @@ from flask_restful import Resource, Api
 import json
 import random
 
-from src.api.utils import svg_to_png, prepare_images_data, prepare_embeddings_data, process_embeddings
+from src.api.utils import svg_to_png, prepare_images_data, prepare_embeddings_data, process_embeddings, prepare_dataset_data
 from src.data.constants import Split
 from src.models.inference.inference import Inference
 
@@ -64,7 +64,6 @@ class Embeddings(Resource):
 
     def post(self):
         json_data = request.get_json()
-        print(json_data)
         args = Args()
 
         if "nb_dim" not in json_data.keys():
@@ -95,11 +94,22 @@ class Dataset(Resource):
 
     def post(self):
         json_data = request.get_json()
-        print(json_data)
 
         if "category" not in json_data.keys():
             return {"ERROR": "Category not provided"}, 400
         category = json_data["category"]
+
+        dataset_path = 'io/data/raw/Quickdraw/'
+
+        data_sketches = prepare_dataset_data(dataset_path, 'sketches', category)
+        data_images = prepare_dataset_data(dataset_path, 'images', category)
+
+        data = {**data_sketches, **data_images}
+
+        return make_response(json.dumps(data), 200)
+        
+
+
 
 
 
