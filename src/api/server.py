@@ -56,7 +56,7 @@ class Inferrence(Resource):
             return {"ERROR": "No sketch provided"}, 400
         
         sketch = svg_to_png(json_data["sketch"])
-        
+
         inference.inference_sketch(sketch)
         images, image_labels = inference.get_closest(2)
         attention = inference.get_attention(sketch)
@@ -83,12 +83,8 @@ class Embeddings(Resource):
                 args.embeddings_path, n_components=nb_dimensions, sketch_emb=False
             )
         else:
-            random_number = str(random.random())
-            sketch_fname = "sketch" + random_number + ".png"
-            svg_to_png(json_data["sketch"], sketch_fname)
-
-            sketch_embedding = inference.inference_sketch(sketch_fname)
-            os.remove(sketch_fname)
+            sketch = svg_to_png(json_data["sketch"])
+            sketch_embedding = inference.inference_sketch(sketch)
 
             df = process_embeddings(
                 args.embeddings_path,
