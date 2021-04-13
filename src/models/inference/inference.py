@@ -2,6 +2,7 @@ import json
 import os
 
 import matplotlib.pyplot as plt
+
 import matplotlib.image as mpimg
 import numpy as np
 import pandas as pd
@@ -160,39 +161,72 @@ class Inference:
 
         for i in range(len(rand_samples_sk)):
             _, sketch_fname, _ = test_sk_loader[rand_samples_sk[i]]
-            self.inference_sketch(sketch_fname)
+            self.sk = self.loader(sketch_fname)
+            self.inference_sketch(self.sk)
+            self.get_heatmap()
             self.plot_closest(sketch_fname)
 
-    def inference_sketch(self, sketch_fname):
-        """ Find the closest images of a sketch and plot it """
-        sketch = self.transform(self.loader(sketch_fname)).unsqueeze(
-            0
-        )  # unsqueeze because 1 sketch (no batch)
+    def inference_sketch(self, sk):
+        """ 
+        Find the closest images of a sketch and plot it 
+        sk is passed as argument as it can come from the inference
+        and not exist yet
+        """
+        self.sketch = self.transform(sk).unsqueeze(0)
 
         if self.args.cuda:
-            sketch = sketch.cuda()
-        sketch_embedding, attn_sk = self.sk_net(sketch)
-        self.attn_sk = normalise_attention(attn_sk, sketch)
+            self.sketch = self.sketch.cuda()
+        sketch_embedding, self.attn_sk = self.sk_net(self.sketch)
 
         if self.args.cuda:
             sketch_embedding = sketch_embedding.cpu()
-        self.get_closest_images(sketch_embedding)
 
-    def get_closest_images(self, sketch_embedding):
-        """
-        Based on a sketch embedding, retrieve the index of the closest images
-        """
         similarity = get_similarity(
             sketch_embedding.detach().numpy(), self.images_embeddings
         )
         arg_sorted_sim = (-similarity).argsort()
 
         self.sorted_fnames = [
-            self.images_fnames[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
+            self.images_fnames[i] for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]
         ]
         self.sorted_labels = [
-            self.images_classes[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
+            self.images_classes[i] for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]
         ]
+        return sketch_embedding
+
+    def get_heatmap(self):
+        attn_sk = normalise_attention(self.attn_sk, self.sketch)
+        self.heat_map = attn_sk.squeeze().detach().numpy()
+
+    def get_attention(self, sk):
+        """ Find the closest images of a sketch and plot it """
+        self.get_heatmap()
+
+        fig, ax = plt.subplots(frameon=False)
+
+        ax.imshow(sk, aspect="auto")
+        ax.imshow(255 * self.heat_map, alpha=0.7, cmap="Spectral_r", aspect="auto")
+        ax.axis("off")
+        plt.tight_layout()
+
+        fig.canvas.draw()
+        attention = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+        attention = attention.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        plt.show()
+
+        fig.clf()
+        plt.close("all")
+
+        return attention
+
+    def get_closest(self, number):
+        images, labels = [], []
+        for index in range(number):
+            image, label = self.prepare_image(index)
+            images.append(image)
+            labels.append(label)
+        return images, labels
+
 
     def prepare_image(self, index):
         dataset = self.sorted_fnames[index].split("/")[-4]
@@ -211,29 +245,25 @@ class Inference:
         """
         fig, axes = plt.subplots(1, NUM_CLOSEST + 2, figsize=((NUM_CLOSEST + 1) * 4, 8))
 
-        sk = mpimg.imread(sketch_fname)
-        axes[0].imshow(sk)
+        axes[0].imshow(self.sk)
         axes[0].set(title="Sketch \n Label: " + sketch_fname.split("/")[-2])
         axes[0].axis("off")
 
-        if self.args.cuda:
-            self.attn_sk = self.attn_sk.cpu()
-        heat_map = self.attn_sk.squeeze().detach().numpy()
-        axes[1].imshow(sk)
-        axes[1].imshow(255 * heat_map, alpha=0.7, cmap="Spectral_r")
+        axes[1].imshow(self.sk)
+        axes[1].imshow(255 * self.heat_map, alpha=0.7, cmap="Spectral_r")
         axes[1].set(title=sketch_fname.split("/")[-2] + "\n Attention Map")
         axes[1].axis("off")
 
         for i in range(2, NUM_CLOSEST + 2):
-            im, label = self.prepare_image(i - 1)
+            im, label = self.prepare_image(i - 2)
             axes[i].imshow(im)
             axes[i].set(title="Closest image " + str(i) + "\n Label: " + label)
-
             axes[i].axis("off")
         plt.subplots_adjust(wspace=0.25, hspace=-0.35)
 
         img_name = "_".join(sketch_fname.split("/")[-2:])
         plt.savefig(os.path.join(self.prediction_folder, img_name))
+        plt.close(fig)
 
 
 def main(args):
