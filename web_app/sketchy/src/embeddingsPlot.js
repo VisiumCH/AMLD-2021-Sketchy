@@ -150,41 +150,6 @@ function Embeddings() {
               {getDimensionButton()}
             </VStack>
           </GridItem>
-          {/* <Text fontSize="2xl" color={textColor} align="center">
-                --------------------------
-              </Text>
-              <Text fontSize="2xl" color={textColor} align="center">
-                Load graph
-              </Text>
-              <Button
-                color={backgroundColor}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-                onClick={() => {
-                  sendRequest(getEmbeddings);
-                }}
-              >
-                Load Graph
-              </Button>
-              <Button
-                color={backgroundColor}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-                onClick={() => {
-                  sendRequest(addSketch);
-                }}
-              >
-                With My Drawing
-              </Button> */}
-
           <GridItem rowSpan={3} colSpan={6}>
             <Plot
               data={traces}
