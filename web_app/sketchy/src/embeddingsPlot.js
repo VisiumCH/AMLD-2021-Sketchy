@@ -54,42 +54,42 @@ function Embeddings() {
   }, [state, nbDimensions]);
 
   function fillTraces() {
-    let marker_size = 4;
+    let marker_size = 6;
+    let marker_line_color = colors[0];
+    let marker_line_width = 0.1;
     let i = 0;
     for (let key in result) {
       if (key === "My Custom Sketch") {
         marker_size = 10;
+        marker_line_color = "rgb(0,0,0)";
+        marker_line_width = 1;
       } else {
+        marker_line_color = colors[i];
+        marker_line_width = 0.1;
         marker_size = 6;
       }
-      let trace = {};
+
+      let trace = {
+        x: result[key]["x"],
+        y: result[key]["y"],
+        name: key,
+        mode: "markers",
+        marker: {
+          color: colors[i],
+          line: {
+            color: marker_line_color,
+            width: marker_line_width,
+          },
+        },
+        hoverinfo: "name",
+      };
       if (nbDimensions === 3) {
-        trace = {
-          x: result[key]["x"],
-          y: result[key]["y"],
-          z: result[key]["z"],
-          name: key,
-          type: "scatter3d",
-          mode: "markers",
-          marker: {
-            color: colors[i],
-            size: marker_size,
-          },
-          hoverinfo: "name",
-        };
+        trace["z"] = result[key]["z"];
+        trace["type"] = "scatter3d";
+        trace["marker"]["size"] = marker_size;
       } else {
-        trace = {
-          x: result[key]["x"],
-          y: result[key]["y"],
-          name: key,
-          type: "scatter",
-          mode: "markers",
-          marker: {
-            color: colors[i],
-            size: marker_size * 2,
-          },
-          hoverinfo: "name",
-        };
+        trace["type"] = "scatter";
+        trace["marker"]["size"] = marker_size * 2;
       }
       traces.push(trace);
       i = i + 1;
