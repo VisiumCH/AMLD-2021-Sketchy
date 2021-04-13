@@ -53,11 +53,14 @@ function Dataset() {
       for (let i = 0; i < nb_to_show; i++) {
         tmpImage = res["images_" + i + "_base64"].split("'")[1];
         tmpImages[i] = (
-          <img src={`data:image/jpeg;base64,${tmpImage}`} alt="image" />
+          <img src={`data:image/jpeg;base64,${tmpImage}`} alt={"image_" + i} />
         );
         tmpSketch = res["sketches_" + i + "_base64"].split("'")[1];
         tmpSketches[i] = (
-          <img src={`data:image/jpeg;base64,${tmpSketch}`} alt="sketch" />
+          <img
+            src={`data:image/jpeg;base64,${tmpSketch}`}
+            alt={"sketch_" + i}
+          />
         );
       }
       setImages(tmpImages);

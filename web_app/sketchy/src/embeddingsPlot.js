@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Plot from "react-plotly.js";
 import {
@@ -24,70 +24,34 @@ import { BiPencil, BiImages } from "react-icons/bi";
 
 function Embeddings() {
   const { state } = useLocation();
-  const [isSending, setIsSending] = useState(false);
   const [result, setResult] = useState({});
   const [nbDimensions, setNbDimensions] = useState(3);
   let traces = [];
 
   useEffect(() => {
-    if (typeof state === undefined) {
-      getEmbeddings();
-    } else {
-      addSketch();
+    let to_send = { nb_dim: nbDimensions };
+    if (typeof state !== undefined) {
+      to_send["sketch"] = state;
     }
-  }, [state]);
 
-  async function getEmbeddings() {
-    // Send to back end
-    const response = await fetch("/get_embeddings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        nb_dim: nbDimensions,
-      }),
-    });
+    async function getEmbeddings(to_send) {
+      // Send to back end
+      const response = await fetch("/get_embeddings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(to_send),
+      });
 
-    if (response.ok) {
-      const res = await response.json();
-      setResult(res);
+      if (response.ok) {
+        const res = await response.json();
+        setResult(res);
+      }
     }
-  }
 
-  async function addSketch() {
-    // Send to back end
-    const response = await fetch("/get_embeddings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sketch: state,
-        nb_dim: nbDimensions,
-      }),
-    });
-    if (response.ok) {
-      const res = await response.json();
-      setResult(res);
-    }
-  }
-
-  const sendRequest = useCallback(
-    async (my_function) => {
-      // don't send again while we are sending
-      if (isSending) return;
-      // update state
-      setIsSending(true);
-
-      // set images and labels
-      my_function();
-
-      // once the request is sent, update state again
-      setIsSending(false);
-    },
-    [isSending]
-  ); // update the callback if the state changes
+    getEmbeddings(to_send);
+  }, [state, nbDimensions]);
 
   function fillTraces() {
     let marker_size = 4;
@@ -181,12 +145,8 @@ function Embeddings() {
           <GridItem rowSpan={1} colSpan={1}>
             <VStack spacing={3} direction="row" align="center">
               <Text fontSize="2xl" color={textColor} align="center">
-                Toggle dimension
+                Dimension: {nbDimensions}D
               </Text>
-              <Text fontSize="md" color={textColor} align="center">
-                (Currently {nbDimensions}D)
-              </Text>
-
               {getDimensionButton()}
             </VStack>
           </GridItem>
