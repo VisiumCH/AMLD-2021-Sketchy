@@ -36,6 +36,8 @@ class APIList(Resource):
         api_json = {
             "cmd: /api_list": "return the list of available commands.",
             "cmd: /find_images": "receives a sketch and returns its closest images.",
+            "cmd: /get_embeddings": "receives a dimension number (2D or 3D) and returns the PCA scattered points of the embeddings",
+            "cmd: /get_dataset_images": "receives a category name and return 5 random images and sketches of this category.",
         }
         print("In api list function of server")
         return {
@@ -54,7 +56,7 @@ class Inferrence(Resource):
         # Verify the data
         if "sketch" not in json_data.keys():
             return {"ERROR": "No sketch provided"}, 400
-        
+
         sketch = svg_to_png(json_data["sketch"])
 
         inference.inference_sketch(sketch)
