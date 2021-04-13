@@ -128,15 +128,11 @@ def process_embeddings(embeddings_path, n_components, sketch_emb):
         classes.append("My Custom Sketch")
 
     # Process in dataframe
+    d = {"x": list(X[:, 0]),
+         "y": list(X[:, 1]),
+         "classes": classes}
     if n_components == 3:
-        d = {
-            "x": list(X[:, 0]),
-            "y": list(X[:, 1]),
-            "z": list(X[:, 2]),
-            "classes": classes,
-        }
-    else:
-        d = {"x": list(X[:, 0]), "y": list(X[:, 1]), "classes": classes}
+        d["z"] = list(X[:, 2])
     df = pd.DataFrame(data=d)
 
     return df

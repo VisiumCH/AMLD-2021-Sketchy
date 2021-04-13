@@ -24,7 +24,7 @@ import {
   white,
   black,
 } from "./constants";
-import { BiPencil, BiEraser } from "react-icons/bi";
+import { BiPencil, BiEraser, BiShapePolygon, BiImages } from "react-icons/bi";
 
 const progress = (
   <CircularProgress
@@ -73,7 +73,7 @@ function Drawing() {
 
   async function setInference(svg) {
     // Check that there is visible data in the svg
-    if (svg === "null" || svg.length < 500) {
+    if (svg === "" || svg.length < 500) {
       setInferredImage([]);
       setInferredLabel([]);
       setAttention("");
@@ -334,13 +334,16 @@ function Drawing() {
             >
               <Button
                 color={backgroundColor}
+                leftIcon={<BiShapePolygon />}
                 border="2px"
                 borderColor={darkGray}
                 variant="solid"
                 size="lg"
+                height={buttonHeight}
+                width={buttonWidth}
               >
                 {" "}
-                See Embeddings
+                Embeddings
               </Button>
             </Link>
           </GridItem>
@@ -351,14 +354,17 @@ function Drawing() {
               }}
             >
               <Button
+                leftIcon={<BiImages />}
                 color={backgroundColor}
                 border="2px"
                 borderColor={darkGray}
                 variant="solid"
                 size="lg"
+                height={buttonHeight}
+                width={buttonWidth}
               >
                 {" "}
-                Explore Dataset
+                Dataset
               </Button>
             </Link>
           </GridItem>

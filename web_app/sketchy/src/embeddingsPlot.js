@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Plot from "react-plotly.js";
 import {
@@ -20,69 +20,38 @@ import {
   buttonWidth,
   colors,
 } from "./constants";
+import { BiPencil, BiImages } from "react-icons/bi";
 
 function Embeddings() {
   const { state } = useLocation();
-  const [isSending, setIsSending] = useState(false);
   const [result, setResult] = useState({});
   const [nbDimensions, setNbDimensions] = useState(3);
   let traces = [];
 
   useEffect(() => {
-    getEmbeddings();
-  }, [state]);
-
-  async function getEmbeddings() {
-    // Send to back end
-    const response = await fetch("/get_embeddings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        nb_dim: nbDimensions,
-      }),
-    });
-
-    if (response.ok) {
-      const res = await response.json();
-      setResult(res);
+    let to_send = { nb_dim: nbDimensions };
+    if (typeof state !== undefined) {
+      to_send["sketch"] = state;
     }
-  }
 
-  async function addSketch() {
-    // Send to back end
-    const response = await fetch("/get_embeddings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sketch: state,
-        nb_dim: nbDimensions,
-      }),
-    });
-    if (response.ok) {
-      const res = await response.json();
-      setResult(res);
+    async function getEmbeddings(to_send) {
+      // Send to back end
+      const response = await fetch("/get_embeddings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(to_send),
+      });
+
+      if (response.ok) {
+        const res = await response.json();
+        setResult(res);
+      }
     }
-  }
 
-  const sendRequest = useCallback(
-    async (my_function) => {
-      // don't send again while we are sending
-      if (isSending) return;
-      // update state
-      setIsSending(true);
-
-      // set images and labels
-      my_function();
-
-      // once the request is sent, update state again
-      setIsSending(false);
-    },
-    [isSending]
-  ); // update the callback if the state changes
+    getEmbeddings(to_send);
+  }, [state, nbDimensions]);
 
   function fillTraces() {
     let marker_size = 4;
@@ -107,7 +76,6 @@ function Embeddings() {
             size: marker_size,
           },
           hoverinfo: "name",
-          hovermode: "closest",
         };
       } else {
         trace = {
@@ -171,99 +139,24 @@ function Embeddings() {
           w="98vw"
           gap={4}
           align="center"
-          templateRows="repeat(1, 1fr)"
+          templateRows="repeat(3, 1fr)"
           templateColumns="repeat(7, 1fr)"
         >
           <GridItem rowSpan={1} colSpan={1}>
             <VStack spacing={3} direction="row" align="center">
               <Text fontSize="2xl" color={textColor} align="center">
-                --------------------------
+                Dimension: {nbDimensions}D
               </Text>
-              <Text fontSize="2xl" color={textColor} align="center">
-                Toggle dimension
-              </Text>
-              <Text fontSize="md" color={textColor} align="center">
-                (Currently {nbDimensions}D)
-              </Text>
-
               {getDimensionButton()}
-
-              <Text fontSize="2xl" color={textColor} align="center">
-                --------------------------
-              </Text>
-              <Text fontSize="2xl" color={textColor} align="center">
-                Load graph
-              </Text>
-              <Button
-                color={backgroundColor}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-                onClick={() => {
-                  sendRequest(getEmbeddings);
-                }}
-              >
-                Load Graph
-              </Button>
-              <Button
-                color={backgroundColor}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-                onClick={() => {
-                  sendRequest(addSketch);
-                }}
-              >
-                With My Drawing
-              </Button>
-              <Text fontSize="2xl" color={textColor} align="center">
-                --------------------------
-              </Text>
-              <Text fontSize="2xl" color={textColor} align="center">
-                Change page
-              </Text>
-              <Link to="/drawing" className="drawing_link">
-                <Button
-                  color={backgroundColor}
-                  border="2px"
-                  borderColor={darkGray}
-                  variant="solid"
-                  size="lg"
-                  height={buttonHeight}
-                  width={buttonWidth}
-                >
-                  {" "}
-                  Draw a sketch
-                </Button>
-              </Link>
-              <Link to="/" className="explore_link">
-                <Button
-                  color={backgroundColor}
-                  border="2px"
-                  borderColor={darkGray}
-                  variant="solid"
-                  size="lg"
-                  height={buttonHeight}
-                  width={buttonWidth}
-                >
-                  {" "}
-                  Explore dataset
-                </Button>
-              </Link>
             </VStack>
           </GridItem>
-          <GridItem rowSpan={1} colSpan={6}>
+          <GridItem rowSpan={3} colSpan={6}>
             <Plot
               data={traces}
               layout={{
                 width: 1350,
                 height: 740,
+                hovermode: "closest",
                 showlegend: true,
                 margin: {
                   l: 0,
@@ -294,6 +187,45 @@ function Embeddings() {
                 paper_bgcolor: gray,
               }}
             />
+          </GridItem>
+          <GridItem rowSpan={1} colSpan={1}></GridItem>
+
+          <GridItem rowSpan={1} colSpan={1}>
+            <VStack spacing={3} direction="row" align="center">
+              <Text fontSize="2xl" color={textColor} align="center">
+                Change page
+              </Text>
+              <Link to="/drawing" className="drawing_link">
+                <Button
+                  leftIcon={<BiPencil />}
+                  color={backgroundColor}
+                  border="2px"
+                  borderColor={darkGray}
+                  variant="solid"
+                  size="lg"
+                  height={buttonHeight}
+                  width={buttonWidth}
+                >
+                  {" "}
+                  Draw
+                </Button>
+              </Link>
+              <Link to="/" className="explore_link">
+                <Button
+                  leftIcon={<BiImages />}
+                  color={backgroundColor}
+                  border="2px"
+                  borderColor={darkGray}
+                  variant="solid"
+                  size="lg"
+                  height={buttonHeight}
+                  width={buttonWidth}
+                >
+                  {" "}
+                  Dataset
+                </Button>
+              </Link>
+            </VStack>
           </GridItem>
 
           <Text fontSize="xs" color={textColor} align="center"></Text>
