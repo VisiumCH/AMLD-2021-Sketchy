@@ -23,6 +23,7 @@ import {
   white,
   nb_to_show,
 } from "./constants";
+import { BiPencil, BiShapePolygon, BiRefresh } from "react-icons/bi";
 
 function Dataset() {
   const [isSending, setIsSending] = useState(false);
@@ -79,13 +80,13 @@ function Dataset() {
   }, [sendRequest, currentCategory]);
 
   const renderImages = images.map((image) => (
-    <Box w="100%" h="35%">
+    <Box w="50vw" h="30vh">
       {image}
     </Box>
   ));
 
   const renderSketches = sketches.map((sketch) => (
-    <Box w="30%" h="35%">
+    <Box w="30vw" h="30vh">
       {sketch}
     </Box>
   ));
@@ -116,32 +117,45 @@ function Dataset() {
             </Text>
           </GridItem>
           <GridItem rowSpan={1} colSpan={1} align="left">
-            <form>
-              <FormControl
-                id="category"
-                color={backgroundColor}
-                width={formLabelWidth}
-                bg={white}
-              >
-                <Select
-                  value={currentCategory}
+            <HStack>
+              <form>
+                <FormControl
+                  id="category"
                   color={backgroundColor}
-                  onChange={(e) => setCurrentCategory(e.target.value)}
+                  width={formLabelWidth}
+                  bg={white}
                 >
-                  {categoriesOptions}
-                </Select>
-              </FormControl>
-            </form>
+                  <Select
+                    value={currentCategory}
+                    color={backgroundColor}
+                    onChange={(e) => setCurrentCategory(e.target.value)}
+                  >
+                    {categoriesOptions}
+                  </Select>
+                </FormControl>
+              </form>
+              <Button
+                leftIcon={<BiRefresh />}
+                border="1px"
+                borderColor={darkGray}
+                variant="solid"
+                size="md"
+                onClick={() => {
+                  getImages(currentCategory);
+                }}
+              ></Button>
+            </HStack>
           </GridItem>
           <GridItem rowSpan={4} colSpan={2}>
-            <HStack>{renderImages}</HStack>
+            <HStack align="center">{renderImages}</HStack>
           </GridItem>
           <GridItem rowSpan={4} colSpan={2}>
-            <HStack>{renderSketches}</HStack>
+            <HStack align="center">{renderSketches}</HStack>
           </GridItem>
           <GridItem rowSpan={1} colSpan={1}>
             <Link to="/drawing" className="drawing_link">
               <Button
+                leftIcon={<BiPencil />}
                 color={backgroundColor}
                 borderColor={darkGray}
                 height={buttonHeight}
@@ -151,7 +165,7 @@ function Dataset() {
                 size="lg"
               >
                 {" "}
-                Draw a sketch
+                Draw
               </Button>
             </Link>
           </GridItem>
@@ -162,6 +176,7 @@ function Dataset() {
               }}
             >
               <Button
+                leftIcon={<BiShapePolygon />}
                 color={backgroundColor}
                 borderColor={darkGray}
                 height={buttonHeight}
@@ -171,7 +186,7 @@ function Dataset() {
                 size="lg"
               >
                 {" "}
-                See Embeddings
+                Embeddings
               </Button>
             </Link>
           </GridItem>

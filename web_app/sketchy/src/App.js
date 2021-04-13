@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Switch, Route } from "react-router-dom";
 import Dataset from "./seeDataset.js";
 import Drawing from "./drawing.js";
 import Embeddings from "./embeddingsPlot.js";

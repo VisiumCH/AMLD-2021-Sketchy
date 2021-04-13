@@ -20,6 +20,7 @@ import {
   buttonWidth,
   colors,
 } from "./constants";
+import { BiPencil, BiImages } from "react-icons/bi";
 
 function Embeddings() {
   const { state } = useLocation();
@@ -29,7 +30,11 @@ function Embeddings() {
   let traces = [];
 
   useEffect(() => {
-    getEmbeddings();
+    if (typeof state === undefined) {
+      getEmbeddings();
+    } else {
+      addSketch();
+    }
   }, [state]);
 
   async function getEmbeddings() {
@@ -107,7 +112,6 @@ function Embeddings() {
             size: marker_size,
           },
           hoverinfo: "name",
-          hovermode: "closest",
         };
       } else {
         trace = {
@@ -171,14 +175,11 @@ function Embeddings() {
           w="98vw"
           gap={4}
           align="center"
-          templateRows="repeat(1, 1fr)"
+          templateRows="repeat(3, 1fr)"
           templateColumns="repeat(7, 1fr)"
         >
           <GridItem rowSpan={1} colSpan={1}>
             <VStack spacing={3} direction="row" align="center">
-              <Text fontSize="2xl" color={textColor} align="center">
-                --------------------------
-              </Text>
               <Text fontSize="2xl" color={textColor} align="center">
                 Toggle dimension
               </Text>
@@ -187,8 +188,9 @@ function Embeddings() {
               </Text>
 
               {getDimensionButton()}
-
-              <Text fontSize="2xl" color={textColor} align="center">
+            </VStack>
+          </GridItem>
+          {/* <Text fontSize="2xl" color={textColor} align="center">
                 --------------------------
               </Text>
               <Text fontSize="2xl" color={textColor} align="center">
@@ -221,49 +223,15 @@ function Embeddings() {
                 }}
               >
                 With My Drawing
-              </Button>
-              <Text fontSize="2xl" color={textColor} align="center">
-                --------------------------
-              </Text>
-              <Text fontSize="2xl" color={textColor} align="center">
-                Change page
-              </Text>
-              <Link to="/drawing" className="drawing_link">
-                <Button
-                  color={backgroundColor}
-                  border="2px"
-                  borderColor={darkGray}
-                  variant="solid"
-                  size="lg"
-                  height={buttonHeight}
-                  width={buttonWidth}
-                >
-                  {" "}
-                  Draw a sketch
-                </Button>
-              </Link>
-              <Link to="/" className="explore_link">
-                <Button
-                  color={backgroundColor}
-                  border="2px"
-                  borderColor={darkGray}
-                  variant="solid"
-                  size="lg"
-                  height={buttonHeight}
-                  width={buttonWidth}
-                >
-                  {" "}
-                  Explore dataset
-                </Button>
-              </Link>
-            </VStack>
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={6}>
+              </Button> */}
+
+          <GridItem rowSpan={3} colSpan={6}>
             <Plot
               data={traces}
               layout={{
                 width: 1350,
                 height: 740,
+                hovermode: "closest",
                 showlegend: true,
                 margin: {
                   l: 0,
@@ -294,6 +262,45 @@ function Embeddings() {
                 paper_bgcolor: gray,
               }}
             />
+          </GridItem>
+          <GridItem rowSpan={1} colSpan={1}></GridItem>
+
+          <GridItem rowSpan={1} colSpan={1}>
+            <VStack spacing={3} direction="row" align="center">
+              <Text fontSize="2xl" color={textColor} align="center">
+                Change page
+              </Text>
+              <Link to="/drawing" className="drawing_link">
+                <Button
+                  leftIcon={<BiPencil />}
+                  color={backgroundColor}
+                  border="2px"
+                  borderColor={darkGray}
+                  variant="solid"
+                  size="lg"
+                  height={buttonHeight}
+                  width={buttonWidth}
+                >
+                  {" "}
+                  Draw
+                </Button>
+              </Link>
+              <Link to="/" className="explore_link">
+                <Button
+                  leftIcon={<BiImages />}
+                  color={backgroundColor}
+                  border="2px"
+                  borderColor={darkGray}
+                  variant="solid"
+                  size="lg"
+                  height={buttonHeight}
+                  width={buttonWidth}
+                >
+                  {" "}
+                  Dataset
+                </Button>
+              </Link>
+            </VStack>
           </GridItem>
 
           <Text fontSize="xs" color={textColor} align="center"></Text>
