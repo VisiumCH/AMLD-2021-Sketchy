@@ -4,6 +4,7 @@ from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 import json
 
+from src.api.api_inference import ApiInference
 from src.api.utils import (
     svg_to_png,
     prepare_images_data,
@@ -12,19 +13,18 @@ from src.api.utils import (
     prepare_dataset_data,
 )
 from src.data.constants import Split
-from src.models.inference.inference import Inference
 
 app = Flask(__name__)
 api = Api(app)
 
 
 class Args:
-    dataset = "sketchy"
+    dataset = "quickdraw"
     emb_size = 256
     cuda = False
-    save = "io/models/sktu_copy/"
+    save = "io/models/quickdraw/"
     load = save + "checkpoint.pth"
-    embeddings_path = save + "00053/default/"
+    embeddings_path = save + "00012/default/"
 
 
 class APIList(Resource):
@@ -54,7 +54,7 @@ class Inferrence(Resource):
         # Verify the data
         if "sketch" not in json_data.keys():
             return {"ERROR": "No sketch provided"}, 400
-        
+
         sketch = svg_to_png(json_data["sketch"])
 
         inference.inference_sketch(sketch)
@@ -125,5 +125,5 @@ api.add_resource(Dataset, "/get_dataset_images")
 if __name__ == "__main__":
 
     args = Args()
-    inference = Inference(args, Split.test)
+    inference = ApiInference(args, Split.test)
     app.run(host="0.0.0.0", port="5000", debug=True)

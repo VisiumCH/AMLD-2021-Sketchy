@@ -152,23 +152,9 @@ class Inference:
             raise Exception(self.args.dataset + " not implemented.")
         self.args.dataset = dataset
 
-    def random_images_inference(self, number_sketches):
-        """ Selects number_sketches random sketched and find the closest images """
-        _, _, [test_sk_loader, _], _ = load_data(self.args, self.transform)
-        rand_samples_sk = np.random.randint(
-            0, high=len(test_sk_loader), size=number_sketches
-        )
-
-        for i in range(len(rand_samples_sk)):
-            _, sketch_fname, _ = test_sk_loader[rand_samples_sk[i]]
-            self.sk = self.loader(sketch_fname)
-            self.inference_sketch(self.sk)
-            self.get_heatmap()
-            self.plot_closest(sketch_fname)
-
     def inference_sketch(self, sk):
-        """ 
-        Find the closest images of a sketch and plot it 
+        """
+        Find the closest images of a sketch and plot it
         sk is passed as argument as it can come from the inference
         and not exist yet
         """
@@ -187,46 +173,16 @@ class Inference:
         arg_sorted_sim = (-similarity).argsort()
 
         self.sorted_fnames = [
-            self.images_fnames[i] for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]
+            self.images_fnames[i] for i in arg_sorted_sim[0][0 : NUM_CLOSEST + 1]
         ]
         self.sorted_labels = [
-            self.images_classes[i] for i in arg_sorted_sim[0][0:NUM_CLOSEST + 1]
+            self.images_classes[i] for i in arg_sorted_sim[0][0 : NUM_CLOSEST + 1]
         ]
         return sketch_embedding
 
     def get_heatmap(self):
         attn_sk = normalise_attention(self.attn_sk, self.sketch)
         self.heat_map = attn_sk.squeeze().detach().numpy()
-
-    def get_attention(self, sk):
-        """ Find the closest images of a sketch and plot it """
-        self.get_heatmap()
-
-        fig, ax = plt.subplots(frameon=False)
-
-        ax.imshow(sk, aspect="auto")
-        ax.imshow(255 * self.heat_map, alpha=0.7, cmap="Spectral_r", aspect="auto")
-        ax.axis("off")
-        plt.tight_layout()
-
-        fig.canvas.draw()
-        attention = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        attention = attention.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        plt.show()
-
-        fig.clf()
-        plt.close("all")
-
-        return attention
-
-    def get_closest(self, number):
-        images, labels = [], []
-        for index in range(number):
-            image, label = self.prepare_image(index)
-            images.append(image)
-            labels.append(label)
-        return images, labels
-
 
     def prepare_image(self, index):
         dataset = self.sorted_fnames[index].split("/")[-4]
@@ -237,6 +193,25 @@ class Inference:
         dict_class = get_dict(dataset, self.dict_class)
         label = dict_class[str(self.sorted_labels[index])]
         return image, label
+
+
+class PlotInference(Inference):
+    def __init__(self, args, dataset_type):
+        super().__init__(args, dataset_type)
+
+    def random_images_inference(self, number_sketches):
+        """ Selects number_sketches random sketched and find the closest images """
+        _, _, [test_sk_loader, _], _ = load_data(self.args, self.transform)
+        rand_samples_sk = np.random.randint(
+            0, high=len(test_sk_loader), size=number_sketches
+        )
+
+        for i in range(len(rand_samples_sk)):
+            _, sketch_fname, _ = test_sk_loader[rand_samples_sk[i]]
+            self.sk = self.loader(sketch_fname)
+            self.inference_sketch(self.sk)
+            self.get_heatmap()
+            self.plot_closest(sketch_fname)
 
     def plot_closest(self, sketch_fname):
         """
@@ -267,11 +242,13 @@ class Inference:
 
 
 def main(args):
-    inference = Inference(args, Split.test)
+    inference = PlotInference(args, Split.test)
     inference.random_images_inference(number_sketches=NUMBER_RANDOM_IMAGES)
 
 
 if __name__ == "__main__":
 
     args = get_parameters()
+    args.cuda = args.ngpu > 0 and torch.cuda.is_available()
+    args.cuda = False
     main(args)

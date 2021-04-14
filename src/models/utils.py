@@ -17,9 +17,7 @@ def get_parameters():
         "name", type=str, help="Name of the training folder of the model to test."
     )
     argument = parser.parse_args()
-
     args = get_saved_params("io/models/" + argument.name)
-    args.cuda = args.ngpu > 0 and torch.cuda.is_available()
     return args
 
 
