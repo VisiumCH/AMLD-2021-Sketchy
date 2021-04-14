@@ -167,7 +167,7 @@ class Options:
         parser.add_argument(
             "--embedding_number",
             type=int,
-            default=300,
+            default=200,
             help="Number of embedding images and sketch to plot in latent space on tensorboard.",
         )
         # Inference
