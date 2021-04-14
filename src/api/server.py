@@ -19,12 +19,12 @@ api = Api(app)
 
 
 class Args:
-    dataset = "sketchy"
+    dataset = "quickdraw"
     emb_size = 256
     cuda = False
-    save = "io/models/sktu_copy/"
+    save = "io/models/quickdraw/"
     load = save + "checkpoint.pth"
-    embeddings_path = save + "00053/default/"
+    embeddings_path = save + "00012/default/"
 
 
 class APIList(Resource):
@@ -34,10 +34,10 @@ class APIList(Resource):
 
     def get(self):
         api_json = {
-            "cmd: /api_list": "return the list of available commands.",
-            "cmd: /find_images": "receives a sketch and returns its closest images.",
-            "cmd: /get_embeddings": "receives a dimension number (2D or 3D) and returns the PCA scattered points of the embeddings",
-            "cmd: /get_dataset_images": "receives a category name and return 5 random images and sketches of this category.",
+            "cmd: /api_list": "Input: None. Return the list of available commands.",
+            "cmd: /find_images": "Input: an svg base 64 string of a sketch. Returns base 64 string of its closest images, the associated labels and the attention map",
+            "cmd: /get_embeddings": "Inputs: a dimension number (2 or 3) and optinally a sketch. Returns the projected points of the embeddings.",
+            "cmd: /get_dataset_images": "Input: a category name. Returns 5 random images and sketches of this category.",
         }
         print("In api list function of server")
         return {
