@@ -124,8 +124,8 @@ function Embeddings() {
 
   return (
     <ChakraProvider>
-      <Box bg={backgroundColor}>
-        <VStack spacing={4} align="center">
+      <Box bg={backgroundColor} h="100vh">
+        <VStack spacing={4} align="center" h="10%" w="100%">
           <Heading fontSize="4xl" color={textColor} align="center">
             AMLD 2021 Visium's Sketchy App
           </Heading>
@@ -135,14 +135,14 @@ function Embeddings() {
         </VStack>
 
         <Grid
-          h="90vh"
-          w="98vw"
+          h="90%"
+          w="95%"
           gap={4}
           align="center"
           templateRows="repeat(3, 1fr)"
           templateColumns="repeat(7, 1fr)"
         >
-          <GridItem rowSpan={1} colSpan={1}>
+          <GridItem rowSpan={1} colSpan={1} align="center">
             <VStack spacing={3} direction="row" align="center">
               <Text fontSize="2xl" color={textColor} align="center">
                 Dimension: {nbDimensions}D
@@ -150,6 +150,7 @@ function Embeddings() {
               {getDimensionButton()}
             </VStack>
           </GridItem>
+
           <GridItem rowSpan={3} colSpan={6}>
             <Plot
               data={traces}
@@ -188,7 +189,6 @@ function Embeddings() {
               }}
             />
           </GridItem>
-          <GridItem rowSpan={1} colSpan={1}></GridItem>
 
           <GridItem rowSpan={1} colSpan={1}>
             <VStack spacing={3} direction="row" align="center">

@@ -73,7 +73,7 @@ function Drawing() {
 
   async function setInference(svg) {
     // Check that there is visible data in the svg
-    if (svg === "" || svg.length < 500) {
+    if (svg === null || svg.length < 500) {
       setInferredImage([]);
       setInferredLabel([]);
       setAttention("");
@@ -154,7 +154,7 @@ function Drawing() {
         </Text>
 
         <Grid
-          h="96vh"
+          h="95vh"
           w="98vw"
           gap={4}
           align="center"
@@ -177,7 +177,7 @@ function Drawing() {
 
           <GridItem rowSpan={11} colSpan={8}>
             <Box
-              h="74vh"
+              h="74.5vh"
               w="62vw"
               bg={white}
               borderWidth="5px"
@@ -328,6 +328,27 @@ function Drawing() {
           <GridItem rowSpan={2} colSpan={2}>
             <Link
               to={{
+                pathname: "/",
+              }}
+            >
+              <Button
+                leftIcon={<BiImages />}
+                color={backgroundColor}
+                border="2px"
+                borderColor={darkGray}
+                variant="solid"
+                size="lg"
+                height={buttonHeight}
+                width={buttonWidth}
+              >
+                {" "}
+                Dataset
+              </Button>
+            </Link>
+          </GridItem>
+          <GridItem rowSpan={2} colSpan={2}>
+            <Link
+              to={{
                 pathname: "/embeddings",
                 state: svg,
               }}
@@ -344,27 +365,6 @@ function Drawing() {
               >
                 {" "}
                 Embeddings
-              </Button>
-            </Link>
-          </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
-            <Link
-              to={{
-                pathname: "/",
-              }}
-            >
-              <Button
-                leftIcon={<BiImages />}
-                color={backgroundColor}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-              >
-                {" "}
-                Dataset
               </Button>
             </Link>
           </GridItem>
