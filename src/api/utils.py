@@ -5,6 +5,7 @@ import sys
 
 import base64
 from cairosvg import svg2png
+from collections import defaultdict
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -13,6 +14,7 @@ from sklearn.decomposition import PCA
 from src.data.utils import default_image_loader
 
 NB_DATASET_IMAGES = 5
+
 
 def get_image(folder_path, ending):
     files = [
@@ -23,7 +25,7 @@ def get_image(folder_path, ending):
     return np.random.choice(files, NB_DATASET_IMAGES)
 
 
-def base64_encoding(image, bytes_type):
+def base64_encoding(image, bytes_type="PNG"):
     rawBytes = io.BytesIO()
     image.save(rawBytes, bytes_type)
     rawBytes.seek(0)
@@ -91,6 +93,11 @@ def prepare_images_data(images, image_labels, attention):
     return data
 
 
+def prepare_sketch(sketch):
+    sketch = svg_to_png(sketch)
+    return base64_encoding(sketch, bytes_type="PNG")
+
+
 def read_tensor_tsv_file(fpath):
     with open(fpath, "r") as f:
         tensor = []
@@ -128,9 +135,7 @@ def process_embeddings(embeddings_path, n_components, sketch_emb):
         classes.append("My Custom Sketch")
 
     # Process in dataframe
-    d = {"x": list(X[:, 0]),
-         "y": list(X[:, 1]),
-         "classes": classes}
+    d = {"x": list(X[:, 0]), "y": list(X[:, 1]), "classes": classes}
     if n_components == 3:
         d["z"] = list(X[:, 2])
     df = pd.DataFrame(data=d)
@@ -152,3 +157,31 @@ def prepare_embeddings_data(df, nb_dimensions):
             data[_class]["z"] = list(df[df["classes"] == _class]["z"])
 
     return data
+
+
+def map_curvenumber_image(args):
+    nb_images = 250
+    nb_rows = 23
+
+    classes = read_class_tsv_file(args.embeddings_path + "metadata.tsv")[0:nb_images]
+
+    im = Image.open(args.embeddings_path + "sprite.png")
+    full_size = im.size[0]
+    size_img = int(full_size / nb_rows)
+    tiles = [
+        im.crop((x, y, x + size_img, y + size_img))
+        for y in range(0, full_size, size_img)
+        for x in range(0, full_size, size_img)
+    ]
+    tiles = tiles[nb_images : nb_images * 2]
+
+    mapping = {}
+    d = defaultdict(int)
+    for i, _class in enumerate(classes):
+        mapping[i] = _class, d[_class]
+        d[_class] += 1
+
+    class_curvenumber_to_image = {
+        v: base64_encoding(tiles[k]) for k, v in mapping.items()
+    }
+    return class_curvenumber_to_image

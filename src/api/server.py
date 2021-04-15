@@ -11,6 +11,8 @@ from src.api.utils import (
     prepare_embeddings_data,
     process_embeddings,
     prepare_dataset_data,
+    map_curvenumber_image,
+    prepare_sketch,
 )
 from src.data.constants import Split
 
@@ -117,13 +119,38 @@ class Dataset(Resource):
         return make_response(json.dumps(data), 200)
 
 
+class ShowEmbeddingImage(Resource):
+    def post(self):
+        json_data = request.get_json()
+
+        if "class" not in json_data.keys():
+            return {"ERROR": "Class not provided"}, 400
+
+        if json_data["class"] == "My Custom Sketch":
+            if "sketch" not in json_data.keys():
+                return {"ERROR": "sketch not provided"}, 400
+            sketch = prepare_sketch(json_data["sketch"])
+            data = {"image": sketch}
+        else:
+            if "curvenumber" not in json_data.keys():
+                return {"ERROR": "Curvenumber not provided"}, 400
+
+            key = (json_data["class"], json_data["curvenumber"])
+            print(key)
+            data = {"image": class_curvenumber_to_image[key]}
+
+        return make_response(json.dumps(data), 200)
+
+
 api.add_resource(APIList, "/api_list")
 api.add_resource(Inferrence, "/find_images")
 api.add_resource(Embeddings, "/get_embeddings")
 api.add_resource(Dataset, "/get_dataset_images")
+api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
 
 if __name__ == "__main__":
 
     args = Args()
     inference = ApiInference(args, Split.test)
+    class_curvenumber_to_image = map_curvenumber_image(args)
     app.run(host="0.0.0.0", port="5000", debug=True)

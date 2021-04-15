@@ -26,6 +26,10 @@ function Embeddings() {
   const { state } = useLocation();
   const [result, setResult] = useState({});
   const [nbDimensions, setNbDimensions] = useState(3);
+  const [clickedClass, setClickedClass] = useState("");
+  const [clickedCurvenuber, setClickedCurvenuber] = useState(0);
+  const [sketch, setSketch] = useState([]);
+  const [showImage, setShowImage] = useState([]);
   let traces = [];
 
   useEffect(() => {
@@ -51,7 +55,50 @@ function Embeddings() {
     }
 
     getEmbeddings(to_send);
+    setClickedClass("My Custom Sketch");
   }, [state, nbDimensions]);
+
+  useEffect(() => {
+    let to_send = { class: clickedClass };
+    if (clickedClass === "My Custom Sketch") {
+      to_send["sketch"] = state;
+    } else {
+      to_send["curvenumber"] = clickedCurvenuber;
+    }
+    async function getClickedImage(to_send) {
+      console.log("Clicked");
+      console.log(clickedClass);
+      // Send to back end
+      const response = await fetch("/get_embedding_images", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(to_send),
+      });
+
+      if (response.ok) {
+        const res = await response.json();
+        let tempImage = res["image"].split("'")[1];
+        if (clickedClass === "My Custom Sketch") {
+          setSketch(
+            <img
+              src={`data:image/jpeg;base64,${tempImage}`}
+              alt="inferred_image"
+            />
+          );
+        } else {
+          setShowImage(
+            <img
+              src={`data:image/jpeg;base64,${tempImage}`}
+              alt="inferred_image"
+            />
+          );
+        }
+      }
+    }
+    getClickedImage(to_send);
+  }, [clickedClass, clickedCurvenuber, state]);
 
   function fillTraces() {
     let marker_size = 6;
@@ -122,6 +169,11 @@ function Embeddings() {
     );
   }
 
+  function getClickedImage(e) {
+    setClickedClass(e["points"][0]["data"]["name"]);
+    setClickedCurvenuber(e["points"][0]["curveNumber"]);
+  }
+
   return (
     <ChakraProvider>
       <Box bg={backgroundColor} h="100vh">
@@ -139,7 +191,7 @@ function Embeddings() {
           w="95%"
           gap={4}
           align="center"
-          templateRows="repeat(3, 1fr)"
+          templateRows="repeat(4, 1fr)"
           templateColumns="repeat(7, 1fr)"
         >
           <GridItem rowSpan={1} colSpan={1} align="center">
@@ -151,7 +203,7 @@ function Embeddings() {
             </VStack>
           </GridItem>
 
-          <GridItem rowSpan={3} colSpan={6}>
+          <GridItem rowSpan={4} colSpan={6}>
             <Plot
               data={traces}
               layout={{
@@ -187,6 +239,7 @@ function Embeddings() {
                 },
                 paper_bgcolor: gray,
               }}
+              onClick={(e) => getClickedImage(e)}
             />
           </GridItem>
 
@@ -226,6 +279,12 @@ function Embeddings() {
                 </Button>
               </Link>
             </VStack>
+          </GridItem>
+          <GridItem rowSpan={1} colSpan={1} align="center">
+            {sketch}
+          </GridItem>
+          <GridItem rowSpan={1} colSpan={1} align="center">
+            {showImage}
           </GridItem>
 
           <Text fontSize="xs" color={textColor} align="center"></Text>
