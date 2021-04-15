@@ -113,11 +113,7 @@ def read_class_tsv_file(fpath):
         return [line.rstrip("\n") for line in f]
 
 
-def process_embeddings(embeddings_path, n_components, sketch_emb):
-    # File names
-    tensors_path = embeddings_path + "tensors.tsv"
-    tsv_path = embeddings_path + "metadata.tsv"
-
+def project_embeddings(tensors_path, n_components, sketch_emb):
     tensors = read_tensor_tsv_file(tensors_path)
     if type(sketch_emb) != bool:
         # Add sketch embeddings
@@ -127,20 +123,47 @@ def process_embeddings(embeddings_path, n_components, sketch_emb):
     # PCA on tensors
     pca = PCA(n_components=n_components)
     pca.fit(tensors)
-    X = pca.transform(tensors)
+    return pca.transform(tensors)
 
+
+def get_class(tsv_path, sketch_emb):
     # Classes of embeddings
     classes = read_class_tsv_file(tsv_path)
     if type(sketch_emb) != bool:
         classes.append("My Custom Sketch")
+    return classes
+
+
+def get_tiles(im_path):
+    im = Image.open(im_path)
+    nb_rows = 23
+    nb_images = 2 * 250
+    full_size = im.size[0]
+    size_img = int(full_size / nb_rows)
+    tiles = [
+        im.crop((x, y, x + size_img, y + size_img))
+        for y in range(0, full_size, size_img)
+        for x in range(0, full_size, size_img)
+    ]
+    tiles = tiles[:nb_images]
+    tiles = [base64_encoding(tile) for tile in tiles]
+
+    return tiles
+
+
+def process_graph(embeddings_path, n_components, sketch_emb=False):
+    # File names
+    tensors_path = embeddings_path + "tensors.tsv"
+    tsv_path = embeddings_path + "metadata.tsv"
+
+    X = project_embeddings(tensors_path, n_components, sketch_emb)
+    classes = get_class(tsv_path, sketch_emb)
 
     # Process in dataframe
     d = {"x": list(X[:, 0]), "y": list(X[:, 1]), "classes": classes}
     if n_components == 3:
         d["z"] = list(X[:, 2])
     df = pd.DataFrame(data=d)
-    print(df.shape)
-
     return df
 
 
@@ -158,37 +181,3 @@ def prepare_embeddings_data(df, nb_dimensions):
             data[_class]["z"] = list(df[df["classes"] == _class]["z"])
 
     return data
-
-
-def map_curvenumber_image(args):
-    nb_images = 250
-    nb_rows = 23
-
-    classes = read_class_tsv_file(
-        args.embeddings_path + "metadata.tsv"
-    )  # [nb_images : nb_images * 2]
-
-    im = Image.open(args.embeddings_path + "sprite.png")
-    full_size = im.size[0]
-    size_img = int(full_size / nb_rows)
-    tiles = [
-        im.crop((x, y, x + size_img, y + size_img))
-        for y in range(0, full_size, size_img)
-        for x in range(0, full_size, size_img)
-    ]
-    # tiles = tiles[nb_images : nb_images * 2]
-
-    mapping = {}
-
-    def return_one():
-        return 1
-
-    d = defaultdict(return_one)
-    for i, _class in enumerate(classes):
-        mapping[i] = _class, d[_class]
-        d[_class] += 1
-
-    class_curvenumber_to_image = {
-        v: base64_encoding(tiles[k]) for k, v in mapping.items()
-    }
-    return class_curvenumber_to_image

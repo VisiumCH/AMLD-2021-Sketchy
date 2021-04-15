@@ -27,7 +27,9 @@ function Embeddings() {
   const [result, setResult] = useState({});
   const [nbDimensions, setNbDimensions] = useState(3);
   const [clickedClass, setClickedClass] = useState("");
-  const [clickedPointnumber, setClickedPointnumber] = useState(0);
+  const [clickedX, setClickedX] = useState(0);
+  const [clickedY, setClickedY] = useState(0);
+  const [clickedZ, setClickedZ] = useState(0);
   const [sketch, setSketch] = useState([]);
   const [showImage, setShowImage] = useState([]);
   let traces = [];
@@ -63,7 +65,11 @@ function Embeddings() {
     if (clickedClass === "My Custom Sketch") {
       to_send["sketch"] = state;
     } else {
-      to_send["pointnumber"] = clickedPointnumber;
+      to_send["x"] = clickedX;
+      to_send["y"] = clickedY;
+      if (nbDimensions === 3) {
+        to_send["z"] = clickedZ;
+      }
     }
     async function getClickedImage(to_send) {
       // Send to back end
@@ -96,7 +102,7 @@ function Embeddings() {
       }
     }
     getClickedImage(to_send);
-  }, [clickedClass, clickedPointnumber, state]);
+  }, [clickedClass, clickedX, clickedY, clickedZ, state]);
 
   function fillTraces() {
     let marker_size = 6;
@@ -169,7 +175,9 @@ function Embeddings() {
 
   function getClickedImage(e) {
     setClickedClass(e["points"][0]["data"]["name"]);
-    setClickedPointnumber(e["points"][0]["pointNumber"]);
+    setClickedX(e["points"][0]["x"]);
+    setClickedY(e["points"][0]["y"]);
+    setClickedZ(e["points"][0]["z"]);
   }
 
   return (

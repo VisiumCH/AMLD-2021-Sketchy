@@ -3,21 +3,25 @@ import os
 from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 import json
+import numpy as np
+import pandas as pd
 
 from src.api.api_inference import ApiInference
 from src.api.utils import (
     svg_to_png,
     prepare_images_data,
     prepare_embeddings_data,
-    process_embeddings,
+    process_graph,
     prepare_dataset_data,
-    map_curvenumber_image,
     prepare_sketch,
+    get_tiles,
 )
 from src.data.constants import Split
 
 app = Flask(__name__)
 api = Api(app)
+
+df = pd.DataFrame()
 
 
 class Args:
@@ -75,20 +79,21 @@ class Embeddings(Resource):
         json_data = request.get_json()
         args = Args()
 
+        # Verify the data
         if "nb_dim" not in json_data.keys():
             return {"ERROR": "Number of dimensions not provided"}, 400
         nb_dimensions = json_data["nb_dim"]
 
-        # Verify the data
+        global df
         if "sketch" not in json_data.keys():
-            df = process_embeddings(
+            df = process_graph(
                 args.embeddings_path, n_components=nb_dimensions, sketch_emb=False
             )
         else:
             sketch = svg_to_png(json_data["sketch"])
             sketch_embedding = inference.inference_sketch(sketch)
 
-            df = process_embeddings(
+            df = process_graph(
                 args.embeddings_path,
                 n_components=nb_dimensions,
                 sketch_emb=sketch_embedding,
@@ -132,11 +137,20 @@ class ShowEmbeddingImage(Resource):
             sketch = prepare_sketch(json_data["sketch"])
             data = {"image": sketch}
         else:
-            if "pointnumber" not in json_data.keys():
+            if "x" not in json_data.keys():
                 return {"ERROR": "Pointnumber not provided"}, 400
 
-            key = (json_data["class"], json_data["pointnumber"])
-            data = {"image": class_curvenumber_to_image[key]}
+            if "z" in json_data.keys():
+                point = json_data["x"], json_data["y"], json_data["z"]
+                dist = np.sum((df[["x", "y", "z"]].values - point) ** 2, axis=1)
+            else:
+                point = json_data["x"], json_data["y"]
+                dist = np.sum((df[["x", "y"]].values - point) ** 2, axis=1)
+
+            print(dist.shape)
+            print(np.argmin(dist))
+            # find index of closest image to x y z in dataframe.
+            data = {"image": tiles[np.argmin(dist)]}
 
         return make_response(json.dumps(data), 200)
 
@@ -150,6 +164,9 @@ api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
 if __name__ == "__main__":
 
     args = Args()
+
+    im_path = args.embeddings_path + "sprite.png"
+    tiles = get_tiles(im_path)
+
     inference = ApiInference(args, Split.test)
-    class_curvenumber_to_image = map_curvenumber_image(args)
     app.run(host="0.0.0.0", port="5000", debug=True)
