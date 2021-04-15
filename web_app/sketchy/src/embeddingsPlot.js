@@ -27,7 +27,7 @@ function Embeddings() {
   const [result, setResult] = useState({});
   const [nbDimensions, setNbDimensions] = useState(3);
   const [clickedClass, setClickedClass] = useState("");
-  const [clickedCurvenuber, setClickedCurvenuber] = useState(0);
+  const [clickedPointnumber, setClickedPointnumber] = useState(0);
   const [sketch, setSketch] = useState([]);
   const [showImage, setShowImage] = useState([]);
   let traces = [];
@@ -63,11 +63,9 @@ function Embeddings() {
     if (clickedClass === "My Custom Sketch") {
       to_send["sketch"] = state;
     } else {
-      to_send["curvenumber"] = clickedCurvenuber;
+      to_send["pointnumber"] = clickedPointnumber;
     }
     async function getClickedImage(to_send) {
-      console.log("Clicked");
-      console.log(clickedClass);
       // Send to back end
       const response = await fetch("/get_embedding_images", {
         method: "POST",
@@ -98,7 +96,7 @@ function Embeddings() {
       }
     }
     getClickedImage(to_send);
-  }, [clickedClass, clickedCurvenuber, state]);
+  }, [clickedClass, clickedPointnumber, state]);
 
   function fillTraces() {
     let marker_size = 6;
@@ -171,7 +169,7 @@ function Embeddings() {
 
   function getClickedImage(e) {
     setClickedClass(e["points"][0]["data"]["name"]);
-    setClickedCurvenuber(e["points"][0]["curveNumber"]);
+    setClickedPointnumber(e["points"][0]["pointNumber"]);
   }
 
   return (

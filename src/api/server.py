@@ -132,11 +132,10 @@ class ShowEmbeddingImage(Resource):
             sketch = prepare_sketch(json_data["sketch"])
             data = {"image": sketch}
         else:
-            if "curvenumber" not in json_data.keys():
-                return {"ERROR": "Curvenumber not provided"}, 400
+            if "pointnumber" not in json_data.keys():
+                return {"ERROR": "Pointnumber not provided"}, 400
 
-            key = (json_data["class"], json_data["curvenumber"])
-            print(key)
+            key = (json_data["class"], json_data["pointnumber"])
             data = {"image": class_curvenumber_to_image[key]}
 
         return make_response(json.dumps(data), 200)

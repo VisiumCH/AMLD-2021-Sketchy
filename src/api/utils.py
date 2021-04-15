@@ -139,6 +139,7 @@ def process_embeddings(embeddings_path, n_components, sketch_emb):
     if n_components == 3:
         d["z"] = list(X[:, 2])
     df = pd.DataFrame(data=d)
+    print(df.shape)
 
     return df
 
@@ -163,7 +164,9 @@ def map_curvenumber_image(args):
     nb_images = 250
     nb_rows = 23
 
-    classes = read_class_tsv_file(args.embeddings_path + "metadata.tsv")[0:nb_images]
+    classes = read_class_tsv_file(
+        args.embeddings_path + "metadata.tsv"
+    )  # [nb_images : nb_images * 2]
 
     im = Image.open(args.embeddings_path + "sprite.png")
     full_size = im.size[0]
@@ -173,10 +176,14 @@ def map_curvenumber_image(args):
         for y in range(0, full_size, size_img)
         for x in range(0, full_size, size_img)
     ]
-    tiles = tiles[nb_images : nb_images * 2]
+    # tiles = tiles[nb_images : nb_images * 2]
 
     mapping = {}
-    d = defaultdict(int)
+
+    def return_one():
+        return 1
+
+    d = defaultdict(return_one)
     for i, _class in enumerate(classes):
         mapping[i] = _class, d[_class]
         d[_class] += 1
