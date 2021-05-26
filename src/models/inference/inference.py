@@ -183,10 +183,10 @@ class Inference:
         arg_sorted_sim = (-similarity).argsort()
 
         self.sorted_fnames = [
-            self.images_fnames[i] for i in arg_sorted_sim[0][0 : NUM_CLOSEST + 1]
+            self.images_fnames[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
         ]
         self.sorted_labels = [
-            self.images_classes[i] for i in arg_sorted_sim[0][0 : NUM_CLOSEST + 1]
+            self.images_classes[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
         ]
 
     def prepare_image(self, index):
