@@ -1,4 +1,7 @@
 from flask import Flask, request, make_response
+import flask.scaffold
+flask.helpers._endpoint_from_view_func = flask.scaffold._endpoint_from_view_func
+import flask_restful
 from flask_restful import Resource, Api
 import json
 import numpy as np
