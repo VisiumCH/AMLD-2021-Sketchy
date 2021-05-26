@@ -174,7 +174,7 @@ class Options:
         parser.add_argument(
             "--max_images_test",
             type=int,
-            default=1000,
+            default=500,
             help="Maximum sketches in metrics computation (to avoid memory error).",
         )
         self.parser = parser

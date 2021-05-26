@@ -6,19 +6,17 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from src.data.constants import DatasetFolder, ImageType, DatasetName
-
 
 def create_dict_texts(texts):
-    ''' Dictionnary with key: number and value: class names'''
+    """ Dictionnary with key: number and value: class names"""
     texts = sorted(list(set(texts)))
     d = {l: i for i, l in enumerate(texts)}
     return d
 
 
 def get_file_list(dir_skim, class_list, skim):
-    ''' Lists of image/sketch files of a directory '''
-    _ext = "*.png" if skim == ImageType.sketch else "*.jpg"
+    """ Lists of image/sketch files of a directory """
+    _ext = "*.png" if skim == "sketches" else "*.jpg"
 
     fnames = []
     fnames_cls = []
@@ -30,14 +28,18 @@ def get_file_list(dir_skim, class_list, skim):
 
 
 def default_image_loader(path):
-    ''' Loads RGB data '''
-    img = Image.fromarray(cv2.resize(np.array(Image.open(path).convert("RGB")), (224, 224)))
+    """ Loads RGB data """
+    img = Image.fromarray(
+        cv2.resize(np.array(Image.open(path).convert("RGB")), (224, 224))
+    )
     return img
 
 
 def default_image_loader_tuberlin(path):
-    ''' Loads BGR data '''
-    img = Image.fromarray(cv2.resize(np.array(Image.open(path).convert('RGB')), (224, 224)))
+    """ Loads BGR data """
+    img = Image.fromarray(
+        cv2.resize(np.array(Image.open(path).convert("RGB")), (224, 224))
+    )
     b, g, r = img.split()
     img = Image.merge("RGB", (r, g, b))
     return img
@@ -50,15 +52,17 @@ def get_random_file_from_path(file_path):
 
 
 def get_class_dict(args, dataset_folder):
-    ''' Get a dictionnary of the class based on the folders' classes '''
+    """ Get a dictionnary of the class based on the folders' classes """
     class_directories = glob(os.path.join(args.data_path, dataset_folder, "images/*/"))
     list_class = [class_path.split("/")[-2] for class_path in class_directories]
     dicts_class = create_dict_texts(list_class)
     return dicts_class
 
 
-def dataset_class_split(args, dataset_folder, training_split, validation_split, image_type):
-    '''
+def dataset_class_split(
+    args, dataset_folder, training_split, validation_split, image_type
+):
+    """
     Splits the data of a class between test, valid and train split
     Args:
         - args: metadata provided in src/options.py
@@ -73,27 +77,29 @@ def dataset_class_split(args, dataset_folder, training_split, validation_split, 
         - cls_valid: classes associated to the images in the validaiton set
         - fnames_test: path to the images in the test set
         - cls_test: classes associated to the images in the test set
-    '''
+    """
     # Random seed
     random.seed(args.seed)
 
-    _ext = ".png" if image_type == ImageType.sketch else ".jpg"
+    _ext = ".png" if image_type == "sketches" else ".jpg"
 
     fnames_train, fnames_valid, fnames_test = [], [], []
     cls_train, cls_valid, cls_test = [], [], []
 
-    class_directories = glob(os.path.join(args.data_path, dataset_folder, image_type, "*/"))
+    class_directories = glob(
+        os.path.join(args.data_path, dataset_folder, image_type, "*/")
+    )
 
     for class_dir in class_directories:
-        cls_name = class_dir.split('/')[-2]
-        images_path = glob(class_dir + '/*')
+        cls_name = class_dir.split("/")[-2]
+        images_path = glob(class_dir + "/*")
         images_path = [path for path in images_path if path.endswith(_ext)]
         random.shuffle(images_path)
 
         train_split = int(training_split * len(images_path))
         valid_split = int((training_split + validation_split) * len(images_path))
 
-        train_images = images_path[: train_split]
+        train_images = images_path[:train_split]
         valid_images = images_path[train_split:valid_split]
         test_images = images_path[valid_split:]
 
@@ -110,7 +116,7 @@ def dataset_class_split(args, dataset_folder, training_split, validation_split, 
 
 
 def dataset_split(args, dataset_folder, training_split, valid_split):
-    '''
+    """
     Splits the data of all classes between test, valid and train split
     Args:
         - args: metadata provided in src/options.py
@@ -121,28 +127,46 @@ def dataset_split(args, dataset_folder, training_split, valid_split):
         - train_data: [images path, image classes, sketch paths, sketch classes] of the training set
         - valid_data: [images path, image classes, sketch paths, sketch classes] of the validation set
         - test_data: [images path, image classes, sketch paths, sketch classes] of the testing set
-    '''
+    """
     (
-        fnames_image_train, cls_image_train,
-        fnames_image_valid, cls_image_valid,
-        fnames_image_test, cls_image_test
-    ) = dataset_class_split(args, dataset_folder, training_split, valid_split, ImageType.image)
+        fnames_image_train,
+        cls_image_train,
+        fnames_image_valid,
+        cls_image_valid,
+        fnames_image_test,
+        cls_image_test,
+    ) = dataset_class_split(args, dataset_folder, training_split, valid_split, "images")
 
     (
-        fnames_sketch_train, cls_sketch_train,
-        fnames_sketch_valid, cls_sketch_valid,
-        fnames_sketch_test, cls_sketch_test
-    ) = dataset_class_split(args, dataset_folder, training_split, valid_split, ImageType.sketch)
+        fnames_sketch_train,
+        cls_sketch_train,
+        fnames_sketch_valid,
+        cls_sketch_valid,
+        fnames_sketch_test,
+        cls_sketch_test,
+    ) = dataset_class_split(
+        args, dataset_folder, training_split, valid_split, "sketches"
+    )
 
-    train_data = [fnames_image_train, cls_image_train, fnames_sketch_train, cls_sketch_train]
-    valid_data = [fnames_image_valid, cls_image_valid, fnames_sketch_valid, cls_sketch_valid]
+    train_data = [
+        fnames_image_train,
+        cls_image_train,
+        fnames_sketch_train,
+        cls_sketch_train,
+    ]
+    valid_data = [
+        fnames_image_valid,
+        cls_image_valid,
+        fnames_sketch_valid,
+        cls_sketch_valid,
+    ]
     test_data = [fnames_image_test, cls_image_test, fnames_sketch_test, cls_sketch_test]
 
     return train_data, valid_data, test_data
 
 
 def get_loader(dataset):
-    if dataset == DatasetFolder.tuberlin:
+    if dataset == "TU-Berlin":
         loader = default_image_loader_tuberlin
     else:
         loader = default_image_loader
@@ -150,25 +174,25 @@ def get_loader(dataset):
 
 
 def get_dict(dataset, dict_class):
-    '''
+    """
     Returns the appropriate dictionnary based on the training training folder
-    '''
+    """
     if isinstance(dict_class, dict):
         dict_class = dict_class
     else:
-        if dataset == DatasetFolder.sketchy:
+        if dataset == "Sketchy":
             dict_class = dict_class[0]
-        elif dataset == DatasetFolder.tuberlin:
+        elif dataset == "TU-Berlin":
             dict_class = dict_class[1]
-        elif dataset == DatasetFolder.quickdraw:
+        elif dataset == "Quickdraw":
             dict_class = dict_class[2]
         else:
-            raise(f"Error with dataset name: {dataset}.")
+            raise (f"Error with dataset name: {dataset}.")
     return dict_class
 
 
 def get_limits(dataset, valid_data, image_type):
-    '''
+    """
     Returns the limit of index at which to switch between datasets
     Args:
         - dataset: dataset in training
@@ -180,17 +204,17 @@ def get_limits(dataset, valid_data, image_type):
             - sketchy_limit is the limit between the indexes of Sketchy dataset and TU_Berlin dataset
             - tuberlin_limit is the limit between the indexes of TU_Berlin dataset and Quickdraw dataset
 
-    '''
-    if dataset == DatasetName.sktu or dataset == DatasetName.sktuqd:
-        if image_type == ImageType.image:
+    """
+    if dataset == "sk+tu" or dataset == "sk+tu+qd":
+        if image_type == "images":
             sketchy_limit = valid_data.sketchy_limit_images
         else:
             sketchy_limit = valid_data.sketchy_limit_sketch
     else:
         sketchy_limit = None
 
-    if dataset == DatasetName.sktuqd:
-        if image_type == ImageType.image:
+    if dataset == "sk+tu+qd":
+        if image_type == "images":
             tuberlin_limit = valid_data.tuberlin_limit_images
         else:
             tuberlin_limit = valid_data.tuberlin_limit_sketch
@@ -201,10 +225,10 @@ def get_limits(dataset, valid_data, image_type):
 
 
 def get_dataset_dict(dict_class, idx, sketchy_limit, tuberlin_limit):
-    '''
+    """
     Based on the index and the indexes limits (sketchy_limit, tuberlin_limit),
     returns the dictionnary associated to the right dataset.
-    '''
+    """
     if sketchy_limit is None:  # single dataset
         pass
     else:  # multiple datasets

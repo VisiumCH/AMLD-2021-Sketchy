@@ -8,7 +8,6 @@ import pandas as pd
 import torch
 from torchvision import transforms
 
-from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_loader, get_dict
 from src.models.utils import get_model, normalise_attention, get_parameters
@@ -81,11 +80,7 @@ class Inference:
         """
         dataset = self.args.dataset
 
-        if dataset in [
-            DatasetName.sketchy,
-            DatasetName.tuberlin,
-            DatasetName.quickdraw,
-        ]:
+        if dataset in ["sketchy", "tuberlin", "quickdraw"]:
             (
                 self.dict_class,
                 self.images_fnames,
@@ -95,8 +90,8 @@ class Inference:
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
-        elif dataset in [DatasetName.sktu, DatasetName.sktuqd]:
-            self.args.dataset = DatasetName.sketchy
+        elif dataset in ["sk+tu", "sk+tu+qd"]:
+            self.args.dataset = "sketchy"
             (
                 dict_class_sk,
                 self.images_fnames,
@@ -107,7 +102,7 @@ class Inference:
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
 
-            self.args.dataset = DatasetName.tuberlin
+            self.args.dataset = "tuberlin"
             (
                 dict_class_tu,
                 images_fnames,
@@ -126,8 +121,8 @@ class Inference:
                 (self.images_embeddings, images_embeddings), axis=0
             )
 
-            if dataset == DatasetName.sktuqd:
-                self.args.dataset = DatasetName.quickdraw
+            if dataset == "sk+tu+qd":
+                self.args.dataset = "quickdraw"
                 self.tuberlin_limit = len(self.images_fnames)
 
                 (
@@ -188,10 +183,10 @@ class Inference:
         arg_sorted_sim = (-similarity).argsort()
 
         self.sorted_fnames = [
-            self.images_fnames[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
+            self.images_fnames[i] for i in arg_sorted_sim[0][0 : NUM_CLOSEST + 1]
         ]
         self.sorted_labels = [
-            self.images_classes[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
+            self.images_classes[i] for i in arg_sorted_sim[0][0 : NUM_CLOSEST + 1]
         ]
 
     def prepare_image(self, index):
@@ -237,7 +232,7 @@ class Inference:
 
 
 def main(args):
-    inference = Inference(args, Split.test)
+    inference = Inference(args, "test")
     inference.random_images_inference(number_sketches=NUMBER_RANDOM_IMAGES)
 
 

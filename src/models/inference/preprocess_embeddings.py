@@ -6,7 +6,6 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.models.test import get_test_data
 from src.models.utils import get_model, get_parameters
@@ -81,13 +80,13 @@ def preprocess_embeddings(args, im_net):
     valid_fnames, valid_embeddings, valid_classes = get_test_images(
         args, valid_im_data, im_net
     )
-    save_embeddings(args, valid_fnames, valid_embeddings, valid_classes, Split.valid)
+    save_embeddings(args, valid_fnames, valid_embeddings, valid_classes, "valid")
 
     print("Test")
     test_fnames, test_embeddings, test_classes = get_test_images(
         args, test_im_data, im_net
     )
-    save_embeddings(args, test_fnames, test_embeddings, test_classes, Split.test)
+    save_embeddings(args, test_fnames, test_embeddings, test_classes, "test")
 
 
 if __name__ == "__main__":
@@ -107,18 +106,18 @@ if __name__ == "__main__":
 
     # Compute embeddings on chosen dataset(s)
     dataset = args.dataset
-    if dataset in [DatasetName.sketchy, DatasetName.tuberlin, DatasetName.quickdraw]:
+    if dataset in ["sketchy", "tuberlin", "quickdraw"]:
         preprocess_embeddings(args, im_net)
 
-    elif dataset in [DatasetName.sktu, DatasetName.sktuqd]:
-        args.dataset = DatasetName.sketchy
+    elif dataset in ["sk+tu", "sk+tu+qd"]:
+        args.dataset = "sketchy"
         preprocess_embeddings(args, im_net)
 
-        args.dataset = DatasetName.tuberlin
+        args.dataset = "tuberlin"
         preprocess_embeddings(args, im_net)
 
-        if dataset == DatasetName.sktuqd:
-            args.dataset = DatasetName.quickdraw
+        if dataset == "sk+tu+qd":
+            args.dataset = "quickdraw"
             preprocess_embeddings(args, im_net)
     else:
         raise Exception(args.dataset + " not implemented.")
