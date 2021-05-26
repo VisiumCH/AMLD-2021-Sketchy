@@ -8,11 +8,13 @@ import numpy as np
 import pandas as pd
 
 from src.api.api_inference import ApiInference
+from src.api.api_options import ApiOptions
 from src.api.utils import (
     svg_to_png,
     prepare_images_data,
     prepare_dataset,
     prepare_sketch,
+    get_parameters
 )
 from src.api.embeddings_utils import (
     prepare_embeddings_data,
@@ -152,6 +154,7 @@ api.add_resource(Embeddings, "/get_embeddings")
 api.add_resource(Dataset, "/get_dataset_images")
 api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
 
+        
 
 class Args:
     dataset = "quickdraw"
@@ -163,7 +166,13 @@ class Args:
     
 if __name__ == "__main__":
 
-    args = Args()
+    args = ApiOptions().parse()
+    args.save = args.log + args.name
+    args.dataset, args.emb_size = get_parameters(args.save)
+    args.load = args.save + "checkpoint.pth"
+    args.embeddings_path = args.save + args.epoch_number  + "/default/"
+    args.cuda = False
+
     tiles = get_tiles(args.embeddings_path + "sprite.png")
     df = pd.DataFrame()
 

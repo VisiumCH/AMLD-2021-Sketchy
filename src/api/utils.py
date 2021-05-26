@@ -98,3 +98,16 @@ def prepare_sketch(sketch):
     """ Prepare the sketch: convert it from svg to a base64 encoding """
     sketch = svg_to_png(sketch)
     return base64_encoding(sketch, bytes_type="PNG")
+
+
+def get_parameters(fpath):
+    
+    param = {}
+    with open(fpath + '/params.txt', "r") as f:
+        data = [line.rstrip("\n") for line in f]
+    
+    for line in data:
+        key, val = line.split(' ')
+        param[key] = val
+        
+    return param["dataset"], int(param["emb_size"])
