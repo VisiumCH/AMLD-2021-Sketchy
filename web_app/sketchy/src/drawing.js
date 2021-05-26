@@ -25,6 +25,8 @@ import {
   black,
 } from "./constants";
 import { BiPencil, BiEraser, BiShapePolygon, BiImages } from "react-icons/bi";
+// import cursorEraser from "./cursorEraser.png";
+// import cursorPencil from "./cursorPencil.png";
 
 const progress = (
   <CircularProgress
@@ -44,6 +46,7 @@ function Drawing() {
   const [drawingMode, setDrawingMode] = useState("drawing");
   const [disableDrawing, setDisableDrawing] = useState(true);
   const [disableErasing, setDisableErasing] = useState(false);
+  // const [cursor, setCursor] = useState("crosshair");
 
   const [
     divRef,
@@ -62,12 +65,14 @@ function Drawing() {
       setDrawingMode("erasing");
       setDisableDrawing(false);
       setDisableErasing(true);
+      // setCursor("./cursorEraser.png");
     } else if (drawingMode === "erasing") {
       changePenColor(black);
       changePenWidth(3);
       setDrawingMode("drawing");
       setDisableDrawing(true);
       setDisableErasing(false);
+      // setCursor("./cursorPencil.png");
     }
   }
 
@@ -184,12 +189,7 @@ function Drawing() {
               borderRadius="lg"
               borderColor="#A3A8B0"
               ref={divRef}
-              _hover={
-                {
-                  //TODO: change cursor when drawing or erasing
-                  //cursor: "url(https://i.stack.imgur.com/bUGV0.png),auto"
-                }
-              }
+              // style={{ cursor: cursor }}
               // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
               onMouseMove={() => {
                 setSvg(getSvgXML());

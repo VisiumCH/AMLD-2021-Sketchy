@@ -36,7 +36,7 @@ function Embeddings() {
 
   useEffect(() => {
     let to_send = { nb_dim: nbDimensions };
-    if (typeof state !== undefined) {
+    if (typeof state !== "undefined") {
       to_send["sketch"] = state;
     }
 
@@ -173,6 +173,18 @@ function Embeddings() {
     );
   }
 
+  function showSketch() {
+    if (typeof state !== "undefined") {
+      return sketch;
+    } else {
+      return (
+        <Text fontSize="l" color={textColor} align="center">
+          No sketch drawn, click on Draw to draw one!
+        </Text>
+      );
+    }
+  }
+
   function getClickedImage(e) {
     setClickedClass(e["points"][0]["data"]["name"]);
     setClickedX(e["points"][0]["x"]);
@@ -194,7 +206,7 @@ function Embeddings() {
 
         <Grid
           h="90%"
-          w="95%"
+          w="94%"
           gap={4}
           align="center"
           templateRows="repeat(4, 1fr)"
@@ -202,7 +214,7 @@ function Embeddings() {
         >
           <GridItem rowSpan={1} colSpan={1} align="center">
             <VStack spacing={3} direction="row" align="center">
-              <Text fontSize="2xl" color={textColor} align="center">
+              <Text fontSize="xl" color={textColor} align="center">
                 Dimension: {nbDimensions}D
               </Text>
               {getDimensionButton()}
@@ -251,7 +263,7 @@ function Embeddings() {
 
           <GridItem rowSpan={1} colSpan={1}>
             <VStack spacing={3} direction="row" align="center">
-              <Text fontSize="2xl" color={textColor} align="center">
+              <Text fontSize="xl" color={textColor} align="center">
                 Change page
               </Text>
               <Link to="/drawing" className="drawing_link">
@@ -287,13 +299,17 @@ function Embeddings() {
             </VStack>
           </GridItem>
           <GridItem rowSpan={1} colSpan={1} align="center">
-            {sketch}
+            <Text fontSize="xl" color={textColor} align="center">
+              My Sketch
+            </Text>
+            {showSketch()}
           </GridItem>
           <GridItem rowSpan={1} colSpan={1} align="center">
+            <Text fontSize="xl" color={textColor} align="center">
+              Clicked image
+            </Text>
             {showImage}
           </GridItem>
-
-          <Text fontSize="xs" color={textColor} align="center"></Text>
         </Grid>
       </Box>
     </ChakraProvider>
