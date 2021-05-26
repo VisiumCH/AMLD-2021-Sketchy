@@ -24,15 +24,6 @@ app = Flask(__name__)
 api = Api(app)
 
 
-class Args:
-    dataset = "quickdraw"
-    emb_size = 256
-    cuda = False
-    save = "io/models/quickdraw/"
-    load = save + "checkpoint.pth"
-    embeddings_path = save + "00012/default/"
-
-
 class APIList(Resource):
     """
     Return a list of available command and their description
@@ -161,6 +152,15 @@ api.add_resource(Embeddings, "/get_embeddings")
 api.add_resource(Dataset, "/get_dataset_images")
 api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
 
+
+class Args:
+    dataset = "quickdraw"
+    emb_size = 256
+    cuda = False
+    save = "io/models/quickdraw/"
+    load = save + "checkpoint.pth"
+    embeddings_path = save + "00012/default/"
+    
 if __name__ == "__main__":
 
     args = Args()
