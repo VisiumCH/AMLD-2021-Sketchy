@@ -89,6 +89,7 @@ io
 # Mypy cache
 .mypy_cache/
 node_modules
+*package-lock.json
 
 # Personal notebooks
 notebooks/pml-*.ipynb
