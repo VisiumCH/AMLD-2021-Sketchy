@@ -4,13 +4,17 @@ import random
 import numpy as np
 import torch.utils.data as data
 
-from src.data.constants import DatasetFolder, ImageType, Split
-from src.data.utils import (default_image_loader, default_image_loader_tuberlin,
-                            get_random_file_from_path, dataset_split, get_class_dict)
+from src.data.utils import (
+    default_image_loader,
+    default_image_loader_tuberlin,
+    get_random_file_from_path,
+    dataset_split,
+    get_class_dict,
+)
 
 
 def make_default_dataset(args, dataset_folder, transform):
-    '''
+    """
     Creates all the data loaders for any single dataset (Sketchy, TU_Berlin or Quickdraw)
     Args:
         - args: arguments reveived from the command line (argparse)
@@ -24,11 +28,11 @@ def make_default_dataset(args, dataset_folder, transform):
         - test_im_loader: data loader of images for the test set
         - dicts_class: dictionnnary mapping number to classes.
                         The key is a unique number and the value is the class name.
-    '''
+    """
     random.seed(args.seed)
     np.random.seed(args.seed)
 
-    if dataset_folder == DatasetFolder.quickdraw:
+    if dataset_folder == "Quickdraw":
         training_split = args.qd_training_split
         valid_split = args.qd_valid_split
     else:
@@ -37,29 +41,74 @@ def make_default_dataset(args, dataset_folder, transform):
 
     # Get dataset classes
     dicts_class = get_class_dict(args, dataset_folder)
-    train_data, valid_data, test_data = dataset_split(args, dataset_folder, training_split, valid_split)
+    train_data, valid_data, test_data = dataset_split(
+        args, dataset_folder, training_split, valid_split
+    )
 
     # Data Loaders
-    train_loader = DefaultDataset(args, dataset_folder, Split.train, dicts_class,
-                                  train_data, transform)
-    valid_sk_loader = DefaultDataset(args, dataset_folder, Split.valid, dicts_class,
-                                     valid_data, transform, ImageType.sketch)
-    valid_im_loader = DefaultDataset(args, dataset_folder, Split.valid, dicts_class,
-                                     valid_data, transform, ImageType.image)
-    test_sk_loader = DefaultDataset(args, dataset_folder, Split.test, dicts_class,
-                                    test_data, transform, ImageType.sketch)
-    test_im_loader = DefaultDataset(args, dataset_folder, Split.test, dicts_class,
-                                    test_data, transform, ImageType.image)
-    return train_loader, [valid_sk_loader, valid_im_loader], [test_sk_loader, test_im_loader], dicts_class
+    train_loader = DefaultDataset(
+        args, dataset_folder, "train", dicts_class, train_data, transform
+    )
+    valid_sk_loader = DefaultDataset(
+        args,
+        dataset_folder,
+        "valid",
+        dicts_class,
+        valid_data,
+        transform,
+        "sketches",
+    )
+    valid_im_loader = DefaultDataset(
+        args,
+        dataset_folder,
+        "valid",
+        dicts_class,
+        valid_data,
+        transform,
+        "images",
+    )
+    test_sk_loader = DefaultDataset(
+        args,
+        dataset_folder,
+        "test",
+        dicts_class,
+        test_data,
+        transform,
+        "sketches",
+    )
+    test_im_loader = DefaultDataset(
+        args,
+        dataset_folder,
+        "test",
+        dicts_class,
+        test_data,
+        transform,
+        "images",
+    )
+    return (
+        train_loader,
+        [valid_sk_loader, valid_im_loader],
+        [test_sk_loader, test_im_loader],
+        dicts_class,
+    )
 
 
 class DefaultDataset(data.Dataset):
-    '''
+    """
     Default dataset to get data
-    '''
+    """
 
-    def __init__(self, args, dataset_folder, dataset_type, dicts_class, data, transform, image_type=None):
-        '''
+    def __init__(
+        self,
+        args,
+        dataset_folder,
+        dataset_type,
+        dicts_class,
+        data,
+        transform,
+        image_type=None,
+    ):
+        """
         Initialises the dataset with the corresponding images/sketch path and classes
         Args:
             - args: arguments reveived from the command line (argparse)
@@ -69,26 +118,26 @@ class DefaultDataset(data.Dataset):
             - data: list data of the classes [images path, image classes, sketch paths, sketch classes]
             - transform: pytorch transform to apply on the data
             - image_type: type of the data: can be either 'sketches' or 'images'
-        '''
+        """
         self.transform = transform
         self.dataset_type = dataset_type
         self.dicts_class = dicts_class
         self.loader = default_image_loader
         self.image_type = image_type
 
-        if dataset_folder == DatasetFolder.tuberlin:
+        if dataset_folder == "TU-Berlin":
             self.loader_image = default_image_loader_tuberlin
         else:
             self.loader_image = default_image_loader
 
-        self.dir_sketch = os.path.join(args.data_path, dataset_folder, ImageType.sketch)
-        self.dir_image = os.path.join(args.data_path, dataset_folder, ImageType.image)
+        self.dir_sketch = os.path.join(args.data_path, dataset_folder, "sketches")
+        self.dir_image = os.path.join(args.data_path, dataset_folder, "images")
 
         self.fnames_image, self.cls_image = data[0], data[1]
         self.fnames_sketch, self.cls_sketch = data[2], data[3]
 
     def __getitem__(self, index):
-        '''
+        """
         Get training data based on index
         Args:
             - index: index of the sketch or image
@@ -103,10 +152,12 @@ class DefaultDataset(data.Dataset):
             - photo: photo or sketch image
             - fname: path to the photo or sketch
             - lbl: category of the sketch or image
-        '''
-        if self.dataset_type == Split.train:
+        """
+        if self.dataset_type == "train":
             # Read sketch
-            sketch_fname = os.path.join(self.dir_sketch, self.cls_sketch[index], self.fnames_sketch[index])
+            sketch_fname = os.path.join(
+                self.dir_sketch, self.cls_sketch[index], self.fnames_sketch[index]
+            )
             sketch = self.transform(self.loader(sketch_fname))
 
             # Target
@@ -114,7 +165,9 @@ class DefaultDataset(data.Dataset):
             lbl_pos = self.dicts_class.get(label)
 
             # Positive image
-            im_pos_fname = get_random_file_from_path(os.path.join(self.dir_image, label))
+            im_pos_fname = get_random_file_from_path(
+                os.path.join(self.dir_image, label)
+            )
             image_pos = self.transform(self.loader_image(im_pos_fname))
 
             # Negative class
@@ -123,17 +176,19 @@ class DefaultDataset(data.Dataset):
             label_neg = np.random.choice(possible_classes, 1)[0]
             lbl_neg = self.dicts_class.get(label_neg)
 
-            im_neg_fname = get_random_file_from_path(os.path.join(self.dir_image, label_neg))
+            im_neg_fname = get_random_file_from_path(
+                os.path.join(self.dir_image, label_neg)
+            )
             image_neg = self.transform(self.loader_image(im_neg_fname))
 
             return sketch, image_pos, image_neg, lbl_pos, lbl_neg
         else:
-            if self.image_type == ImageType.image:
+            if self.image_type == "images":
                 label = self.cls_image[index]
                 fname = os.path.join(self.dir_image, label, self.fnames_image[index])
                 photo = self.transform(self.loader_image(fname))
 
-            elif self.image_type == ImageType.sketch:
+            elif self.image_type == "sketches":
                 label = self.cls_sketch[index]
                 fname = os.path.join(self.dir_sketch, label, self.fnames_sketch[index])
                 photo = self.transform(self.loader(fname))
@@ -142,12 +197,12 @@ class DefaultDataset(data.Dataset):
             return photo, fname, lbl
 
     def __len__(self):
-        # Number of sketches/images in the dataset
-        if self.dataset_type == Split.train or self.image_type == ImageType.sketch:
+        """ Number of sketches/images in the dataset """
+        if self.dataset_type == "train" or self.image_type == "sketches":
             return len(self.fnames_sketch)
         else:
             return len(self.fnames_image)
 
     def get_class_dict(self):
-        # Dictionnary of categories of the dataset
+        """ Dictionnary of categories of the dataset """
         return self.dicts_class

@@ -1,3 +1,8 @@
+"""
+File to test web-scaling with locust (http://localhost:8089/)
+See this post: https://towardsdatascience.com/performance-testing-an-ml-serving-api-with-locust-ecd98ab9b7f7
+It will make the virtual machine crash at the limit.
+"""
 from locust import HttpUser, task, between
 import json
 

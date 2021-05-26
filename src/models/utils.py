@@ -9,6 +9,7 @@ from src.models.encoder import EncoderCNN
 
 
 def get_parameters():
+    """ Parse the arguments from the command line and default setup """
     parser = argparse.ArgumentParser(
         description="Sketch Based Retrieval Test and inference",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

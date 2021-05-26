@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask, request, make_response
 from flask_restful import Resource, Api
 import json
@@ -10,18 +8,17 @@ from src.api.api_inference import ApiInference
 from src.api.utils import (
     svg_to_png,
     prepare_images_data,
+    prepare_dataset,
+    prepare_sketch,
+)
+from src.api.embeddings_utils import (
     prepare_embeddings_data,
     process_graph,
-    prepare_dataset_data,
-    prepare_sketch,
     get_tiles,
 )
-from src.data.constants import Split
 
 app = Flask(__name__)
 api = Api(app)
-
-df = pd.DataFrame()
 
 
 class Args:
@@ -72,6 +69,26 @@ class Inferrence(Resource):
         return make_response(json.dumps(data), 200)
 
 
+class Dataset(Resource):
+    """ Receives a category and returns associated images. """
+
+    def post(self):
+        json_data = request.get_json()
+
+        if "category" not in json_data.keys():
+            return {"ERROR": "Category not provided"}, 400
+        category = json_data["category"]
+
+        dataset_path = "io/data/raw/Quickdraw/"
+
+        data_sketches = prepare_dataset(dataset_path, "sketches", category)
+        data_images = prepare_dataset(dataset_path, "images", category)
+
+        data = {**data_sketches, **data_images}
+
+        return make_response(json.dumps(data), 200)
+
+
 class Embeddings(Resource):
     """ Receives a sketch and returns its closest images. """
 
@@ -104,27 +121,9 @@ class Embeddings(Resource):
         return make_response(json.dumps(data), 200)
 
 
-class Dataset(Resource):
-    """ Receives a category and returns associated images. """
-
-    def post(self):
-        json_data = request.get_json()
-
-        if "category" not in json_data.keys():
-            return {"ERROR": "Category not provided"}, 400
-        category = json_data["category"]
-
-        dataset_path = "io/data/raw/Quickdraw/"
-
-        data_sketches = prepare_dataset_data(dataset_path, "sketches", category)
-        data_images = prepare_dataset_data(dataset_path, "images", category)
-
-        data = {**data_sketches, **data_images}
-
-        return make_response(json.dumps(data), 200)
-
-
 class ShowEmbeddingImage(Resource):
+    """Return the custom sketch or the image selected on the embedding graph"""
+
     def post(self):
         json_data = request.get_json()
 
@@ -137,7 +136,7 @@ class ShowEmbeddingImage(Resource):
             sketch = prepare_sketch(json_data["sketch"])
             data = {"image": sketch}
         else:
-            if "x" not in json_data.keys():
+            if "x" not in json_data.keys() or "y" not in json_data.keys():
                 return {"ERROR": "Pointnumber not provided"}, 400
 
             if "z" in json_data.keys():
@@ -147,8 +146,6 @@ class ShowEmbeddingImage(Resource):
                 point = json_data["x"], json_data["y"]
                 dist = np.sum((df[["x", "y"]].values - point) ** 2, axis=1)
 
-            print(dist.shape)
-            print(np.argmin(dist))
             # find index of closest image to x y z in dataframe.
             data = {"image": tiles[np.argmin(dist)]}
 
@@ -164,9 +161,8 @@ api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
 if __name__ == "__main__":
 
     args = Args()
+    tiles = get_tiles(args.embeddings_path + "sprite.png")
+    df = pd.DataFrame()
 
-    im_path = args.embeddings_path + "sprite.png"
-    tiles = get_tiles(im_path)
-
-    inference = ApiInference(args, Split.test)
+    inference = ApiInference(args, "test")
     app.run(host="0.0.0.0", port="5000", debug=True)

@@ -88,3 +88,7 @@ io
 
 # Mypy cache
 .mypy_cache/
+node_modules
+
+# Personal notebooks
+notebooks/pml-*.ipynb

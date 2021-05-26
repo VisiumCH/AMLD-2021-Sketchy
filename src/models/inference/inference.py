@@ -3,13 +3,11 @@ import os
 
 import matplotlib.pyplot as plt
 
-import matplotlib.image as mpimg
 import numpy as np
 import pandas as pd
 import torch
 from torchvision import transforms
 
-from src.data.constants import DatasetName, Split
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_loader, get_dict
 from src.models.utils import get_model, normalise_attention, get_parameters
@@ -20,14 +18,19 @@ NUMBER_RANDOM_IMAGES = 20
 
 
 class Inference:
-    """ Class to infer closest images of a sketch """
+    """
+    Class to infer closest images of a sketch
+    Parent class of
+        - PlotInference called from main to plot closest images of random sketch
+        - ApiInference called from the api to retrieve the closest images of a hand-drawn sketch
+    """
 
     def __init__(self, args, dataset_type):
         """
         Initialises the inference with the trained model and precomputed embeddings
         Args:
             - args: arguments received from the command line (argparse)
-            - dataset_type: dataset split ('train', 'valid' or 'test')
+            - dataset_type: 'train', 'valid' or 'test'
         """
         self.args = args
         self.transform = transforms.Compose([transforms.ToTensor()])
@@ -50,7 +53,7 @@ class Inference:
         """
         Get the data of images to match with the sketches
         Args:
-            - dataset_type: dataset split ('train', 'valid' or 'test')
+            - dataset_type: 'train', 'valid' or 'test'
         Return:
             - dict_class: dictionnary mapping numbers to classes names
             - paths to the images
@@ -82,11 +85,7 @@ class Inference:
         """
         dataset = self.args.dataset
 
-        if dataset in [
-            DatasetName.sketchy,
-            DatasetName.tuberlin,
-            DatasetName.quickdraw,
-        ]:
+        if dataset in ["sketchy", "tuberlin", "quickdraw"]:
             (
                 self.dict_class,
                 self.images_fnames,
@@ -96,8 +95,8 @@ class Inference:
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
-        elif dataset in [DatasetName.sktu, DatasetName.sktuqd]:
-            self.args.dataset = DatasetName.sketchy
+        elif dataset in ["sk+tu", "sk+tu+qd"]:
+            self.args.dataset = "sketchy"
             (
                 dict_class_sk,
                 self.images_fnames,
@@ -108,7 +107,7 @@ class Inference:
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
 
-            self.args.dataset = DatasetName.tuberlin
+            self.args.dataset = "tuberlin"
             (
                 dict_class_tu,
                 images_fnames,
@@ -127,8 +126,8 @@ class Inference:
                 (self.images_embeddings, images_embeddings), axis=0
             )
 
-            if dataset == DatasetName.sktuqd:
-                self.args.dataset = DatasetName.quickdraw
+            if dataset == "sk+tu+qd":
+                self.args.dataset = "quickdraw"
                 self.tuberlin_limit = len(self.images_fnames)
 
                 (
@@ -154,9 +153,7 @@ class Inference:
 
     def inference_sketch(self, sk):
         """
-        Find the closest images of a sketch and plot it
-        sk is passed as argument as it can come from the inference
-        and not exist yet
+        Find the closest images of a sketch and plot them
         """
         self.sketch = self.transform(sk).unsqueeze(0)
 
@@ -173,18 +170,20 @@ class Inference:
         arg_sorted_sim = (-similarity).argsort()
 
         self.sorted_fnames = [
-            self.images_fnames[i] for i in arg_sorted_sim[0][0 : NUM_CLOSEST + 1]
+            self.images_fnames[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
         ]
         self.sorted_labels = [
-            self.images_classes[i] for i in arg_sorted_sim[0][0 : NUM_CLOSEST + 1]
+            self.images_classes[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
         ]
         return sketch_embedding
 
     def get_heatmap(self):
+        """ Normalise the attention output of the model for heatmap plots """
         attn_sk = normalise_attention(self.attn_sk, self.sketch)
         self.heat_map = attn_sk.squeeze().detach().numpy()
 
     def prepare_image(self, index):
+        """ Gets an an image and its label based on its index """
         dataset = self.sorted_fnames[index].split("/")[-4]
 
         loader = get_loader(dataset)
@@ -196,6 +195,8 @@ class Inference:
 
 
 class PlotInference(Inference):
+    """ Plot inference of a random sketch with its closest images in the latent space"""
+
     def __init__(self, args, dataset_type):
         super().__init__(args, dataset_type)
 
@@ -242,7 +243,8 @@ class PlotInference(Inference):
 
 
 def main(args):
-    inference = PlotInference(args, Split.test)
+    """ From here, the inference is done on a random sketch and a plot with its closest images is made """
+    inference = PlotInference(args, "test")
     inference.random_images_inference(number_sketches=NUMBER_RANDOM_IMAGES)
 
 
@@ -250,5 +252,4 @@ if __name__ == "__main__":
 
     args = get_parameters()
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
-    args.cuda = False
     main(args)
