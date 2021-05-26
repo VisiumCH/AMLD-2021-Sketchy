@@ -45,16 +45,14 @@ def main(args):
 
     list_dataset = ["sketchy", "tuberlin", "quickdraw", "sk+tu", "sk+tu+qd"]
     for dataset in list_dataset:
+        print(f"Visualising dataset {dataset}")
         args.dataset = dataset
-
         (
             train_loader,
             [valid_sk_loader, valid_im_loader],
             [test_sk_loader, test_im_loader],
             dict_class,
         ) = load_data(args, transform)
-
-        print(f"Dataset {dataset}")
         print_dataset(
             args,
             train_loader,
@@ -70,7 +68,7 @@ def print_dataset(
     args, train_loader, valid_sk_loader, valid_im_loader, test_sk_loader, test_im_loader
 ):
     """
-    Loads all datasets and print the length of each of their fields.
+    Loads dataset and print the number of images and sketches.
     Enable to verify the implementation.
     """
     print("\t* Length sketch train: {}".format(len(train_loader)))

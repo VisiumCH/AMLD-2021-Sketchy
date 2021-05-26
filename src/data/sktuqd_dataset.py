@@ -169,7 +169,6 @@ class SkTuQd(data.Dataset):
             or (self.image_type == "images" and index < self.tuberlin_limit_images)
             or (self.image_type == "sketches" and index < self.tuberlin_limit_sketch)
         ):
-
             if self.image_type == "sketches" or self.dataset_type == "train":
                 index -= self.sketchy_limit_sketch
             elif self.image_type == "images":
@@ -184,8 +183,8 @@ class SkTuQd(data.Dataset):
             return self.quickdraw.__getitem__(index)
 
     def __len__(self):
-        # Number of sketches/images in the dataset
-        if self.dataset_type == "Quickdraw" or self.image_type == "sketches":
+        """ Number of sketches/images in the dataset """
+        if self.dataset_type == "train" or self.image_type == "sketches":
             return (
                 len(self.sketchy.fnames_sketch)
                 + len(self.tuberlin.fnames_sketch)
@@ -199,5 +198,5 @@ class SkTuQd(data.Dataset):
             )
 
     def get_class_dict(self):
-        # Dictionnary of categories of the dataset
+        """ Dictionnary of categories of the dataset """
         return self.dicts_class

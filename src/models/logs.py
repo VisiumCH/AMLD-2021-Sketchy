@@ -31,7 +31,7 @@ class AverageMeter(object):
 
 
 class Logger(object):
-    """Logs Scalars in tensorboard"""
+    """Logs data in tensorboard"""
 
     def __init__(self, log_dir, force=False):
         # create the summary writer object
@@ -45,22 +45,24 @@ class Logger(object):
     def __del__(self):
         self._writer.close()
 
-    # During training every args.log_interval images
     def add_scalar_training(self, name, scalar_value):
+        """ Log a scalar every  args.log_interval images during training """
         assert isinstance(scalar_value, float), type(scalar_value)
         self._writer.add_scalar(name, scalar_value, self.log_step)
         self.log_step += 1
 
-    # At the end of each epoch
     def add_scalar(self, name, scalar_value):
+        """ Log a scalar at the end of an epoch """
         assert isinstance(scalar_value, float), type(scalar_value)
         self._writer.add_scalar(name, scalar_value, self.global_step)
 
     def add_image(self, name, img_tensor):
+        """ Log an image at the end of an epoch """
         assert isinstance(img_tensor, torch.Tensor), type(img_tensor)
         self._writer.add_image(name, img_tensor, self.global_step)
 
     def add_embedding(self, embedding, metadata, label_img):
+        """ Log embeddings in the latent space at the end of an epoch """
         self._writer.add_embedding(
             embedding,
             metadata=metadata,
@@ -69,6 +71,7 @@ class Logger(object):
         )
 
     def step(self):
+        """ Increment training step """
         self.global_step += 1
 
 
@@ -91,6 +94,11 @@ class InferenceLogger(object):
         )
 
     def plot_inference(self, similarity, images_fnames, images_classes):
+        """
+        Logs an inference plot to tensorboard:
+            The sketch is on the left
+            The NUM_CLOSEST images in the latent space are on the right
+        """
         images_fnames = [
             image for batch_image in images_fnames for image in batch_image
         ]
@@ -148,7 +156,7 @@ class InferenceLogger(object):
 
 
 class AttentionLogger(object):
-    """Logs some images to visulatise attenction module in tensorboard"""
+    """Logs some images to visualise attenction module in tensorboard"""
 
     def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
         self.logger = logger
@@ -176,7 +184,7 @@ class AttentionLogger(object):
         )
 
     def plot_attention(self, im_net, sk_net):
-        """Log the attention images in tensorboard"""
+        """Log the attention images and sketches in tensorboard"""
 
         _, attn_im = im_net(self.im_log)
         attn_im = normalise_attention(attn_im, self.im_log)
@@ -194,7 +202,7 @@ class AttentionLogger(object):
 
 
 class EmbeddingLogger(object):
-    """Logs the images in the latent space"""
+    """Logs the images and sketches embeddings in the latent space"""
 
     def __init__(self, valid_sk_data, valid_im_data, logger, dict_class, args):
         self.logger = logger
@@ -229,6 +237,7 @@ class EmbeddingLogger(object):
         )
 
     def plot_embeddings(self, im_net, sk_net):
+        """ Compute images embeddings and log them in tensorboard """
         sk_embedding, _ = sk_net(self.sk_log)
         im_embedding, _ = im_net(self.im_log)
 

@@ -36,7 +36,7 @@ def default_image_loader(path):
 
 
 def default_image_loader_tuberlin(path):
-    """ Loads BGR data """
+    """ Loads BGR data for TU-Berlin dataset """
     img = Image.fromarray(
         cv2.resize(np.array(Image.open(path).convert("RGB")), (224, 224))
     )

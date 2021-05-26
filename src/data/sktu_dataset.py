@@ -146,12 +146,12 @@ class SkTu(data.Dataset):
             return self.tuberlin.__getitem__(index)
 
     def __len__(self):
-        # Number of sketches/images in the dataset
+        """ Number of sketches/images in the dataset """
         if self.dataset_type == "train" or self.image_type == "sketches":
             return len(self.sketchy.fnames_sketch) + len(self.tuberlin.fnames_sketch)
         else:
             return len(self.sketchy.fnames_image) + len(self.tuberlin.fnames_image)
 
     def get_class_dict(self):
-        # Dictionnary of categories of the dataset
+        """ Dictionnary of categories of the dataset """
         return self.dicts_class

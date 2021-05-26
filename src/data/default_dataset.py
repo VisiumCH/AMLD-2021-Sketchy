@@ -197,12 +197,12 @@ class DefaultDataset(data.Dataset):
             return photo, fname, lbl
 
     def __len__(self):
-        # Number of sketches/images in the dataset
+        """ Number of sketches/images in the dataset """
         if self.dataset_type == "train" or self.image_type == "sketches":
             return len(self.fnames_sketch)
         else:
             return len(self.fnames_image)
 
     def get_class_dict(self):
-        # Dictionnary of categories of the dataset
+        """ Dictionnary of categories of the dataset """
         return self.dicts_class

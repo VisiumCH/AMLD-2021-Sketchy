@@ -25,7 +25,7 @@ class Inference:
         Initialises the inference with the trained model and precomputed embeddings
         Args:
             - args: arguments received from the command line (argparse)
-            - dataset_type: dataset split ('train', 'valid' or 'test')
+            - dataset_type: 'train', 'valid' or 'test'
         """
         self.args = args
         self.transform = transforms.Compose([transforms.ToTensor()])
@@ -48,7 +48,7 @@ class Inference:
         """
         Get the data of images to match with the sketches
         Args:
-            - dataset_type: dataset split ('train', 'valid' or 'test')
+            - dataset_type: 'train', 'valid' or 'test'
         Return:
             - dict_class: dictionnary mapping numbers to classes names
             - paths to the images
@@ -190,6 +190,9 @@ class Inference:
         ]
 
     def prepare_image(self, index):
+        """
+        Gets an an imageand its label based on its index
+        """
         dataset = self.sorted_fnames[index].split("/")[-4]
 
         loader = get_loader(dataset)

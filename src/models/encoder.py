@@ -4,12 +4,16 @@ import torchvision.models as models
 
 
 class AttentionModel(nn.Module):
+    """ Attention module of the network """
+
     def __init__(self, hidden_layer=380):
         super(AttentionModel, self).__init__()
 
         self.attn_hidden_layer = hidden_layer
-        self.net = nn.Sequential(nn.Conv2d(512, self.attn_hidden_layer, kernel_size=1),
-                                 nn.Conv2d(self.attn_hidden_layer, 1, kernel_size=1))
+        self.net = nn.Sequential(
+            nn.Conv2d(512, self.attn_hidden_layer, kernel_size=1),
+            nn.Conv2d(self.attn_hidden_layer, 1, kernel_size=1),
+        )
 
     def forward(self, x):
         attn_mask = self.net(x)
@@ -22,6 +26,8 @@ class AttentionModel(nn.Module):
 
 
 class EncoderCNN(nn.Module):
+    """ Encoder to transform image or sketch to the latent space """
+
     def __init__(self, out_size=300, pretrained=True, attention=True):
         super(EncoderCNN, self).__init__()
         # Embedd images in a 1000 space
@@ -34,7 +40,7 @@ class EncoderCNN(nn.Module):
         self.attn = AttentionModel()
 
         self.map = vgg_aux.classifier
-        self.map._modules['6'] = nn.Linear(4096, out_size)
+        self.map._modules["6"] = nn.Linear(4096, out_size)
 
     def forward(self, im):
         x = self.cnn_features(im)  # Size (BS x 512 x 7 x 7)
