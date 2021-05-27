@@ -20,6 +20,7 @@ flask_restful==0.3.8
 matplotlib==3.3.4
 opencv-python==4.5.2.52
 pandas==1.2.2
+plotly==4.14.3
 torchvision==0.8.2+cu101
 torch==1.7.1+cu101
 tensorboard==2.4.1
