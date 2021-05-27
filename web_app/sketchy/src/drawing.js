@@ -25,6 +25,8 @@ import {
   black,
 } from "./constants";
 import { BiPencil, BiEraser, BiShapePolygon, BiImages } from "react-icons/bi";
+// import cursorEraser from "./cursorEraser.png";
+// import cursorPencil from "./cursorPencil.png";
 
 const progress = (
   <CircularProgress
@@ -44,6 +46,7 @@ function Drawing() {
   const [drawingMode, setDrawingMode] = useState("drawing");
   const [disableDrawing, setDisableDrawing] = useState(true);
   const [disableErasing, setDisableErasing] = useState(false);
+  // const [cursor, setCursor] = useState("crosshair");
 
   const [
     divRef,
@@ -62,12 +65,14 @@ function Drawing() {
       setDrawingMode("erasing");
       setDisableDrawing(false);
       setDisableErasing(true);
+      // setCursor("./cursorEraser.png");
     } else if (drawingMode === "erasing") {
       changePenColor(black);
       changePenWidth(3);
       setDrawingMode("drawing");
       setDisableDrawing(true);
       setDisableErasing(false);
+      // setCursor("./cursorPencil.png");
     }
   }
 
@@ -154,7 +159,7 @@ function Drawing() {
         </Text>
 
         <Grid
-          h="96vh"
+          h="95vh"
           w="98vw"
           gap={4}
           align="center"
@@ -177,19 +182,14 @@ function Drawing() {
 
           <GridItem rowSpan={11} colSpan={8}>
             <Box
-              h="74vh"
+              h="74.5vh"
               w="62vw"
               bg={white}
               borderWidth="5px"
               borderRadius="lg"
               borderColor="#A3A8B0"
               ref={divRef}
-              _hover={
-                {
-                  //TODO: change cursor when drawing or erasing
-                  //cursor: "url(https://i.stack.imgur.com/bUGV0.png),auto"
-                }
-              }
+              // style={{ cursor: cursor }}
               // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
               onMouseMove={() => {
                 setSvg(getSvgXML());
@@ -328,6 +328,27 @@ function Drawing() {
           <GridItem rowSpan={2} colSpan={2}>
             <Link
               to={{
+                pathname: "/",
+              }}
+            >
+              <Button
+                leftIcon={<BiImages />}
+                color={backgroundColor}
+                border="2px"
+                borderColor={darkGray}
+                variant="solid"
+                size="lg"
+                height={buttonHeight}
+                width={buttonWidth}
+              >
+                {" "}
+                Dataset
+              </Button>
+            </Link>
+          </GridItem>
+          <GridItem rowSpan={2} colSpan={2}>
+            <Link
+              to={{
                 pathname: "/embeddings",
                 state: svg,
               }}
@@ -344,27 +365,6 @@ function Drawing() {
               >
                 {" "}
                 Embeddings
-              </Button>
-            </Link>
-          </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
-            <Link
-              to={{
-                pathname: "/",
-              }}
-            >
-              <Button
-                leftIcon={<BiImages />}
-                color={backgroundColor}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-              >
-                {" "}
-                Dataset
               </Button>
             </Link>
           </GridItem>

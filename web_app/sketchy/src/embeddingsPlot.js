@@ -26,11 +26,17 @@ function Embeddings() {
   const { state } = useLocation();
   const [result, setResult] = useState({});
   const [nbDimensions, setNbDimensions] = useState(3);
+  const [clickedClass, setClickedClass] = useState("");
+  const [clickedX, setClickedX] = useState(0);
+  const [clickedY, setClickedY] = useState(0);
+  const [clickedZ, setClickedZ] = useState(0);
+  const [sketch, setSketch] = useState([]);
+  const [showImage, setShowImage] = useState([]);
   let traces = [];
 
   useEffect(() => {
     let to_send = { nb_dim: nbDimensions };
-    if (typeof state !== undefined) {
+    if (typeof state !== "undefined") {
       to_send["sketch"] = state;
     }
 
@@ -51,7 +57,52 @@ function Embeddings() {
     }
 
     getEmbeddings(to_send);
+    setClickedClass("My Custom Sketch");
   }, [state, nbDimensions]);
+
+  useEffect(() => {
+    let to_send = { class: clickedClass };
+    if (clickedClass === "My Custom Sketch") {
+      to_send["sketch"] = state;
+    } else {
+      to_send["x"] = clickedX;
+      to_send["y"] = clickedY;
+      if (nbDimensions === 3) {
+        to_send["z"] = clickedZ;
+      }
+    }
+    async function getClickedImage(to_send) {
+      // Send to back end
+      const response = await fetch("/get_embedding_images", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(to_send),
+      });
+
+      if (response.ok) {
+        const res = await response.json();
+        let tempImage = res["image"].split("'")[1];
+        if (clickedClass === "My Custom Sketch") {
+          setSketch(
+            <img
+              src={`data:image/jpeg;base64,${tempImage}`}
+              alt="inferred_image"
+            />
+          );
+        } else {
+          setShowImage(
+            <img
+              src={`data:image/jpeg;base64,${tempImage}`}
+              alt="inferred_image"
+            />
+          );
+        }
+      }
+    }
+    getClickedImage(to_send);
+  }, [clickedClass, clickedX, clickedY, clickedZ, state]);
 
   function fillTraces() {
     let marker_size = 6;
@@ -122,10 +173,29 @@ function Embeddings() {
     );
   }
 
+  function showSketch() {
+    if (typeof state !== "undefined") {
+      return sketch;
+    } else {
+      return (
+        <Text fontSize="l" color={textColor} align="center">
+          No sketch drawn, click on "Draw" to draw one!
+        </Text>
+      );
+    }
+  }
+
+  function getClickedImage(e) {
+    setClickedClass(e["points"][0]["data"]["name"]);
+    setClickedX(e["points"][0]["x"]);
+    setClickedY(e["points"][0]["y"]);
+    setClickedZ(e["points"][0]["z"]);
+  }
+
   return (
     <ChakraProvider>
-      <Box bg={backgroundColor}>
-        <VStack spacing={4} align="center">
+      <Box bg={backgroundColor} h="100vh">
+        <VStack spacing={4} align="center" h="10%" w="100%">
           <Heading fontSize="4xl" color={textColor} align="center">
             AMLD 2021 Visium's Sketchy App
           </Heading>
@@ -135,22 +205,23 @@ function Embeddings() {
         </VStack>
 
         <Grid
-          h="90vh"
-          w="98vw"
+          h="90%"
+          w="94%"
           gap={4}
           align="center"
-          templateRows="repeat(3, 1fr)"
+          templateRows="repeat(4, 1fr)"
           templateColumns="repeat(7, 1fr)"
         >
-          <GridItem rowSpan={1} colSpan={1}>
+          <GridItem rowSpan={1} colSpan={1} align="center">
             <VStack spacing={3} direction="row" align="center">
-              <Text fontSize="2xl" color={textColor} align="center">
+              <Text fontSize="xl" color={textColor} align="center">
                 Dimension: {nbDimensions}D
               </Text>
               {getDimensionButton()}
             </VStack>
           </GridItem>
-          <GridItem rowSpan={3} colSpan={6}>
+
+          <GridItem rowSpan={4} colSpan={6}>
             <Plot
               data={traces}
               layout={{
@@ -186,13 +257,13 @@ function Embeddings() {
                 },
                 paper_bgcolor: gray,
               }}
+              onClick={(e) => getClickedImage(e)}
             />
           </GridItem>
-          <GridItem rowSpan={1} colSpan={1}></GridItem>
 
           <GridItem rowSpan={1} colSpan={1}>
             <VStack spacing={3} direction="row" align="center">
-              <Text fontSize="2xl" color={textColor} align="center">
+              <Text fontSize="xl" color={textColor} align="center">
                 Change page
               </Text>
               <Link to="/drawing" className="drawing_link">
@@ -227,8 +298,18 @@ function Embeddings() {
               </Link>
             </VStack>
           </GridItem>
-
-          <Text fontSize="xs" color={textColor} align="center"></Text>
+          <GridItem rowSpan={1} colSpan={1} align="center">
+            <Text fontSize="xl" color={textColor} align="center">
+              My Sketch
+            </Text>
+            {showSketch()}
+          </GridItem>
+          <GridItem rowSpan={1} colSpan={1} align="center">
+            <Text fontSize="xl" color={textColor} align="center">
+              Clicked image
+            </Text>
+            {showImage}
+          </GridItem>
         </Grid>
       </Box>
     </ChakraProvider>

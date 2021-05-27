@@ -2,9 +2,9 @@ from locust import HttpUser, task, between
 import json
 
 
-# Loading the test JSON data
-with open("mock_svg/test1.json") as f:
-    test_data = json.loads(f.read())
+test_data = {
+    "category": "pineapple"
+}
 
 
 class APIUser(HttpUser):
@@ -15,4 +15,4 @@ class APIUser(HttpUser):
     # Defining the post task using the JSON test data
     @task()
     def predict_endpoint(self):
-        self.client.post("/find_images", json=test_data)
+        self.client.post("/get_embeddings", json=test_data)

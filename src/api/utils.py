@@ -6,15 +6,14 @@ import sys
 import base64
 from cairosvg import svg2png
 import numpy as np
-import pandas as pd
 from PIL import Image
-from sklearn.decomposition import PCA
 
+from src.constants import NB_DATASET_IMAGES, PARAMETERS
 from src.data.utils import default_image_loader
 
-NB_DATASET_IMAGES = 5
 
 def get_image(folder_path, ending):
+    """ Get a list of all images or sketches in a folder """
     files = [
         os.path.join(folder_path, f)
         for f in os.listdir(folder_path)
@@ -23,7 +22,8 @@ def get_image(folder_path, ending):
     return np.random.choice(files, NB_DATASET_IMAGES)
 
 
-def base64_encoding(image, bytes_type):
+def base64_encoding(image, bytes_type="PNG"):
+    """ Encode image in base 64 encoding """
     rawBytes = io.BytesIO()
     image.save(rawBytes, bytes_type)
     rawBytes.seek(0)
@@ -32,8 +32,8 @@ def base64_encoding(image, bytes_type):
     return str(img_base64)
 
 
-def prepare_dataset_data(dataset_path, image_type, category):
-
+def prepare_dataset(dataset_path, image_type, category):
+    """ Base 64 encoding of all images in dataset_path """
     if image_type == "images":
         ending = ".jpg"
         bytes_type = "JPEG"
@@ -56,6 +56,7 @@ def prepare_dataset_data(dataset_path, image_type, category):
 
 
 def svg_to_png(sketch):
+    """ Convert a sketch in svg format to an image array """
     # random name
     random_number = str(random.random())
     sketch_fname = "sketch" + random_number + ".png"
@@ -71,12 +72,13 @@ def svg_to_png(sketch):
     background.convert("RGB").save(sketch_fname)
 
     sketch = default_image_loader(sketch_fname)
-    os.remove(sketch_fname)
+    os.remove(sketch_fname)  # remove saved sketch from machine
 
     return sketch
 
 
 def prepare_images_data(images, image_labels, attention):
+    """ Load the images, labels and attention into dictionnary to send to the web app """
     data = {}
     data["images_base64"] = []
     data["images_label"] = []
@@ -91,64 +93,20 @@ def prepare_images_data(images, image_labels, attention):
     return data
 
 
-def read_tensor_tsv_file(fpath):
-    with open(fpath, "r") as f:
-        tensor = []
-        for line in f:
-            line = line.rstrip("\n")
-            if line:
-                tensor.append(list(map(float, line.split("\t"))))
-    return np.array(tensor, dtype="float32")
+def prepare_sketch(sketch):
+    """ Prepare the sketch: convert it from svg to a base64 encoding """
+    sketch = svg_to_png(sketch)
+    return base64_encoding(sketch, bytes_type="PNG")
 
 
-def read_class_tsv_file(fpath):
-    with open(fpath, "r") as f:
-        return [line.rstrip("\n") for line in f]
-
-
-def process_embeddings(embeddings_path, n_components, sketch_emb):
-    # File names
-    tensors_path = embeddings_path + "tensors.tsv"
-    tsv_path = embeddings_path + "metadata.tsv"
-
-    tensors = read_tensor_tsv_file(tensors_path)
-    if type(sketch_emb) != bool:
-        # Add sketch embeddings
-        sketch_emb = sketch_emb.detach().numpy()
-        tensors = np.append(tensors, sketch_emb, axis=0)
-
-    # PCA on tensors
-    pca = PCA(n_components=n_components)
-    pca.fit(tensors)
-    X = pca.transform(tensors)
-
-    # Classes of embeddings
-    classes = read_class_tsv_file(tsv_path)
-    if type(sketch_emb) != bool:
-        classes.append("My Custom Sketch")
-
-    # Process in dataframe
-    d = {"x": list(X[:, 0]),
-         "y": list(X[:, 1]),
-         "classes": classes}
-    if n_components == 3:
-        d["z"] = list(X[:, 2])
-    df = pd.DataFrame(data=d)
-
-    return df
-
-
-def prepare_embeddings_data(df, nb_dimensions):
-    df.sort_values(by=["classes"])
-    class_set = sorted(list(set(df["classes"])))
-
-    # Prepare data in object
-    data = {}
-    for _class in class_set:
-        data[_class] = {}
-        data[_class]["x"] = list(df[df["classes"] == _class]["x"])
-        data[_class]["y"] = list(df[df["classes"] == _class]["y"])
-        if nb_dimensions == 3:
-            data[_class]["z"] = list(df[df["classes"] == _class]["z"])
-
-    return data
+def get_parameters(fpath):
+    
+    param = {}
+    with open(fpath + PARAMETERS, "r") as f:
+        data = [line.rstrip("\n") for line in f]
+    
+    for line in data:
+        key, val = line.split(' ')
+        param[key] = val
+        
+    return param["dataset"], int(param["emb_size"]), int(param["embedding_number"])

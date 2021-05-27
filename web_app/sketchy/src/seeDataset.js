@@ -96,7 +96,7 @@ function Dataset() {
 
   return (
     <ChakraProvider>
-      <Box bg={backgroundColor}>
+      <Box bg={backgroundColor} h="100vh" w="100vw">
         <Heading fontSize="4xl" color={textColor} align="center">
           AMLD 2021 Visium's Sketchy App
         </Heading>
@@ -107,8 +107,8 @@ function Dataset() {
           .
         </Text>
         <Grid
-          h="92vh"
-          w="98vw"
+          h="90%"
+          w="98%"
           gap={4}
           align="center"
           templateRows="repeat(9, 1fr)"

@@ -5,10 +5,12 @@ import errno
 import torch
 import torch.nn as nn
 
+from src.constants import MODELS_PATH, PARAMETERS
 from src.models.encoder import EncoderCNN
 
 
 def get_parameters():
+    """ Parse the arguments from the command line and default setup """
     parser = argparse.ArgumentParser(
         description="Sketch Based Retrieval Test and inference",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -17,8 +19,7 @@ def get_parameters():
         "name", type=str, help="Name of the training folder of the model to test."
     )
     argument = parser.parse_args()
-
-    args = get_saved_params("io/models/" + argument.name)
+    args = get_saved_params(MODELS_PATH + argument.name)
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
     return args
 
@@ -35,7 +36,7 @@ def get_saved_params(save_folder):
     d["save"] = save_folder
     d["load"] = save_folder + "/checkpoint.pth"
 
-    with open(d["save"] + "/params.txt") as f:
+    with open(d["save"] + "/" + PARAMETERS) as f:
         for line in f:
             line = line.rstrip("\n")
             (key, val) = line.split(" ")
