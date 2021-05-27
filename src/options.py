@@ -142,7 +142,6 @@ class Options:
             "--prefetch", type=int, default=2, help="Pre-fetching threads."
         )
         # i/o
-        parser.add_argument("--log", type=str, default="io/models/", help="Log folder.")
         parser.add_argument(
             "--log-interval",
             type=int,
