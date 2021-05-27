@@ -5,10 +5,9 @@ import matplotlib.pyplot as plt
 from tensorboardX import SummaryWriter
 import torch
 
+from src.constants import NUM_CLOSEST_PLOT
 from src.data.utils import get_loader, get_dict, get_limits, get_dataset_dict
 from src.models.utils import normalise_attention
-
-NUM_CLOSEST = 5
 
 
 class AverageMeter(object):
@@ -109,18 +108,18 @@ class InferenceLogger(object):
         for i, sk in enumerate(self.sk_log):
             # inference
             self.sorted_fnames = [
-                images_fnames[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]
+                images_fnames[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST_PLOT]
             ]
             self.sorted_classes = [
-                images_classes[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST]
+                images_classes[j] for j in arg_sorted_sim[i][0:NUM_CLOSEST_PLOT]
             ]
 
-            fig, axes = plt.subplots(1, NUM_CLOSEST, figsize=(NUM_CLOSEST * 4, 10))
+            fig, axes = plt.subplots(1, NUM_CLOSEST_PLOT, figsize=(NUM_CLOSEST_PLOT * 4, 10))
             axes[0].imshow(sk.permute(1, 2, 0).numpy())
             axes[0].set_title("Sketch \n Label: " + self.sk_class_names[i], fontsize=16)
             axes[0].axis("off")
 
-            for j in range(1, NUM_CLOSEST):
+            for j in range(1, NUM_CLOSEST_PLOT):
                 dataset = self.sorted_fnames[j - 1].split("/")[-4]
                 loader = get_loader(dataset)
 

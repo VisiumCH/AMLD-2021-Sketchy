@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torch.utils.data as data
 
+from src.constants import SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS
 from src.data.default_dataset import DefaultDataset
 from src.data.utils import dataset_split, get_class_dict
 
@@ -26,21 +27,21 @@ def create_sktuqd_dataset(args, transform):
     np.random.seed(args.seed)
 
     # Sketchy, TU-Berlin and Quickdraw
-    dicts_class_sketchy = get_class_dict(args, "Sketchy")
+    dicts_class_sketchy = get_class_dict(args, FOLDERS[SKETCHY])
     train_data_sketchy, valid_data_sketchy, test_data_sketchy = dataset_split(
-        args, "Sketchy", args.training_split, args.valid_split
+        args, FOLDERS[SKETCHY], args.training_split, args.valid_split
     )
 
     # TU-Berlin
-    dicts_class_tuberlin = get_class_dict(args, "TU-Berlin")
+    dicts_class_tuberlin = get_class_dict(args, FOLDERS[TUBERLIN])
     train_data_tuberlin, valid_data_tuberlin, test_data_tuberlin = dataset_split(
-        args, "TU-Berlin", args.training_split, args.valid_split
+        args, FOLDERS[TUBERLIN], args.training_split, args.valid_split
     )
 
     # Quickdraw
-    dicts_class_quickdraw = get_class_dict(args, "Quickdraw")
+    dicts_class_quickdraw = get_class_dict(args, FOLDERS[QUICKDRAW])
     train_data_quickdraw, valid_data_quickdraw, test_data_quickdraw = dataset_split(
-        args, "Quickdraw", args.qd_training_split, args.qd_valid_split
+        args, FOLDERS[QUICKDRAW], args.qd_training_split, args.qd_valid_split
     )
 
     dicts_class = [dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw]
@@ -100,7 +101,7 @@ class SkTuQd(data.Dataset):
         # Sketchy data
         self.sketchy = DefaultDataset(
             args,
-            "Sketchy",
+            FOLDERS[SKETCHY],
             dataset_type,
             dicts_class[0],
             data[0],
@@ -110,7 +111,7 @@ class SkTuQd(data.Dataset):
         # Tuberlin data
         self.tuberlin = DefaultDataset(
             args,
-            "TU-Berlin",
+            FOLDERS[TUBERLIN],
             dataset_type,
             dicts_class[1],
             data[1],
@@ -120,7 +121,7 @@ class SkTuQd(data.Dataset):
         # Quickdraw data
         self.quickdraw = DefaultDataset(
             args,
-            "Quickdraw",
+            FOLDERS[QUICKDRAW],
             dataset_type,
             dicts_class[2],
             data[2],

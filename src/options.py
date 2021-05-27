@@ -1,5 +1,7 @@
 import argparse
 
+from src.constants import DATASETS, SKETCHY, QUICKDRAW, TUBERLIN, SKTU, SKTUQD
+
 
 class Options:
     def __init__(self, test=False):
@@ -19,12 +21,12 @@ class Options:
             "--dataset",
             type=str,
             default="sketchy",
-            help='Choose from \
-                                "sketchy" (sketchy dataset only), \
-                                "tuberlin"(tuberlin dataset only), \
-                                "quickdraw"(tuberlin dataset only), \
-                                "sk+tu"(sketchy and tuberlin), \
-                                "sk+tu+qd"(sketchy, tuberlin and quickdraw)',
+            help=f'Choose from {DATASETS} \
+                                {SKETCHY} (sketchy dataset only), \
+                                {TUBERLIN} (tuberlin dataset only), \
+                                {QUICKDRAW} (tuberlin dataset only), \
+                                {SKTU} (sketchy and tuberlin), \
+                                {SKTUQD} (sketchy, tuberlin and quickdraw)',
         )
         # Model parameters
         parser.add_argument(

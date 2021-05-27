@@ -2,6 +2,7 @@ import sys
 
 import numpy as np
 
+from src.constants import SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS, SKTU, SKTUQD, DATASETS
 from src.data.default_dataset import make_default_dataset
 from src.data.sktuqd_dataset import create_sktuqd_dataset
 from src.data.sktu_dataset import create_sktu_dataset
@@ -22,15 +23,15 @@ def load_data(args, transform):
         - test_im_loader: image test dataset class
         - dicts_class: Ordered dictionnary {class_name, value}
     """
-    if args.dataset == "sketchy":
-        return make_default_dataset(args, "Sketchy", transform)
-    elif args.dataset == "tuberlin":
-        return make_default_dataset(args, "TU-Berlin", transform)
-    elif args.dataset == "quickdraw":
-        return make_default_dataset(args, "Quickdraw", transform)
-    elif args.dataset == "sk+tu":
+    if args.dataset == SKETCHY:
+        return make_default_dataset(args, FOLDERS[SKETCHY], transform)
+    elif args.dataset == TUBERLIN:
+        return make_default_dataset(args, FOLDERS[TUBERLIN], transform)
+    elif args.dataset == QUICKDRAW:
+        return make_default_dataset(args, FOLDERS[QUICKDRAW], transform)
+    elif args.dataset == SKTU:
         return create_sktu_dataset(args, transform)
-    elif args.dataset == "sk+tu+qd":
+    elif args.dataset == SKTUQD:
         return create_sktuqd_dataset(args, transform)
     else:
         print(args.dataset + " dataset not implemented. Exiting.")
@@ -43,8 +44,7 @@ def main(args):
     """
     transform = transforms.Compose([transforms.ToTensor()])
 
-    list_dataset = ["sketchy", "tuberlin", "quickdraw", "sk+tu", "sk+tu+qd"]
-    for dataset in list_dataset:
+    for dataset in DATASETS:
         print(f"Visualising dataset {dataset}")
         args.dataset = dataset
         (
@@ -72,14 +72,14 @@ def print_dataset(
     Enable to verify the implementation.
     """
     print("\t* Length sketch train: {}".format(len(train_loader)))
-    if args.dataset == "sk+tu":
+    if args.dataset == SKTU:
         print(
             "\t* Length image train: {}".format(
                 len(train_loader.sketchy.fnames_image)
                 + len(train_loader.tuberlin.fnames_image)
             )
         )
-    elif args.dataset == "sk+tu+qd":
+    elif args.dataset == SKTUQD:
         print(
             "\t* Length image train: {}".format(
                 len(train_loader.sketchy.fnames_image)

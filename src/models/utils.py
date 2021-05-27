@@ -5,6 +5,7 @@ import errno
 import torch
 import torch.nn as nn
 
+from src.constants import MODELS_PATH, PARAMETERS
 from src.models.encoder import EncoderCNN
 
 
@@ -19,7 +20,7 @@ def get_parameters():
     )
     argument = parser.parse_args()
 
-    args = get_saved_params("io/models/" + argument.name)
+    args = get_saved_params(MODELS_PATH + argument.name)
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
     return args
 
@@ -36,7 +37,7 @@ def get_saved_params(save_folder):
     d["save"] = save_folder
     d["load"] = save_folder + "/checkpoint.pth"
 
-    with open(d["save"] + "/params.txt") as f:
+    with open(d["save"] + "/" + PARAMETERS) as f:
         for line in f:
             line = line.rstrip("\n")
             (key, val) = line.split(" ")

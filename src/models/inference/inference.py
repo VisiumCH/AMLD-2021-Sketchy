@@ -8,13 +8,11 @@ import pandas as pd
 import torch
 from torchvision import transforms
 
+from src.constants import DICT_CLASS, EMB_ARRAY, EMBEDDINGS, METADATA, NUM_CLOSEST_PLOT, NUMBER_RANDOM_IMAGES, PREDICTION, SKETCHY, TUBERLIN, QUICKDRAW, SKTU, SKTUQD
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_loader, get_dict
 from src.models.utils import get_model, normalise_attention, get_parameters
 from src.models.metrics import get_similarity
-
-NUM_CLOSEST = 4
-NUMBER_RANDOM_IMAGES = 20
 
 
 class Inference:
@@ -36,10 +34,10 @@ class Inference:
         self.sk_net.eval()
         torch.set_grad_enabled(False)
 
-        self.prediction_folder = os.path.join(args.save, "predictions")
+        self.prediction_folder = os.path.join(args.save, PREDICTION)
         os.makedirs(self.prediction_folder, exist_ok=True)
 
-        self.embedding_path = os.path.join(args.save, "precomputed_embeddings")
+        self.embedding_path = os.path.join(args.save, EMBEDDINGS)
         os.makedirs(self.embedding_path, exist_ok=True)
 
         self.__get_data(dataset_type)
@@ -56,19 +54,19 @@ class Inference:
             - images_embeddings: embeddings of the images
         """
         dict_path = os.path.join(
-            self.embedding_path, self.args.dataset + "_dict_class.json"
+            self.embedding_path, self.args.dataset + DICT_CLASS
         )
         with open(dict_path, "r") as fp:
             dict_class = json.load(fp)
 
         array_path = os.path.join(
-            self.embedding_path, self.args.dataset + "_" + dataset_type + "_array.npy"
+            self.embedding_path, self.args.dataset + "_" + dataset_type + EMB_ARRAY
         )
         with open(array_path, "rb") as f:
             images_embeddings = np.load(f)
 
         meta_path = os.path.join(
-            self.embedding_path, self.args.dataset + "_" + dataset_type + "_meta.csv"
+            self.embedding_path, self.args.dataset + "_" + dataset_type + METADATA
         )
         df = pd.read_csv(meta_path, sep=" ")
 
@@ -80,7 +78,7 @@ class Inference:
         """
         dataset = self.args.dataset
 
-        if dataset in ["sketchy", "tuberlin", "quickdraw"]:
+        if dataset in [SKETCHY, TUBERLIN, QUICKDRAW]:
             (
                 self.dict_class,
                 self.images_fnames,
@@ -90,8 +88,8 @@ class Inference:
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
-        elif dataset in ["sk+tu", "sk+tu+qd"]:
-            self.args.dataset = "sketchy"
+        elif dataset in [SKTU, SKTUQD]:
+            self.args.dataset = SKETCHY
             (
                 dict_class_sk,
                 self.images_fnames,
@@ -102,7 +100,7 @@ class Inference:
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
 
-            self.args.dataset = "tuberlin"
+            self.args.dataset = TUBERLIN
             (
                 dict_class_tu,
                 images_fnames,
@@ -121,8 +119,8 @@ class Inference:
                 (self.images_embeddings, images_embeddings), axis=0
             )
 
-            if dataset == "sk+tu+qd":
-                self.args.dataset = "quickdraw"
+            if dataset == SKTUQD:
+                self.args.dataset = QUICKDRAW
                 self.tuberlin_limit = len(self.images_fnames)
 
                 (
@@ -183,10 +181,10 @@ class Inference:
         arg_sorted_sim = (-similarity).argsort()
 
         self.sorted_fnames = [
-            self.images_fnames[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
+            self.images_fnames[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST_PLOT + 1]
         ]
         self.sorted_labels = [
-            self.images_classes[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST + 1]
+            self.images_classes[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST_PLOT + 1]
         ]
 
     def prepare_image(self, index):
@@ -207,7 +205,7 @@ class Inference:
         Plots a sketch with its closest images in the embedding space.
         The images are stored in the same folder as the best model in a subfolder called 'predictions'
         """
-        fig, axes = plt.subplots(1, NUM_CLOSEST + 2, figsize=((NUM_CLOSEST + 1) * 4, 8))
+        fig, axes = plt.subplots(1, NUM_CLOSEST_PLOT + 2, figsize=((NUM_CLOSEST_PLOT + 1) * 4, 8))
 
         sk = mpimg.imread(sketch_fname)
         axes[0].imshow(sk)
@@ -222,7 +220,7 @@ class Inference:
         axes[1].set(title=sketch_fname.split("/")[-2] + "\n Attention Map")
         axes[1].axis("off")
 
-        for i in range(2, NUM_CLOSEST + 2):
+        for i in range(2, NUM_CLOSEST_PLOT + 2):
             im, label = self.prepare_image(i - 1)
             axes[i].imshow(im)
             axes[i].set(title="Closest image " + str(i) + "\n Label: " + label)
