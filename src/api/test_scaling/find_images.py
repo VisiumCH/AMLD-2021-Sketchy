@@ -8,7 +8,7 @@ import json
 
 
 # Loading the test JSON data
-with open("mock_svg/test1.json") as f:
+with open("mock_svg/test.json") as f:
     test_data = json.loads(f.read())
 
 

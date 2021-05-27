@@ -183,7 +183,7 @@ class Inference:
     def get_heatmap(self):
         """ Normalise the attention output of the model for heatmap plots """
         attn_sk = normalise_attention(self.attn_sk, self.sketch)
-        self.heat_map = attn_sk.squeeze().detach().numpy()
+        self.heat_map = attn_sk.squeeze().cpu().detach().numpy()
 
     def prepare_image(self, index):
         """ Gets an an image and its label based on its index """
