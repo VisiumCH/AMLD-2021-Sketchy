@@ -5,74 +5,6 @@ import torch.utils.data as data
 
 from src.constants import SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS
 from src.data.default_dataset import DefaultDataset
-from src.data.utils import dataset_split, get_class_dict
-
-
-def create_sktuqd_dataset(args, transform):
-    """
-    Creates all the data loaders for training with Sketchy, TU-Berlin and Quickdraw datasets
-    Args:
-        - args: arguments reveived from the command line (argparse)
-        - transform: pytorch transform to apply on the data
-    Return:
-        - train_loader: data loader for the training set
-        - valid_sk_loader: data loader of sketches for the validation set
-        - valid_im_loader: data loader of images for the validation set
-        - test_sk_loader: data loader of sketches for the test set
-        - test_im_loader: data loader of images for the test set
-        - dicts_class: dictionnnary mapping number to classes.
-                        The key is a unique number and the value is the class name.
-    """
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-
-    # Sketchy, TU-Berlin and Quickdraw
-    dicts_class_sketchy = get_class_dict(args, FOLDERS[SKETCHY])
-    train_data_sketchy, valid_data_sketchy, test_data_sketchy = dataset_split(
-        args, FOLDERS[SKETCHY], args.training_split, args.valid_split
-    )
-
-    # TU-Berlin
-    dicts_class_tuberlin = get_class_dict(args, FOLDERS[TUBERLIN])
-    train_data_tuberlin, valid_data_tuberlin, test_data_tuberlin = dataset_split(
-        args, FOLDERS[TUBERLIN], args.training_split, args.valid_split
-    )
-
-    # Quickdraw
-    dicts_class_quickdraw = get_class_dict(args, FOLDERS[QUICKDRAW])
-    train_data_quickdraw, valid_data_quickdraw, test_data_quickdraw = dataset_split(
-        args, FOLDERS[QUICKDRAW], args.qd_training_split, args.qd_valid_split
-    )
-
-    dicts_class = [dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw]
-    train_data = [train_data_sketchy, train_data_tuberlin, train_data_quickdraw]
-    valid_data = [valid_data_sketchy, valid_data_tuberlin, valid_data_quickdraw]
-    test_data = [test_data_sketchy, test_data_tuberlin, test_data_quickdraw]
-
-    # Data Loaders
-    train_loader = SkTuQd(args, "train", dicts_class, train_data, transform)
-    valid_sk_loader = SkTuQd(
-        args, "valid", dicts_class, valid_data, transform, "sketches"
-    )
-    valid_im_loader = SkTuQd(
-        args, "valid", dicts_class, valid_data, transform, "images"
-    )
-    test_sk_loader = SkTuQd(args, "test", dicts_class, test_data, transform, "sketches")
-    test_im_loader = SkTuQd(args, "test", dicts_class, test_data, transform, "images")
-    return (
-        train_loader,
-        [valid_sk_loader, valid_im_loader],
-        [test_sk_loader, test_im_loader],
-        [dicts_class_sketchy, dicts_class_tuberlin, dicts_class_quickdraw],
-    )
-
-
-if __name__ == "__main__":
-    from src.options import Options
-
-    # Parse options
-    args = Options().parse()
-    create_sktuqd_dataset(args)
 
 
 class SkTuQd(data.Dataset):
@@ -108,7 +40,7 @@ class SkTuQd(data.Dataset):
             transform,
             image_type,
         )
-        # Tuberlin data
+        # TU-Berlin data
         self.tuberlin = DefaultDataset(
             args,
             FOLDERS[TUBERLIN],

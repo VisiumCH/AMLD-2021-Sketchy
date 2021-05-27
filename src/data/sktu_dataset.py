@@ -5,66 +5,6 @@ import torch.utils.data as data
 
 from src.constants import SKETCHY, TUBERLIN, FOLDERS
 from src.data.default_dataset import DefaultDataset
-from src.data.utils import dataset_split, get_class_dict
-
-
-def create_sktu_dataset(args, transform):
-    """
-    Creates all the data loaders for training with Sketchy and TU-Berlin datasets
-    Args:
-        - args: arguments received from the command line (argparse)
-        - transform: pytorch transform to apply on the data
-    Return:
-        - train_loader: data loader for the training set
-        - valid_sk_loader: data loader of sketches for the validation set
-        - valid_im_loader: data loader of images for the validation set
-        - test_sk_loader: data loader of sketches for the test set
-        - test_im_loader: data loader of images for the test set
-        - dicts_class: dictionnnary mapping number to classes.
-                        The key is a unique number and the value is the class name.
-    """
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-
-    # # Sketchy
-    dicts_class_sketchy = get_class_dict(args, FOLDERS[SKETCHY])
-    train_data_sketchy, valid_data_sketchy, test_data_sketchy = dataset_split(
-        args, FOLDERS[SKETCHY], args.training_split, args.valid_split
-    )
-
-    # TU-Berlin
-    dicts_class_tuberlin = get_class_dict(args, FOLDERS[TUBERLIN])
-    train_data_tuberlin, valid_data_tuberlin, test_data_tuberlin = dataset_split(
-        args, FOLDERS[TUBERLIN], args.training_split, args.valid_split
-    )
-
-    dicts_class = [dicts_class_sketchy, dicts_class_tuberlin]
-    train_data = [train_data_sketchy, train_data_tuberlin]
-    valid_data = [valid_data_sketchy, valid_data_tuberlin]
-    test_data = [test_data_sketchy, test_data_tuberlin]
-
-    # Data Loaders
-    train_loader = SkTu(args, "train", dicts_class, train_data, transform)
-    valid_sk_loader = SkTu(
-        args, "valid", dicts_class, valid_data, transform, "sketches"
-    )
-    valid_im_loader = SkTu(args, "valid", dicts_class, valid_data, transform, "images")
-    test_sk_loader = SkTu(args, "test", dicts_class, test_data, transform, "sketches")
-    test_im_loader = SkTu(args, "test", dicts_class, test_data, transform, "images")
-    return (
-        train_loader,
-        [valid_sk_loader, valid_im_loader],
-        [test_sk_loader, test_im_loader],
-        [dicts_class_sketchy, dicts_class_tuberlin],
-    )
-
-
-if __name__ == "__main__":
-    from src.options import Options
-
-    # Parse options
-    args = Options().parse()
-    create_sktu_dataset(args)
 
 
 class SkTu(data.Dataset):

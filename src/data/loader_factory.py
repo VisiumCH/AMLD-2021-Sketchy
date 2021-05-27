@@ -4,8 +4,7 @@ import numpy as np
 
 from src.constants import SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS, SKTU, SKTUQD, DATASETS
 from src.data.default_dataset import make_default_dataset
-from src.data.sktuqd_dataset import create_sktuqd_dataset
-from src.data.sktu_dataset import create_sktu_dataset
+from src.data.composite_dataset import make_composite_dataset
 from src.data.utils import get_dataset_dict, get_limits
 
 
@@ -30,9 +29,9 @@ def load_data(args, transform):
     elif args.dataset == QUICKDRAW:
         return make_default_dataset(args, FOLDERS[QUICKDRAW], transform)
     elif args.dataset == SKTU:
-        return create_sktu_dataset(args, transform)
+        return make_composite_dataset(args, transform, SKTU)
     elif args.dataset == SKTUQD:
-        return create_sktuqd_dataset(args, transform)
+        return make_composite_dataset(args, transform, SKTUQD)
     else:
         print(args.dataset + " dataset not implemented. Exiting.")
         sys.exit()
