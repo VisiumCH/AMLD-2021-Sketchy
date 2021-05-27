@@ -8,7 +8,9 @@ class ApiOptions:
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
         parser.add_argument("name", type=str, help="Name of the training")
-        parser.add_argument("--epoch", type=str, default="00012", help="Epoch to load model")
+        parser.add_argument(
+            "--ngpu", type=int, default=1, help="0 = CPU, 1 = CUDA, 1 < DataParallel"
+        )
         self.parser = parser
     
     def parse(self):

@@ -1,3 +1,7 @@
+# ----------------- IO PATH -------------------
+MODELS_PATH = "io/models/"
+DATA_PATH = "io/data/raw/"
+
 # ---------------- DATASETS -------------------
 SKETCHY = 'sketchy'
 TUBERLIN = 'tuberlin'
@@ -14,7 +18,6 @@ FOLDERS = {
 
 
 # ---------------- INFERENCE ------------------
-MODELS_PATH = "io/models/"
 PREDICTION = "predictions"
 EMBEDDINGS = "precomputed_embeddings"
 DICT_CLASS = "_dict_class.json"

@@ -100,7 +100,7 @@ def prepare_sketch(sketch):
 
 
 def get_parameters(fpath):
-    
+    """ Get the parameters saved during the training """
     param = {}
     with open(fpath + PARAMETERS, "r") as f:
         data = [line.rstrip("\n") for line in f]
@@ -110,3 +110,12 @@ def get_parameters(fpath):
         param[key] = val
         
     return param["dataset"], int(param["emb_size"]), int(param["embedding_number"])
+
+
+def get_last_epoch_number(fpath):
+    """
+    Embeddings are saved at every epoch in a numeroted folder,
+    this function returns the folder of the last training epoch.
+    """
+    list_epoch = [folder for folder in os.listdir(fpath) if folder.startswith('00')]
+    return max(list_epoch)
