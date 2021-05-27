@@ -8,7 +8,12 @@ import pandas as pd
 import torch
 from torchvision import transforms
 
-from src.constants import DICT_CLASS, EMB_ARRAY, EMBEDDINGS, METADATA, NUM_CLOSEST_PLOT, NUMBER_RANDOM_IMAGES, PREDICTION, SKETCHY, TUBERLIN, QUICKDRAW, SKTU, SKTUQD
+from src.constants import (
+    DICT_CLASS, EMB_ARRAY, EMBEDDINGS, METADATA,
+    NUM_CLOSEST_PLOT,
+    NUMBER_RANDOM_IMAGES, PREDICTION,
+    SKETCHY, TUBERLIN, QUICKDRAW, SKTU, SKTUQD
+)
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_loader, get_dict
 from src.models.utils import get_model, normalise_attention, get_parameters

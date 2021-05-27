@@ -18,9 +18,8 @@ MODELS_PATH = "io/models/"
 PREDICTION = "predictions"
 EMBEDDINGS = "precomputed_embeddings"
 DICT_CLASS = "_dict_class.json"
-EMB_ARRAY ="_array.npy"
+EMB_ARRAY = "_array.npy"
 METADATA = "_meta.csv"
 PARAMETERS = 'params.txt'
 NUM_CLOSEST_PLOT = 4
 NUMBER_RANDOM_IMAGES = 20
-
