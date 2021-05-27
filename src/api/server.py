@@ -21,6 +21,7 @@ from src.api.embeddings_utils import (
     process_graph,
     get_tiles,
 )
+from src.constants import MODELS_PATH, TENSORBOARD_IMAGE
 
 app = Flask(__name__)
 api = Api(app)
@@ -157,13 +158,13 @@ api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
 if __name__ == "__main__":
 
     args = ApiOptions().parse()
-    args.save = args.log + args.name + '/'
-    args.dataset, args.emb_size = get_parameters(args.save)
+    args.save = MODELS_PATH + args.name + '/'
+    args.dataset, args.emb_size, embedding_number = get_parameters(args.save)
     args.load = args.save + "checkpoint.pth"
     args.embeddings_path = args.save + args.epoch  + "/default/"
     args.cuda = False
 
-    tiles = get_tiles(args.embeddings_path + "sprite.png")
+    tiles = get_tiles(args.embeddings_path + TENSORBOARD_IMAGE, embedding_number)
     df = pd.DataFrame()
 
     inference = ApiInference(args, "test")

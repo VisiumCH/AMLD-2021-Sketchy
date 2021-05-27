@@ -8,9 +8,8 @@ from cairosvg import svg2png
 import numpy as np
 from PIL import Image
 
+from src.constants import NB_DATASET_IMAGES, PARAMETERS
 from src.data.utils import default_image_loader
-
-NB_DATASET_IMAGES = 5
 
 
 def get_image(folder_path, ending):
@@ -103,11 +102,11 @@ def prepare_sketch(sketch):
 def get_parameters(fpath):
     
     param = {}
-    with open(fpath + 'params.txt', "r") as f:
+    with open(fpath + PARAMETERS, "r") as f:
         data = [line.rstrip("\n") for line in f]
     
     for line in data:
         key, val = line.split(' ')
         param[key] = val
         
-    return param["dataset"], int(param["emb_size"])
+    return param["dataset"], int(param["emb_size"]), int(param["embedding_number"])

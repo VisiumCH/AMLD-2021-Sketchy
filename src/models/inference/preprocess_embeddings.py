@@ -6,6 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
+from src.constants import DICT_CLASS, EMB_ARRAY, EMBEDDINGS, METADATA, SKETCHY, QUICKDRAW, TUBERLIN, SKTU, SKTUQD
 from src.data.loader_factory import load_data
 from src.models.test import get_test_data
 from src.models.utils import get_model, get_parameters
@@ -24,12 +25,12 @@ def save_embeddings(args, fnames, embeddings, classes, dataset_type):
     df = pd.DataFrame(data=[fnames, classes]).T
     df.columns = ["fnames", "classes"]
     meta_path = os.path.join(
-        args.embedding_path, args.dataset + "_" + dataset_type + "_meta.csv"
+        args.embedding_path, args.dataset + "_" + dataset_type + METADATA
     )
     df.to_csv(meta_path, sep=" ", header=True)
 
     array_path = os.path.join(
-        args.embedding_path, args.dataset + "_" + dataset_type + "_array.npy"
+        args.embedding_path, args.dataset + "_" + dataset_type + EMB_ARRAY
     )
     with open(array_path, "wb") as f:
         np.save(f, embeddings)
@@ -61,7 +62,7 @@ def get_test_images(args, data, im_net):
 
 def save_class_dict(args, dict_class):
     """ Saves the dictionnary mapping classes to numbers """
-    dict_path = os.path.join(args.embedding_path, args.dataset + "_dict_class.json")
+    dict_path = os.path.join(args.embedding_path, args.dataset + DICT_CLASS)
     dict_class = {v: k for k, v in dict_class.items()}
     with open(dict_path, "w") as fp:
         json.dump(dict_class, fp)
@@ -95,7 +96,7 @@ if __name__ == "__main__":
     args.pin_memory = args.cuda
 
     # Path to store embeddings
-    args.embedding_path = os.path.join(args.save, "precomputed_embeddings")
+    args.embedding_path = os.path.join(args.save, EMBEDDINGS)
     if not os.path.exists(args.embedding_path):
         os.makedirs(args.embedding_path)
 
@@ -106,18 +107,18 @@ if __name__ == "__main__":
 
     # Compute embeddings on chosen dataset(s)
     dataset = args.dataset
-    if dataset in ["sketchy", "tuberlin", "quickdraw"]:
+    if dataset in [SKETCHY, TUBERLIN, QUICKDRAW]:
         preprocess_embeddings(args, im_net)
 
-    elif dataset in ["sk+tu", "sk+tu+qd"]:
-        args.dataset = "sketchy"
+    elif dataset in [SKTU, SKTUQD]:
+        args.dataset = SKETCHY
         preprocess_embeddings(args, im_net)
 
-        args.dataset = "tuberlin"
+        args.dataset = TUBERLIN
         preprocess_embeddings(args, im_net)
 
-        if dataset == "sk+tu+qd":
-            args.dataset = "quickdraw"
+        if dataset == SKTUQD:
+            args.dataset = QUICKDRAW
             preprocess_embeddings(args, im_net)
     else:
         raise Exception(args.dataset + " not implemented.")

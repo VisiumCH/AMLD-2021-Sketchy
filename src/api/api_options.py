@@ -9,7 +9,6 @@ class ApiOptions:
         )
         parser.add_argument("name", type=str, help="Name of the training")
         parser.add_argument("--epoch", type=str, default="00012", help="Epoch to load model")
-        parser.add_argument("--log", type=str, default="io/models/", help="Log folder")
         self.parser = parser
     
     def parse(self):

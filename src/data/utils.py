@@ -6,6 +6,8 @@ import cv2
 import numpy as np
 from PIL import Image
 
+from src.constants import SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS, SKTU, SKTUQD
+
 
 def create_dict_texts(texts):
     """ Dictionnary with key: number and value: class names"""
@@ -166,7 +168,7 @@ def dataset_split(args, dataset_folder, training_split, valid_split):
 
 
 def get_loader(dataset):
-    if dataset == "TU-Berlin":
+    if dataset == FOLDERS[TUBERLIN]:
         loader = default_image_loader_tuberlin
     else:
         loader = default_image_loader
@@ -180,11 +182,11 @@ def get_dict(dataset, dict_class):
     if isinstance(dict_class, dict):
         dict_class = dict_class
     else:
-        if dataset == "Sketchy":
+        if dataset == FOLDERS[SKETCHY]:
             dict_class = dict_class[0]
-        elif dataset == "TU-Berlin":
+        elif dataset == FOLDERS[TUBERLIN]:
             dict_class = dict_class[1]
-        elif dataset == "Quickdraw":
+        elif dataset == FOLDERS[QUICKDRAW]:
             dict_class = dict_class[2]
         else:
             raise (f"Error with dataset name: {dataset}.")
@@ -205,7 +207,7 @@ def get_limits(dataset, valid_data, image_type):
             - tuberlin_limit is the limit between the indexes of TU_Berlin dataset and Quickdraw dataset
 
     """
-    if dataset == "sk+tu" or dataset == "sk+tu+qd":
+    if dataset == SKTU or dataset == SKTUQD:
         if image_type == "images":
             sketchy_limit = valid_data.sketchy_limit_images
         else:
@@ -213,7 +215,7 @@ def get_limits(dataset, valid_data, image_type):
     else:
         sketchy_limit = None
 
-    if dataset == "sk+tu+qd":
+    if dataset == SKTUQD:
         if image_type == "images":
             tuberlin_limit = valid_data.tuberlin_limit_images
         else:

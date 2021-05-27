@@ -4,6 +4,7 @@ import random
 import numpy as np
 import torch.utils.data as data
 
+from src.constants import QUICKDRAW, TUBERLIN, FOLDERS
 from src.data.utils import (
     default_image_loader,
     default_image_loader_tuberlin,
@@ -32,7 +33,7 @@ def make_default_dataset(args, dataset_folder, transform):
     random.seed(args.seed)
     np.random.seed(args.seed)
 
-    if dataset_folder == "Quickdraw":
+    if dataset_folder == FOLDERS[QUICKDRAW]:
         training_split = args.qd_training_split
         valid_split = args.qd_valid_split
     else:
@@ -125,7 +126,7 @@ class DefaultDataset(data.Dataset):
         self.loader = default_image_loader
         self.image_type = image_type
 
-        if dataset_folder == "TU-Berlin":
+        if dataset_folder == FOLDERS[TUBERLIN]:
             self.loader_image = default_image_loader_tuberlin
         else:
             self.loader_image = default_image_loader

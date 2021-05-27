@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 import torch.nn as nn
 
+from src.constants import MODELS_PATH
 from src.data.loader_factory import load_data
 from src.options import Options
 from src.models.encoder import EncoderCNN
@@ -167,7 +168,7 @@ def main():
         drop_last=True,
     )
 
-    if args.log and args.attn:
+    if args.attn:
         attention_logger = AttentionLogger(
             valid_sk_data, valid_im_data, logger, dict_class, args
         )
@@ -249,27 +250,26 @@ def main():
         )
 
         # Logger
-        if args.log:
-            im_net.eval()
-            sk_net.eval()
-            if not args.attn:
-                pass
-            else:
-                with torch.set_grad_enabled(False):
-                    im_net.to(torch.device("cpu"))
-                    sk_net.to(torch.device("cpu"))
-                    attention_logger.plot_attention(im_net, sk_net)
-                    embedding_logger.plot_embeddings(im_net, sk_net)
+        im_net.eval()
+        sk_net.eval()
+        if not args.attn:
+            pass
+        else:
+            with torch.set_grad_enabled(False):
+                im_net.to(torch.device("cpu"))
+                sk_net.to(torch.device("cpu"))
+                attention_logger.plot_attention(im_net, sk_net)
+                embedding_logger.plot_embeddings(im_net, sk_net)
 
-            # Scalars
-            logger.add_scalar("loss_train", loss_train.avg)
-            logger.add_scalar("loss_domain", loss_dom.avg)
-            logger.add_scalar("loss_triplet", loss_spa.avg)
-            logger.add_scalar("map_valid", map_valid)
-            logger.add_scalar("map_valid_200", map_valid_200)
-            logger.add_scalar("prec_valid_200", prec_valid_200)
-            logger.add_scalar("learning_rate", args.learning_rate)
-            logger.step()
+        # Scalars
+        logger.add_scalar("loss_train", loss_train.avg)
+        logger.add_scalar("loss_domain", loss_dom.avg)
+        logger.add_scalar("loss_triplet", loss_spa.avg)
+        logger.add_scalar("map_valid", map_valid)
+        logger.add_scalar("map_valid_200", map_valid_200)
+        logger.add_scalar("prec_valid_200", prec_valid_200)
+        logger.add_scalar("learning_rate", args.learning_rate)
+        logger.step()
 
         # Early-Stop
         if map_valid_200 > best_map:
@@ -331,17 +331,16 @@ if __name__ == "__main__":
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
 
-    if args.log is not None:
-        print("Initialize logger")
-        args.save = args.log + args.name
-        if os.path.exists(args.save):
-            raise FileExistsError(f"{args.save} directory already exists.")
+    print("Initialize logger")
+    args.save = MODELS_PATH + args.name
+    if os.path.exists(args.save):
+        raise FileExistsError(f"{args.save} directory already exists.")
 
-        # Create logger
-        print("Log dir:\t" + args.save)
-        logger = Logger(args.save, force=True)
-        with open(os.path.join(args.save, "params.txt"), "w") as fp:
-            for key, val in vars(args).items():
-                fp.write("{} {}\n".format(key, val))
+    # Create logger
+    print("Log dir:\t" + args.save)
+    logger = Logger(args.save, force=True)
+    with open(os.path.join(args.save, "params.txt"), "w") as fp:
+        for key, val in vars(args).items():
+            fp.write("{} {}\n".format(key, val))
 
     main()
