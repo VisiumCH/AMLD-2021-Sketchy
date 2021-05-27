@@ -179,7 +179,7 @@ function Embeddings() {
     } else {
       return (
         <Text fontSize="l" color={textColor} align="center">
-          No sketch drawn, click on Draw to draw one!
+          No sketch drawn, click on "Draw" to draw one!
         </Text>
       );
     }

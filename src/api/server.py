@@ -90,7 +90,6 @@ class Embeddings(Resource):
 
     def post(self):
         json_data = request.get_json()
-        args = Args()
 
         # Verify the data
         if "nb_dim" not in json_data.keys():
@@ -154,23 +153,14 @@ api.add_resource(Embeddings, "/get_embeddings")
 api.add_resource(Dataset, "/get_dataset_images")
 api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
 
-        
-
-class Args:
-    dataset = "quickdraw"
-    emb_size = 256
-    cuda = False
-    save = "io/models/quickdraw/"
-    load = save + "checkpoint.pth"
-    embeddings_path = save + "00012/default/"
     
 if __name__ == "__main__":
 
     args = ApiOptions().parse()
-    args.save = args.log + args.name
+    args.save = args.log + args.name + '/'
     args.dataset, args.emb_size = get_parameters(args.save)
     args.load = args.save + "checkpoint.pth"
-    args.embeddings_path = args.save + args.epoch_number  + "/default/"
+    args.embeddings_path = args.save + args.epoch  + "/default/"
     args.cuda = False
 
     tiles = get_tiles(args.embeddings_path + "sprite.png")

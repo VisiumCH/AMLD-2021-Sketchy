@@ -103,7 +103,7 @@ def prepare_sketch(sketch):
 def get_parameters(fpath):
     
     param = {}
-    with open(fpath + '/params.txt', "r") as f:
+    with open(fpath + 'params.txt', "r") as f:
         data = [line.rstrip("\n") for line in f]
     
     for line in data:
