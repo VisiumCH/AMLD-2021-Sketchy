@@ -76,9 +76,12 @@ class Dataset(Resource):
 
         if "category" not in json_data.keys():
             return {"ERROR": "Category not provided"}, 400
+        if "dataset" not in json_data.keys():
+            return {"ERROR": "Dataset not provided"}, 400
         category = json_data["category"]
+        dataset_folder = json_data["dataset"]
 
-        dataset_path = DATA_PATH + FOLDERS[args.dataset]
+        dataset_path = DATA_PATH + dataset_folder
 
         data_sketches = prepare_dataset(dataset_path, "sketches", category)
         data_images = prepare_dataset(dataset_path, "images", category)
