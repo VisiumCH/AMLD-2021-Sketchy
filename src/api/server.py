@@ -83,8 +83,8 @@ class Dataset(Resource):
 
         dataset_path = DATA_PATH + dataset_folder
 
-        data_sketches = prepare_dataset(dataset_path, "sketches", category)
-        data_images = prepare_dataset(dataset_path, "images", category)
+        data_sketches = prepare_dataset(dataset_path, "sketches", category, dataset_folder)
+        data_images = prepare_dataset(dataset_path, "images", category, dataset_folder)
 
         data = {**data_sketches, **data_images}
 

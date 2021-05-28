@@ -181,7 +181,7 @@ function Dataset() {
                 variant="solid"
                 size="md"
                 onClick={() => {
-                  getImages(currentCategory);
+                  getImages(currentCategory, currentDataset);
                 }}
               ></Button>
             </HStack>

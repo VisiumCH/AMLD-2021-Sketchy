@@ -32,6 +32,8 @@ export const colors = [
   "#000000",
 ];
 export const nb_to_show = 5;
+export const datasets = ["Sketchy", "TU-Berlin", "Quickdraw"];
+
 export const categories = {
   Quickdraw: [
     "airplane",
@@ -525,4 +527,3 @@ export const categories = {
     "zebra",
   ],
 };
-export const datasets = ["Sketchy", "TU-Berlin", "Quickdraw"];
