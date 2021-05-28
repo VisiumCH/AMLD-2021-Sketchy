@@ -23,7 +23,7 @@ from src.api.embeddings_utils import (
     process_graph,
     get_tiles,
 )
-from src.constants import DATA_PATH, FOLDERS, MODELS_PATH, TENSORBOARD_IMAGE
+from src.constants import CUSTOM_SKETCH_CLASS, DATA_PATH, FOLDERS, MODELS_PATH, TENSORBOARD_IMAGE
 
 app = Flask(__name__)
 api = Api(app)
@@ -128,7 +128,7 @@ class ShowEmbeddingImage(Resource):
         if "class" not in json_data.keys():
             return {"ERROR": "Class not provided"}, 400
 
-        if json_data["class"] == "My Custom Sketch":
+        if json_data["class"] == CUSTOM_SKETCH_CLASS:
             if "sketch" not in json_data.keys():
                 return {"ERROR": "sketch not provided"}, 400
             sketch = prepare_sketch(json_data["sketch"])

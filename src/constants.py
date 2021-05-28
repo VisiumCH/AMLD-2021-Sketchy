@@ -33,3 +33,4 @@ TENSORBOARD_IMAGE = "sprite.png"
 TENSORBOARD_EMBEDDINGS = "tensors.tsv"
 TENSORBOARD_CLASSES = "metadata.tsv"
 NB_DATASET_IMAGES = 5
+CUSTOM_SKETCH_CLASS = "My Custom Sketch" # if modified, must change in web app as well

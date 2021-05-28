@@ -7,6 +7,7 @@ export const backgroundColor = "#1A365D";
 export const buttonHeight = "48px";
 export const buttonWidth = "180px";
 export const formLabelWidth = "200px";
+export const custom_sketch_class = "My Custom Sketch"; // update python constant if modify
 export const colors = [
   "#e6194b",
   "#3cb44b",
