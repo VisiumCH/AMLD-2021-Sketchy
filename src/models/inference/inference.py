@@ -28,12 +28,12 @@ class Inference:
         - ApiInference called from the api to retrieve the closest images of a hand-drawn sketch
     """
 
-    def __init__(self, args, dataset_type):
+    def __init__(self, args, mode):
         """
         Initialises the inference with the trained model and precomputed embeddings
         Args:
             - args: arguments received from the command line (argparse)
-            - dataset_type: 'train', 'valid' or 'test'
+            - mode: 'train', 'valid' or 'test'
         """
         self.args = args
         self.transform = transforms.Compose([transforms.ToTensor()])
@@ -50,13 +50,13 @@ class Inference:
         self.embedding_path = os.path.join(args.save, EMBEDDINGS)
         os.makedirs(self.embedding_path, exist_ok=True)
 
-        self.__get_data(dataset_type)
+        self.__get_data(mode)
 
-    def __get_processed_images(self, dataset_type):
+    def __get_processed_images(self, mode):
         """
         Get the data of images to match with the sketches
         Args:
-            - dataset_type: 'train', 'valid' or 'test'
+            - mode: 'train', 'valid' or 'test'
         Return:
             - dict_class: dictionnary mapping numbers to classes names
             - paths to the images
@@ -70,19 +70,19 @@ class Inference:
             dict_class = json.load(fp)
 
         array_path = os.path.join(
-            self.embedding_path, self.args.dataset + "_" + dataset_type + EMB_ARRAY
+            self.embedding_path, self.args.dataset + "_" + mode + EMB_ARRAY
         )
         with open(array_path, "rb") as f:
             images_embeddings = np.load(f)
 
         meta_path = os.path.join(
-            self.embedding_path, self.args.dataset + "_" + dataset_type + METADATA
+            self.embedding_path, self.args.dataset + "_" + mode + METADATA
         )
         df = pd.read_csv(meta_path, sep=" ")
 
         return dict_class, df["fnames"].values, df["classes"].values, images_embeddings
 
-    def __get_data(self, dataset_type):
+    def __get_data(self, mode):
         """
         Loads the paths, classes and embeddings of the images of different datasets
         """
@@ -94,7 +94,7 @@ class Inference:
                 self.images_fnames,
                 self.images_classes,
                 self.images_embeddings,
-            ) = self.__get_processed_images(dataset_type)
+            ) = self.__get_processed_images(mode)
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
@@ -105,7 +105,7 @@ class Inference:
                 self.images_fnames,
                 self.images_classes,
                 self.images_embeddings,
-            ) = self.__get_processed_images(dataset_type)
+            ) = self.__get_processed_images(mode)
 
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
@@ -116,7 +116,7 @@ class Inference:
                 images_fnames,
                 images_classes,
                 images_embeddings,
-            ) = self.__get_processed_images(dataset_type)
+            ) = self.__get_processed_images(mode)
             self.dict_class = [dict_class_sk, dict_class_tu]
 
             self.images_fnames = np.concatenate(
@@ -138,7 +138,7 @@ class Inference:
                     images_fnames,
                     images_classes,
                     images_embeddings,
-                ) = self.__get_processed_images(dataset_type)
+                ) = self.__get_processed_images(mode)
                 self.dict_class.append(dict_class_qd)
 
                 self.images_fnames = np.concatenate(
