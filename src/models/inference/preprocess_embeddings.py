@@ -12,7 +12,7 @@ from src.models.test import get_test_data
 from src.models.utils import get_model, get_parameters
 
 
-def save_embeddings(args, fnames, embeddings, classes, dataset_type):
+def save_embeddings(args, fnames, embeddings, classes, mode):
     """
     Saves the precomputed image data in the same folder as the model in a subfolder called 'precomputed_embeddings'
     Args:
@@ -20,18 +20,14 @@ def save_embeddings(args, fnames, embeddings, classes, dataset_type):
         - fnames: path of the images
         - embeddings: embeddings of the images
         - classes: classes of the images
-        - dataset_type: validation or test set
+        - mode: validation or test set
     """
     df = pd.DataFrame(data=[fnames, classes]).T
     df.columns = ["fnames", "classes"]
-    meta_path = os.path.join(
-        args.embedding_path, args.dataset + "_" + dataset_type + METADATA
-    )
+    meta_path = os.path.join(args.embedding_path, args.dataset + "_" + mode + METADATA)
     df.to_csv(meta_path, sep=" ", header=True)
 
-    array_path = os.path.join(
-        args.embedding_path, args.dataset + "_" + dataset_type + EMB_ARRAY
-    )
+    array_path = os.path.join(args.embedding_path, args.dataset + "_" + mode + EMB_ARRAY)
     with open(array_path, "wb") as f:
         np.save(f, embeddings)
 

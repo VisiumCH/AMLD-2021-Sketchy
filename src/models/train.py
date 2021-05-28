@@ -33,7 +33,7 @@ def adjust_learning_rate(optimizer, epoch):
             param_group["lr"] = args.learning_rate
 
 
-def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int, logger):
+def train(args, data_loader, model, optimizer, criterion, epoch):
     """
     Train an epoch
     """
@@ -54,54 +54,31 @@ def train(data_loader, model, optimizer, cuda, criterion, epoch, log_int, logger
     for i, (sk, im, im_neg, _, _) in enumerate(data_loader):
 
         # Prepare input data
-        if cuda:
+        if args.cuda:
             im, im_neg, sk = im.cuda(), im_neg.cuda(), sk.cuda()
-
         optimizer.zero_grad()
-        bs = im.size(0)
-        # Output
-        # Image
-        im_feat, _ = im_net(im)  # Image encoding and projection to semantic space
 
+        # Model Output: Image and sketch encoding and projection to semantic space
+        # Image Positive
+        im_feat, _ = im_net(im)
         # Image Negative
-        # Encode negative image
-        im_feat_neg, _ = im_net(
-            im_neg
-        )  # Image encoding and projection to semantic space
-
+        im_feat_neg, _ = im_net(im_neg)
         # Sketch
-        sk_feat, _ = sk_net(sk)  # Sketch encoding and projection to semantic space
+        sk_feat, _ = sk_net(sk)
 
-        # LOSS
+        # Loss
         loss, loss_dom, loss_spa = criterion(im_feat, sk_feat, im_feat_neg, i)
 
-        # Gradiensts and update
+        # Gradients and update
         loss.backward()
         optimizer.step()
 
         # Save values
-        losses_dom.update(loss_dom.item(), bs)
-        losses_spa.update(loss_spa.item(), bs)
-        losses.update(loss.item(), bs)
-        batch_time.update(time.time() - end, bs)
+        losses_dom.update(loss_dom.item(), args.batch_size)
+        losses_spa.update(loss_spa.item(), args.batch_size)
+        losses.update(loss.item(), args.batch_size)
+        batch_time.update(time.time() - end, args.batch_size)
         end = time.time()
-
-        if log_int > 0 and i % log_int == 0:
-            print(
-                "Epoch: [{0}]({1}/{2}) Average Loss {loss.avg:.4f} \
-                 (Dom: {loss_dom.avg:.4f} + Spa: {loss_spa.avg:.4f}); Avg Time x Batch {b_time.avg:.3f}".format(
-                    epoch,
-                    i,
-                    len(data_loader),
-                    loss=losses,
-                    loss_dom=losses_dom,
-                    loss_spa=losses_spa,
-                    b_time=batch_time,
-                )
-            )
-            logger.add_scalar_training("loss_step", losses.avg)
-            logger.add_scalar_training("loss_domain_step", losses_dom.avg)
-            logger.add_scalar_training("loss_triplet_step", losses_spa.avg)
 
     print(
         "Epoch: [{0}] Average Loss {loss.avg:.4f} ({loss_dom.avg:.4f} + {loss_spa.avg:.4f}); \
@@ -130,43 +107,21 @@ def main():
         dict_class,
     ) = load_data(args, transform)
 
-    pin_memory = args.cuda
-    train_loader = DataLoader(
-        train_data,
-        batch_size=args.batch_size,
-        shuffle=True,
-        num_workers=args.prefetch,
-        pin_memory=pin_memory,
-        drop_last=True,
-    )
-    valid_sk_loader = DataLoader(
-        valid_sk_data,
-        batch_size=3 * args.batch_size,
-        num_workers=args.prefetch,
-        pin_memory=pin_memory,
-        drop_last=True,
-    )
-    valid_im_loader = DataLoader(
-        valid_im_data,
-        batch_size=3 * args.batch_size,
-        num_workers=args.prefetch,
-        pin_memory=pin_memory,
-        drop_last=True,
-    )
-    test_sk_loader = DataLoader(
-        test_sk_data,
-        batch_size=3 * args.batch_size,
-        num_workers=args.prefetch,
-        pin_memory=pin_memory,
-        drop_last=True,
-    )
-    test_im_loader = DataLoader(
-        test_im_data,
-        batch_size=3 * args.batch_size,
-        num_workers=args.prefetch,
-        pin_memory=pin_memory,
-        drop_last=True,
-    )
+    dataloader_args = {
+        "batch_size": args.batch_size,
+        "num_workers": args.prefetch,
+        "pin_memory": args.cuda,
+        "drop_last": True,
+        "shuffle": True,
+    }
+    train_loader = DataLoader(train_data, **dataloader_args)
+
+    dataloader_args["shuffle"] = False
+    dataloader_args["batch_size"] = 3 * args.batch_size
+    valid_sk_loader = DataLoader(valid_sk_data, **dataloader_args)
+    valid_im_loader = DataLoader(valid_im_data, **dataloader_args)
+    test_sk_loader = DataLoader(test_sk_data, **dataloader_args)
+    test_im_loader = DataLoader(test_im_data, **dataloader_args)
 
     if args.attn:
         attention_logger = AttentionLogger(
@@ -230,21 +185,18 @@ def main():
         adjust_learning_rate(optimizer, epoch)
         print(f"Training epoch {epoch}.")
         loss_train, loss_dom, loss_spa = train(
+            args,
             train_loader,
             [im_net, sk_net],
             optimizer,
-            args.cuda,
             criterion,
             epoch,
-            args.log_interval,
-            logger,
         )
         print(f"Validation epoch {epoch}.")
         map_valid, map_valid_200, prec_valid_200 = test(
-            valid_im_loader,
-            valid_sk_loader,
-            [im_net, sk_net],
             args,
+            valid_im_loader, valid_sk_loader,
+            [im_net, sk_net],
             inference_logger,
             dict_class,
         )
@@ -303,7 +255,7 @@ def main():
 
     print("***Test***")
     map_test, map_200, prec_200 = test(
-        test_im_loader, test_sk_loader, [im_net, sk_net], args
+        args, test_im_loader, test_sk_loader, [im_net, sk_net]
     )
     print("Test mAP {mean_ap}%".format(mean_ap=map_test))
     print("Test mAP@200 {map_200}%".format(map_200=map_200))

@@ -47,45 +47,27 @@ def make_default_dataset(args, dataset_folder, transform):
     )
 
     # Data Loaders
-    train_loader = DefaultDataset(
-        args, dataset_folder, "train", dicts_class, train_data, transform
-    )
-    valid_sk_loader = DefaultDataset(
-        args,
-        dataset_folder,
-        "valid",
-        dicts_class,
-        valid_data,
-        transform,
-        "sketches",
-    )
-    valid_im_loader = DefaultDataset(
-        args,
-        dataset_folder,
-        "valid",
-        dicts_class,
-        valid_data,
-        transform,
-        "images",
-    )
-    test_sk_loader = DefaultDataset(
-        args,
-        dataset_folder,
-        "test",
-        dicts_class,
-        test_data,
-        transform,
-        "sketches",
-    )
-    test_im_loader = DefaultDataset(
-        args,
-        dataset_folder,
-        "test",
-        dicts_class,
-        test_data,
-        transform,
-        "images",
-    )
+    data_args = {
+        "args": args,
+        "dataset_folder": dataset_folder,
+        "dicts_class": dicts_class,
+        "transform": transform,
+    }
+    data_args["mode"], data_args["data"] = "train", train_data
+    train_loader = DefaultDataset(**data_args)
+
+    data_args["mode"], data_args["data"] = "valid", valid_data
+    data_args["image_type"] = "sketches"
+    valid_sk_loader = DefaultDataset(**data_args)
+    data_args["image_type"] = "images"
+    valid_im_loader = DefaultDataset(**data_args)
+
+    data_args["mode"], data_args["data"] = "test", test_data
+    data_args["image_type"] = "sketches"
+    test_sk_loader = DefaultDataset(**data_args)
+    data_args["image_type"] = "images"
+    test_im_loader = DefaultDataset(**data_args)
+
     return (
         train_loader,
         [valid_sk_loader, valid_im_loader],
@@ -103,7 +85,7 @@ class DefaultDataset(data.Dataset):
         self,
         args,
         dataset_folder,
-        dataset_type,
+        mode,
         dicts_class,
         data,
         transform,
@@ -114,14 +96,14 @@ class DefaultDataset(data.Dataset):
         Args:
             - args: arguments reveived from the command line (argparse)
             - dataset_folder: name of the folder containing the data
-            - dataset_type: dataset split ('train', 'valid' or 'test')
+            - mode: dataset split ('train', 'valid' or 'test')
             - dicts_class:  dictionnnary mapping number to classes
             - data: list data of the classes [images path, image classes, sketch paths, sketch classes]
             - transform: pytorch transform to apply on the data
             - image_type: type of the data: can be either 'sketches' or 'images'
         """
         self.transform = transform
-        self.dataset_type = dataset_type
+        self.mode = mode
         self.dicts_class = dicts_class
         self.loader = default_image_loader
         self.image_type = image_type
@@ -154,7 +136,7 @@ class DefaultDataset(data.Dataset):
             - fname: path to the photo or sketch
             - lbl: category of the sketch or image
         """
-        if self.dataset_type == "train":
+        if self.mode == "train":
             # Read sketch
             sketch_fname = os.path.join(
                 self.dir_sketch, self.cls_sketch[index], self.fnames_sketch[index]
@@ -199,7 +181,7 @@ class DefaultDataset(data.Dataset):
 
     def __len__(self):
         """ Number of sketches/images in the dataset """
-        if self.dataset_type == "train" or self.image_type == "sketches":
+        if self.mode == "train" or self.image_type == "sketches":
             return len(self.fnames_sketch)
         else:
             return len(self.fnames_image)

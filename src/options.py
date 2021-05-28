@@ -127,7 +127,6 @@ class Options:
             "--load",
             "-l",
             type=str,
-            default="io/models/quickdraw/checkpoint.pth",
             help="path to the model to retrain",
         )
 
@@ -140,14 +139,6 @@ class Options:
         )
         parser.add_argument(
             "--prefetch", type=int, default=2, help="Pre-fetching threads."
-        )
-        # i/o
-        parser.add_argument(
-            "--log-interval",
-            type=int,
-            default=100,
-            metavar="N",
-            help="How many batches to wait before logging training status",
         )
         # Tensorboard
         parser.add_argument(

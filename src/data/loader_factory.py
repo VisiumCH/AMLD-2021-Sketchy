@@ -52,7 +52,7 @@ def main(args):
             [test_sk_loader, test_im_loader],
             dict_class,
         ) = load_data(args, transform)
-        print_dataset(
+        print_dataset_information(
             args,
             train_loader,
             valid_sk_loader,
@@ -63,7 +63,7 @@ def main(args):
         visualise_dataset(args, train_loader, dict_class)
 
 
-def print_dataset(
+def print_dataset_information(
     args, train_loader, valid_sk_loader, valid_im_loader, test_sk_loader, test_im_loader
 ):
     """

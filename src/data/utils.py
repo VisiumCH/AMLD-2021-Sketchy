@@ -8,6 +8,7 @@ from PIL import Image
 
 from src.constants import SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS, SKTU, SKTUQD
 
+
 def create_dict_texts(texts):
     """ Dictionnary with key: number and value: class names"""
     texts = sorted(list(set(texts)))
