@@ -76,4 +76,24 @@ selects 20 random sketches. For each sketch, computes the embedding and the 4 cl
 
 ## api/
 
+The web application calls the api in server.py. To run the web app, do the following
+
 ### server.py
+
+```bash
+python src/api/server.py *name*
+```
+
+### web_app/sketchy
+
+Go to web_app/sketchy and run
+
+```bash
+npm start
+```
+
+if it is the first time, you will need to install all the react libraries
+
+```bash
+npm install sketchy
+```

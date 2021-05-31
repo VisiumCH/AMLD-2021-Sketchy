@@ -112,7 +112,7 @@ def get_part_of_test_data(data_loader, model, args, part_index=0):
     return fnames, embeddings, classes
 
 
-def test(im_loader, sk_loader, model, args, inference_logger=None, dict_class=None):
+def test(args, im_loader, sk_loader, model, inference_logger=None, dict_class=None):
     """
     Get data and computes metrics on the model
     """
@@ -219,10 +219,9 @@ def main():
 
     print("***Test***")
     _, _, _ = test(
-        test_im_loader,
-        test_sk_loader,
-        [im_net, sk_net],
         args,
+        test_im_loader, test_sk_loader,
+        [im_net, sk_net],
         inference_logger=None,
         dict_class=dict_class,
     )

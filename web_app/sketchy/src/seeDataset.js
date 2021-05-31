@@ -16,6 +16,7 @@ import {
   textColor,
   backgroundColor,
   darkGray,
+  datasets,
   categories,
   buttonHeight,
   buttonWidth,
@@ -27,21 +28,26 @@ import { BiPencil, BiShapePolygon, BiRefresh } from "react-icons/bi";
 
 function Dataset() {
   const [isSending, setIsSending] = useState(false);
+  const [currentDataset, setCurrentDataset] = useState("Quickdraw");
   const [currentCategory, setCurrentCategory] = useState("pineapple");
   const [images, setImages] = useState([]);
   const [sketches, setSketches] = useState([]);
-  const categoriesOptions = categories.map((category) => (
+  const categoriesOptions = categories[currentDataset].map((category) => (
     <option>{category}</option>
   ));
+  const datasetsOptions = datasets.map((dataset) => <option>{dataset}</option>);
 
-  async function getImages(currentCategory) {
+  async function getImages(currentCategory, currentDataset) {
     // Send to back end
     const response = await fetch("/get_dataset_images", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ category: currentCategory }),
+      body: JSON.stringify({
+        category: currentCategory,
+        dataset: currentDataset,
+      }),
     });
 
     if (response.ok) {
@@ -53,13 +59,18 @@ function Dataset() {
       for (let i = 0; i < nb_to_show; i++) {
         tmpImage = res["images_" + i + "_base64"].split("'")[1];
         tmpImages[i] = (
-          <img src={`data:image/jpeg;base64,${tmpImage}`} alt={"image_" + i} />
+          <img
+            src={`data:image/jpeg;base64,${tmpImage}`}
+            alt={"image_" + i}
+            style={{ height: "250px" }}
+          />
         );
         tmpSketch = res["sketches_" + i + "_base64"].split("'")[1];
         tmpSketches[i] = (
           <img
             src={`data:image/jpeg;base64,${tmpSketch}`}
             alt={"sketch_" + i}
+            style={{ height: "250px" }}
           />
         );
       }
@@ -69,18 +80,18 @@ function Dataset() {
   }
 
   const sendRequest = useCallback(
-    async (currentCategory) => {
+    async (currentCategory, currentDataset) => {
       if (isSending) return;
       setIsSending(true);
-      getImages(currentCategory);
+      getImages(currentCategory, currentDataset);
       setIsSending(false);
     },
     [isSending]
   );
 
   useEffect(() => {
-    sendRequest(currentCategory);
-  }, [sendRequest, currentCategory]);
+    sendRequest(currentCategory, currentDataset);
+  }, [sendRequest, currentCategory, currentDataset]);
 
   const renderImages = images.map((image) => (
     <Box w="50vw" h="30vh">
@@ -111,9 +122,35 @@ function Dataset() {
           w="98%"
           gap={4}
           align="center"
-          templateRows="repeat(9, 1fr)"
+          templateRows="repeat(10, 1fr)"
           templateColumns="repeat(2, 1fr)"
         >
+          <GridItem rowSpan={1} colSpan={1} align="right">
+            <Text fontSize="2xl" color={textColor}>
+              Choose a dataset:
+            </Text>
+          </GridItem>
+          <GridItem rowSpan={1} colSpan={1} align="left">
+            <form>
+              <FormControl
+                id="category"
+                color={backgroundColor}
+                width={formLabelWidth}
+                bg={white}
+              >
+                <Select
+                  value={currentDataset}
+                  color={backgroundColor}
+                  onChange={(e) => {
+                    setCurrentDataset(e.target.value);
+                    setCurrentCategory("pineapple");
+                  }}
+                >
+                  {datasetsOptions}
+                </Select>
+              </FormControl>
+            </form>
+          </GridItem>
           <GridItem rowSpan={1} colSpan={1} align="right">
             <Text fontSize="2xl" color={textColor}>
               Choose a categories to see some samples:
@@ -144,7 +181,7 @@ function Dataset() {
                 variant="solid"
                 size="md"
                 onClick={() => {
-                  getImages(currentCategory);
+                  getImages(currentCategory, currentDataset);
                 }}
               ></Button>
             </HStack>

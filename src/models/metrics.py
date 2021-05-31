@@ -1,48 +1,10 @@
 import math
 
 import numpy as np
-import multiprocessing
 from joblib import Parallel, delayed
 
 from scipy.spatial.distance import cdist
 from sklearn.metrics import average_precision_score
-
-
-def recall(actual, predicted, k):
-    '''
-    Computes recall
-    '''
-    act_set = set(actual)
-    pred_set = set(predicted[:k])
-    re = len(act_set & pred_set) / len(act_set)
-    return re
-
-
-def precision(actual, predicted, k):
-    '''
-    Computes precision
-    '''
-    act_set = set(actual)
-    if k is not None:
-        pred_set = set(predicted[:k])
-    else:
-        pred_set = set(predicted)
-    pr = len(act_set & pred_set) / min(len(act_set), len(pred_set))
-    return pr
-
-
-def preca_k(similarity, class_matches, k=None):
-    '''
-    Computes precision and recall (of k samples)
-    '''
-    act_lists = [np.nonzero(s)[0] for s in class_matches]
-    nq = len(act_lists)
-    pred_lists = np.argsort(-similarity, axis=1)
-
-    num_cores = min(multiprocessing.cpu_count(), 8)
-    prec_k = Parallel(n_jobs=num_cores)(delayed(precision)(act_lists[iq], pred_lists[iq], k) for iq in range(nq))
-    rec_k = Parallel(n_jobs=num_cores)(delayed(recall)(act_lists[iq], pred_lists[iq], k) for iq in range(nq))
-    return np.mean(prec_k), rec_k
 
 
 def get_similarity(sk_embeddings, im_embeddings):

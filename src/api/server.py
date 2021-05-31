@@ -6,6 +6,7 @@ from flask_restful import Resource, Api
 import json
 import numpy as np
 import pandas as pd
+import torch
 
 from src.api.api_inference import ApiInference
 from src.api.api_options import ApiOptions
@@ -14,14 +15,15 @@ from src.api.utils import (
     prepare_images_data,
     prepare_dataset,
     prepare_sketch,
-    get_parameters
+    get_parameters,
+    get_last_epoch_number
 )
 from src.api.embeddings_utils import (
     prepare_embeddings_data,
     process_graph,
     get_tiles,
 )
-from src.constants import MODELS_PATH, TENSORBOARD_IMAGE
+from src.constants import CUSTOM_SKETCH_CLASS, DATA_PATH, FOLDERS, MODELS_PATH, TENSORBOARD_IMAGE
 
 app = Flask(__name__)
 api = Api(app)
@@ -76,12 +78,15 @@ class Dataset(Resource):
 
         if "category" not in json_data.keys():
             return {"ERROR": "Category not provided"}, 400
+        if "dataset" not in json_data.keys():
+            return {"ERROR": "Dataset not provided"}, 400
         category = json_data["category"]
+        dataset_folder = json_data["dataset"]
 
-        dataset_path = "io/data/raw/Quickdraw/"
+        dataset_path = DATA_PATH + dataset_folder
 
-        data_sketches = prepare_dataset(dataset_path, "sketches", category)
-        data_images = prepare_dataset(dataset_path, "images", category)
+        data_sketches = prepare_dataset(dataset_path, "sketches", category, dataset_folder)
+        data_images = prepare_dataset(dataset_path, "images", category, dataset_folder)
 
         data = {**data_sketches, **data_images}
 
@@ -128,7 +133,7 @@ class ShowEmbeddingImage(Resource):
         if "class" not in json_data.keys():
             return {"ERROR": "Class not provided"}, 400
 
-        if json_data["class"] == "My Custom Sketch":
+        if json_data["class"] == CUSTOM_SKETCH_CLASS:
             if "sketch" not in json_data.keys():
                 return {"ERROR": "sketch not provided"}, 400
             sketch = prepare_sketch(json_data["sketch"])
@@ -160,14 +165,22 @@ api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
 if __name__ == "__main__":
 
     args = ApiOptions().parse()
+    args.cuda = args.ngpu > 0 and torch.cuda.is_available()
+    print("Cuda:\t" + str(args.cuda))
+
     args.save = MODELS_PATH + args.name + '/'
     args.dataset, args.emb_size, embedding_number = get_parameters(args.save)
     args.load = args.save + "checkpoint.pth"
-    args.embeddings_path = args.save + args.epoch  + "/default/"
-    args.cuda = False
-
+    
+    # Precompute the images from the large tensorboard sprite
+    epoch_number = get_last_epoch_number(args.save)
+    args.embeddings_path = args.save + epoch_number  + "/default/"
     tiles = get_tiles(args.embeddings_path + TENSORBOARD_IMAGE, embedding_number)
-    df = pd.DataFrame()
+
+    # Global dataframe 
+    # Gets data when opening embedding graphs ("/get_embeddings")
+    # Is later called when image are clicked in another api ("/get_embedding_images")
+    df = pd.DataFrame() 
 
     inference = ApiInference(args, "test")
     app.run(host="0.0.0.0", port="5000", debug=True)

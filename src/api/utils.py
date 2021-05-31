@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 
 from src.constants import NB_DATASET_IMAGES, PARAMETERS
-from src.data.utils import default_image_loader
+from src.data.utils import default_image_loader, get_loader
 
 
 def get_image(folder_path, ending):
@@ -32,7 +32,7 @@ def base64_encoding(image, bytes_type="PNG"):
     return str(img_base64)
 
 
-def prepare_dataset(dataset_path, image_type, category):
+def prepare_dataset(dataset_path, image_type, category, dataset_folder):
     """ Base 64 encoding of all images in dataset_path """
     if image_type == "images":
         ending = ".jpg"
@@ -43,13 +43,15 @@ def prepare_dataset(dataset_path, image_type, category):
     else:
         print("Type must be either images or sketches.")
         sys.exit()
+    
+    loader = get_loader(dataset_folder)
 
     data = {}
     images_folder_path = os.path.join(dataset_path, image_type, category)
     images_paths = get_image(images_folder_path, ending)
 
     for i, image_path in enumerate(images_paths):
-        image = Image.open(image_path)
+        image = loader(image_path)
         data[f"{image_type}_{i}_base64"] = base64_encoding(image, bytes_type)
 
     return data
@@ -100,7 +102,7 @@ def prepare_sketch(sketch):
 
 
 def get_parameters(fpath):
-    
+    """ Get the parameters saved during the training """
     param = {}
     with open(fpath + PARAMETERS, "r") as f:
         data = [line.rstrip("\n") for line in f]
@@ -110,3 +112,12 @@ def get_parameters(fpath):
         param[key] = val
         
     return param["dataset"], int(param["emb_size"]), int(param["embedding_number"])
+
+
+def get_last_epoch_number(fpath):
+    """
+    Embeddings are saved at every epoch in a numeroted folder,
+    this function returns the folder of the last training epoch.
+    """
+    list_epoch = [folder for folder in os.listdir(fpath) if folder.startswith('00')]
+    return max(list_epoch)

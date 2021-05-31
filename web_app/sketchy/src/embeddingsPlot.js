@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Plot from "react-plotly.js";
 import {
@@ -19,6 +19,7 @@ import {
   buttonHeight,
   buttonWidth,
   colors,
+  custom_sketch_class,
 } from "./constants";
 import { BiPencil, BiImages } from "react-icons/bi";
 
@@ -32,8 +33,10 @@ function Embeddings() {
   const [clickedZ, setClickedZ] = useState(0);
   const [sketch, setSketch] = useState([]);
   const [showImage, setShowImage] = useState([]);
+  const point = useRef({ clickedX, clickedY, clickedZ });
   let traces = [];
 
+  // get the embedding graph in 2D or 3D
   useEffect(() => {
     let to_send = { nb_dim: nbDimensions };
     if (typeof state !== "undefined") {
@@ -57,20 +60,30 @@ function Embeddings() {
     }
 
     getEmbeddings(to_send);
-    setClickedClass("My Custom Sketch");
+    setClickedClass(custom_sketch_class);
   }, [state, nbDimensions]);
 
   useEffect(() => {
     let to_send = { class: clickedClass };
-    if (clickedClass === "My Custom Sketch") {
+    if (clickedClass === custom_sketch_class) {
       to_send["sketch"] = state;
     } else {
-      to_send["x"] = clickedX;
-      to_send["y"] = clickedY;
-      if (nbDimensions === 3) {
-        to_send["z"] = clickedZ;
+      if (
+        point.current.clickedX === clickedX ||
+        point.current.clickedY === clickedY ||
+        (nbDimensions === 3 && point.current.clickedZ === clickedZ)
+      ) {
+        return;
+      } else {
+        to_send["x"] = clickedX;
+        to_send["y"] = clickedY;
+        if (nbDimensions === 3) {
+          to_send["z"] = clickedZ;
+        }
+        point.current = { clickedX, clickedY, clickedZ };
       }
     }
+
     async function getClickedImage(to_send) {
       // Send to back end
       const response = await fetch("/get_embedding_images", {
@@ -84,7 +97,7 @@ function Embeddings() {
       if (response.ok) {
         const res = await response.json();
         let tempImage = res["image"].split("'")[1];
-        if (clickedClass === "My Custom Sketch") {
+        if (clickedClass === custom_sketch_class) {
           setSketch(
             <img
               src={`data:image/jpeg;base64,${tempImage}`}
@@ -110,7 +123,7 @@ function Embeddings() {
     let marker_line_width = 0.1;
     let i = 0;
     for (let key in result) {
-      if (key === "My Custom Sketch") {
+      if (key === custom_sketch_class) {
         marker_size = 10;
         marker_line_color = "rgb(0,0,0)";
         marker_line_width = 1;

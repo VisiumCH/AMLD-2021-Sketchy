@@ -10,7 +10,7 @@ from PIL import Image
 from sklearn.decomposition import PCA
 
 from src.api.utils import base64_encoding
-from src.constants import TENSORBOARD_CLASSES, TENSORBOARD_EMBEDDINGS
+from src.constants import TENSORBOARD_CLASSES, TENSORBOARD_EMBEDDINGS, CUSTOM_SKETCH_CLASS
 
 
 def read_tensor_tsv_file(fpath):
@@ -35,7 +35,7 @@ def get_classes(tsv_path, sketch_emb):
         classes = [line.rstrip("\n") for line in f]
 
     if type(sketch_emb) != bool:
-        classes.append("My Custom Sketch")
+        classes.append(CUSTOM_SKETCH_CLASS)
     return classes
 
 

@@ -46,17 +46,15 @@ function Drawing() {
   const [drawingMode, setDrawingMode] = useState("drawing");
   const [disableDrawing, setDisableDrawing] = useState(true);
   const [disableErasing, setDisableErasing] = useState(false);
-  // const [cursor, setCursor] = useState("crosshair");
+  const [cursor, setCursor] = useState("pointer");
 
-  const [
-    divRef,
-    { getSvgXML, changePenColor, changePenWidth, undo, clear },
-  ] = useSvgDrawing({
-    penWidth: 3, // pen width (similar as database width)
-    penColor: black, // pen color
-    width: 300, // drawing area width
-    height: 300, // drawing area height
-  });
+  const [divRef, { getSvgXML, changePenColor, changePenWidth, undo, clear }] =
+    useSvgDrawing({
+      penWidth: 3, // pen width (similar as database width)
+      penColor: black, // pen color
+      width: 300, // drawing area width
+      height: 300, // drawing area height
+    });
 
   function changeDrawingMode() {
     if (drawingMode === "drawing") {
@@ -65,14 +63,14 @@ function Drawing() {
       setDrawingMode("erasing");
       setDisableDrawing(false);
       setDisableErasing(true);
-      // setCursor("./cursorEraser.png");
+      setCursor("crosshair");
     } else if (drawingMode === "erasing") {
       changePenColor(black);
       changePenWidth(3);
       setDrawingMode("drawing");
       setDisableDrawing(true);
       setDisableErasing(false);
-      // setCursor("./cursorPencil.png");
+      setCursor("pointer");
     }
   }
 
@@ -189,7 +187,7 @@ function Drawing() {
               borderRadius="lg"
               borderColor="#A3A8B0"
               ref={divRef}
-              // style={{ cursor: cursor }}
+              style={{ cursor: cursor }}
               // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
               onMouseMove={() => {
                 setSvg(getSvgXML());
