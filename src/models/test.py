@@ -60,7 +60,7 @@ def get_test_data(data_loader, model, args):
 
 def get_part_of_test_data(data_loader, model, args, part_index):
     """
-    Get features, paths and target class of all images (or sketches) of data loader
+    Get part of features, paths and target class of images (or sketches) of data loader
     Args:
         - data_loader: loader of the validation or test set
         - model: encoder from images (or sketches) to embeddings
@@ -107,7 +107,7 @@ def get_part_of_test_data(data_loader, model, args, part_index):
     return fnames, embeddings, classes
 
 
-def test(args, im_loader, sk_loader, model, inference_logger=None, dict_class=None):
+def test(args, im_loader, sk_loader, model, inference_logger=None):
     """
     Get data and computes metrics on the model
     """
@@ -128,7 +128,7 @@ def test(args, im_loader, sk_loader, model, inference_logger=None, dict_class=No
         im_fnames, im_embeddings, im_class = get_part_of_test_data(
             im_loader, im_net, args, part_index
         )
-        sk_fnames, sk_embeddings, sk_class = get_part_of_test_data(
+        _, sk_embeddings, sk_class = get_part_of_test_data(
             sk_loader, sk_net, args, part_index
         )
 
@@ -151,22 +151,11 @@ def test(args, im_loader, sk_loader, model, inference_logger=None, dict_class=No
 
     # Measure elapsed time
     batch_time = time.time() - end
+    print("Avg Time x Batch {b_time:.3f}".format(b_time=batch_time))
+    print("* mAP {mean_ap:.3f}".format(mean_ap=map_all))
+    print("* mAP@200 {mean_ap_200:.3f}".format(mean_ap_200=map_200))
+    print("* Precision@200 {prec_200:.3f}".format(prec_200=prec_200))
 
-    print(
-        "* mAP {mean_ap:.3f}; Avg Time x Batch {b_time:.3f}".format(
-            mean_ap=map_all, b_time=batch_time
-        )
-    )
-    print(
-        "* mAP@200 {mean_ap_200:.3f}; Avg Time x Batch {b_time:.3f}".format(
-            mean_ap_200=map_200, b_time=batch_time
-        )
-    )
-    print(
-        "* Precision@200 {prec_200:.3f}; Avg Time x Batch {b_time:.3f}".format(
-            prec_200=prec_200, b_time=batch_time
-        )
-    )
     return map_all, map_200, prec_200
 
 
@@ -176,20 +165,15 @@ def main():
     """
     print("Prepare data")
     transform = transforms.Compose([transforms.ToTensor()])
-    _, [_, _], [test_sk_data, test_im_data], dict_class = load_data(args, transform)
+    _, [_, _], [test_sk_data, test_im_data], _ = load_data(args, transform)
 
-    test_sk_loader = DataLoader(
-        test_sk_data,
-        batch_size=3 * args.batch_size,
-        num_workers=args.prefetch,
-        pin_memory=True,
-    )
-    test_im_loader = DataLoader(
-        test_im_data,
-        batch_size=3 * args.batch_size,
-        num_workers=args.prefetch,
-        pin_memory=True,
-    )
+    data_args = {
+        "batch_size": 3 * args.batch_size,
+        "num_workers": args.prefetch,
+        "pin_memory": True,
+    }
+    test_sk_loader = DataLoader(test_sk_data, **data_args)
+    test_im_loader = DataLoader(test_im_data, **data_args)
 
     print("Create model")
     im_net = EncoderCNN(out_size=args.emb_size, attention=args.attn)
@@ -214,7 +198,6 @@ def main():
         test_im_loader, test_sk_loader,
         [im_net, sk_net],
         inference_logger=None,
-        dict_class=dict_class,
     )
 
 
