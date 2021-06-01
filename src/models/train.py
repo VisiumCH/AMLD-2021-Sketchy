@@ -198,7 +198,6 @@ def main():
             valid_im_loader, valid_sk_loader,
             [im_net, sk_net],
             inference_logger,
-            dict_class,
         )
 
         # Logger

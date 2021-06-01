@@ -82,22 +82,21 @@ class SkTu(data.Dataset):
         self.data_args = {
             "args": args,
             "mode": mode,
-            "dicts_class": dicts_class,
             "transform": transform,
             "image_type": image_type
         }
 
         # Sketchy data
-        self.data_args["dataset_folder"] = FOLDERS[SKETCHY]
-        self.data_args["dicts_class"] = dicts_class[0]
-        self.data_args["data"] = data[0]
-        self.sketchy = DefaultDataset(**self.data_args)
+        self.sketchy = DefaultDataset(
+            data=data[0], dicts_class=dicts_class[0], dataset_folder=FOLDERS[SKETCHY],
+            **self.data_args
+        )
 
         # Tuberlin data
-        self.data_args["dataset_folder"] = FOLDERS[TUBERLIN]
-        self.data_args["dicts_class"] = dicts_class[1]
-        self.data_args["data"] = data[1]
-        self.tuberlin = DefaultDataset(**self.data_args)
+        self.tuberlin = DefaultDataset(
+            data=data[1], dicts_class=dicts_class[1], dataset_folder=FOLDERS[TUBERLIN],
+            **self.data_args
+        )
 
         # No quickdraw with SkTu only
         self.quidraw = None
@@ -194,10 +193,10 @@ class SkTuQd(SkTu):
         super().__init__(args, mode, dicts_class, data, transform, image_type)
 
         # Quickdraw data
-        self.data_args["dataset_folder"] = FOLDERS[QUICKDRAW]
-        self.data_args["dicts_class"] = dicts_class[2]
-        self.data_args["data"] = data[2]
-        self.quickdraw = DefaultDataset(**self.data_args)
+        self.quickdraw = DefaultDataset(
+            data=data[2], dicts_class=dicts_class[2], dataset_folder=FOLDERS[QUICKDRAW],
+            **self.data_args
+        )
 
         # Update length of the dataset
         if self.mode == "train" or self.image_type == "sketches":
