@@ -131,38 +131,28 @@ def dataset_split(args, dataset_folder, training_split, valid_split):
         - test_data: [images path, image classes, sketch paths, sketch classes] of the testing set
     """
     (
-        fnames_image_train,
-        cls_image_train,
-        fnames_image_valid,
-        cls_image_valid,
-        fnames_image_test,
-        cls_image_test,
+        fnames_im_train,
+        cls_im_train,
+        fnames_im_valid,
+        cls_im_valid,
+        fnames_im_test,
+        cls_im_test,
     ) = dataset_class_split(args, dataset_folder, training_split, valid_split, "images")
 
     (
-        fnames_sketch_train,
-        cls_sketch_train,
-        fnames_sketch_valid,
-        cls_sketch_valid,
-        fnames_sketch_test,
-        cls_sketch_test,
+        fnames_sk_train,
+        cls_sk_train,
+        fnames_sk_valid,
+        cls_sk_valid,
+        fnames_sk_test,
+        cls_sk_test,
     ) = dataset_class_split(
         args, dataset_folder, training_split, valid_split, "sketches"
     )
 
-    train_data = [
-        fnames_image_train,
-        cls_image_train,
-        fnames_sketch_train,
-        cls_sketch_train,
-    ]
-    valid_data = [
-        fnames_image_valid,
-        cls_image_valid,
-        fnames_sketch_valid,
-        cls_sketch_valid,
-    ]
-    test_data = [fnames_image_test, cls_image_test, fnames_sketch_test, cls_sketch_test]
+    train_data = [fnames_im_train, cls_im_train, fnames_sk_train, cls_sk_train]
+    valid_data = [fnames_im_valid, cls_im_valid, fnames_sk_valid, cls_sk_valid]
+    test_data = [fnames_im_test, cls_im_test, fnames_sk_test, cls_sk_test]
 
     return train_data, valid_data, test_data
 
