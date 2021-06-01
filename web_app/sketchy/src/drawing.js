@@ -25,8 +25,6 @@ import {
   black,
 } from "./constants";
 import { BiPencil, BiEraser, BiShapePolygon, BiImages } from "react-icons/bi";
-// import cursorEraser from "./cursorEraser.png";
-// import cursorPencil from "./cursorPencil.png";
 
 const progress = (
   <CircularProgress
@@ -148,7 +146,7 @@ function Drawing() {
 
   return (
     <ChakraProvider>
-      <Box bg={backgroundColor}>
+      <Box bg={backgroundColor} align="center">
         <Heading fontSize="4xl" color={textColor} align="center">
           AMLD 2021 Visium's Sketchy App
         </Heading>
@@ -166,15 +164,13 @@ function Drawing() {
         >
           <GridItem rowSpan={1} colSpan={8}>
             <Text fontSize="4xl" color={textColor}>
-              {" "}
               Draw Sketch Here:
             </Text>
           </GridItem>
 
           <GridItem rowSpan={1} colSpan={4}>
             <Text fontSize="4xl" color={textColor}>
-              {" "}
-              Closest Images:{" "}
+              Closest Images:
             </Text>
           </GridItem>
 
@@ -188,7 +184,6 @@ function Drawing() {
               borderColor="#A3A8B0"
               ref={divRef}
               style={{ cursor: cursor }}
-              // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
               onMouseMove={() => {
                 setSvg(getSvgXML());
               }}
