@@ -54,7 +54,3 @@ class EncoderCNN(nn.Module):
         if not self.attention:
             attn_mask = torch.zeros(7, 7)
         return x, attn_mask
-
-
-def normalize(x):
-    return x / x.norm(dim=1, keepdim=True)

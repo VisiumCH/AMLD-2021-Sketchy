@@ -1,4 +1,5 @@
 # ---------------- DATASETS -------------------
+PROCESSED_PATH = "io/data/processed/"
 SKETCHY = 'sketchy'
 TUBERLIN = 'tuberlin'
 QUICKDRAW = 'quickdraw'

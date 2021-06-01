@@ -53,20 +53,11 @@ def make_default_dataset(args, dataset_folder, transform):
         "dicts_class": dicts_class,
         "transform": transform,
     }
-    data_args["mode"], data_args["data"] = "train", train_data
-    train_loader = DefaultDataset(**data_args)
-
-    data_args["mode"], data_args["data"] = "valid", valid_data
-    data_args["image_type"] = "sketches"
-    valid_sk_loader = DefaultDataset(**data_args)
-    data_args["image_type"] = "images"
-    valid_im_loader = DefaultDataset(**data_args)
-
-    data_args["mode"], data_args["data"] = "test", test_data
-    data_args["image_type"] = "sketches"
-    test_sk_loader = DefaultDataset(**data_args)
-    data_args["image_type"] = "images"
-    test_im_loader = DefaultDataset(**data_args)
+    train_loader = DefaultDataset(mode="train", data=train_data, **data_args)
+    valid_sk_loader = DefaultDataset(mode="valid", data=valid_data, image_type="sketches", **data_args)
+    valid_im_loader = DefaultDataset(mode="valid", data=valid_data, image_type="images", **data_args)
+    test_sk_loader = DefaultDataset(mode="test", data=test_data, image_type="sketches", **data_args)
+    test_im_loader = DefaultDataset(mode="test", data=test_data, image_type="images", **data_args)
 
     return (
         train_loader,

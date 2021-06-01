@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 
-from src.constants import SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS, SKTU, SKTUQD, DATASETS
+from src.constants import SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS, SKTU, SKTUQD, DATASETS, PROCESSED_PATH
 from src.data.default_dataset import make_default_dataset
 from src.data.composite_dataset import make_composite_dataset
 from src.data.utils import get_dataset_dict, get_limits
@@ -124,7 +124,7 @@ def visualise_dataset(args, train_loader, dict_class):
         axarr[2, i].set_title(dict_by_value(dataset_dict_class, lbl_neg))
         axarr[2, i].axis("off")
     plt.show()
-    plt.savefig("src/visualization/training_samples_" + args.dataset + ".png")
+    plt.savefig(PROCESSED_PATH + args.dataset + ".png")
 
 
 if __name__ == "__main__":
