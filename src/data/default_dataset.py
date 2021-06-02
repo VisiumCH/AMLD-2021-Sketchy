@@ -33,17 +33,10 @@ def make_default_dataset(args, dataset_folder, transform):
     random.seed(args.seed)
     np.random.seed(args.seed)
 
-    if dataset_folder == FOLDERS[QUICKDRAW]:
-        training_split = args.qd_training_split
-        valid_split = args.qd_valid_split
-    else:
-        training_split = args.training_split
-        valid_split = args.valid_split
-
     # Get dataset classes
     dicts_class = get_class_dict(args, dataset_folder)
     train_data, valid_data, test_data = dataset_split(
-        args, dataset_folder, training_split, valid_split
+        args, dataset_folder, args.training_split, args.valid_split
     )
 
     # Data Loaders

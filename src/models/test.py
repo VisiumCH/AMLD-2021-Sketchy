@@ -122,6 +122,7 @@ def test(args, im_loader, sk_loader, model, inference_logger=None):
 
     num_cores = min(multiprocessing.cpu_count(), 32)
     map_200_list, prec_200_list, map_all_list = [], [], []
+    similarities, images_fnames, images_classes = [], [], []
 
     nb_iterations = len(sk_loader) // args.max_images_test + 1
     for part_index in range(nb_iterations):
@@ -144,10 +145,20 @@ def test(args, im_loader, sk_loader, model, inference_logger=None):
         prec_200_list.append(prec_200)
         map_all_list.append(map_all)
 
-    map_200, prec_200, map_all = np.mean(map_200_list), np.mean(prec_200_list), np.mean(map_all_list)
+        similarities.extend(similarity)
+        images_fnames.extend(im_fnames)
+        images_classes.extend(im_class)
+
+
+    map_200, prec_200, map_all = (
+        np.mean(map_200_list),
+        np.mean(prec_200_list),
+        np.mean(map_all_list),
+    )
 
     if inference_logger:
-        inference_logger.plot_inference(similarity, im_fnames, im_class)
+        inference_logger.plot_inference(similarities, images_fnames, images_classes)
+
 
     # Measure elapsed time
     batch_time = time.time() - end
