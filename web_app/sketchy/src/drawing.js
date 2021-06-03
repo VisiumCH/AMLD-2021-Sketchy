@@ -10,7 +10,6 @@ import {
   Heading,
   Grid,
   GridItem,
-  CircularProgress,
 } from "@chakra-ui/react";
 import { useSvgDrawing } from "react-hooks-svgdrawing";
 import {
@@ -22,19 +21,11 @@ import {
   buttonWidth,
   white,
   black,
+  progress,
 } from "./constants";
 import { PageDrawer } from "./drawer.js";
 
 import { BiPencil, BiEraser } from "react-icons/bi";
-
-const progress = (
-  <CircularProgress
-    isIndeterminate
-    color={backgroundColor}
-    size="180px"
-    thickness="4px"
-  />
-);
 
 function Drawing() {
   const [isSending, setIsSending] = useState(false);

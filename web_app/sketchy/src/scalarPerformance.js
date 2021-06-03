@@ -49,33 +49,35 @@ function ScalarPerformance() {
     }
     return (
       <>
-        <Plot
-          data={[
-            {
-              type: "scatter",
-              y: values,
-              x: [...Array(values.length).keys()],
-            },
-          ]}
-          layout={{
-            width: 500,
-            height: 350,
-            title: title,
-            hovermode: "closest",
-            margin: {
-              l: 60,
-              r: 60,
-              b: 60,
-              t: 60,
-            },
-            font: {
-              color: backgroundColor,
-            },
-            paper_bgcolor: gray,
-            xaxis: { ticks: "outside", title: { text: "Epoch" } },
-            yaxis: { ticks: "outside", title: { text: "Performance" } },
-          }}
-        />
+        <GridItem rowSpan={1} colSpan={1} align="center">
+          <Plot
+            data={[
+              {
+                type: "scatter",
+                y: values,
+                x: [...Array(values.length).keys()],
+              },
+            ]}
+            layout={{
+              width: 500,
+              height: 350,
+              title: title,
+              hovermode: "closest",
+              margin: {
+                l: 60,
+                r: 60,
+                b: 60,
+                t: 60,
+              },
+              font: {
+                color: backgroundColor,
+              },
+              paper_bgcolor: gray,
+              xaxis: { ticks: "outside", title: { text: "Epoch" } },
+              yaxis: { ticks: "outside", title: { text: "Performance" } },
+            }}
+          />
+        </GridItem>
       </>
     );
   }
@@ -97,24 +99,12 @@ function ScalarPerformance() {
           templateRows="repeat(2, 1fr)"
           templateColumns="repeat(3, 1fr)"
         >
-          <GridItem rowSpan={1} colSpan={1} align="center">
-            {plotValues("Domain Loss", domainValues)}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1} align="center">
-            {plotValues("Triplet Loss", tripletValues)}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1} align="center">
-            {plotValues("Total Loss", lossValues)}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1} align="center">
-            {plotValues("MAP", mapValues)}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1} align="center">
-            {plotValues("MAP@200", map200Values)}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1} align="center">
-            {plotValues("Precision", precisionValues)}
-          </GridItem>
+          {plotValues("Domain Loss", domainValues)}
+          {plotValues("Triplet Loss", tripletValues)}
+          {plotValues("Total Loss", lossValues)}
+          {plotValues("MAP", mapValues)}
+          {plotValues("MAP@200", map200Values)}
+          {plotValues("Precision", precisionValues)}
         </Grid>
         {PageDrawer()}
         <Text fontSize="xl" color={backgroundColor} align="center">
