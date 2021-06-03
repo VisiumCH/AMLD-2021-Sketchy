@@ -28,15 +28,11 @@ function ImagePerformance() {
   const [images, setImages] = useState([]);
   const [epochImage, setEpochImage] = useState(progress);
   const [epoch, setEpoch] = useState(0);
-  const [reload, setReload] = useState(false);
+  const [reload, setReload] = useState(true);
 
   useEffect(() => {
+    setImages([]);
     async function getRandomImage() {
-      setImages([]);
-      if (reload === true) {
-        setReload(false);
-      }
-
       // Send to back end
       const response = await fetch("/image_perf", {
         method: "POST",
@@ -60,8 +56,11 @@ function ImagePerformance() {
         }
       }
     }
-    getRandomImage();
-  }, [imageType, reload]);
+    if (reload === true) {
+      setReload(false);
+      getRandomImage();
+    }
+  }, [reload]);
 
   function showImage() {
     if (images.length === 0) {
@@ -116,6 +115,7 @@ function ImagePerformance() {
           width={buttonWidth}
           onClick={() => {
             setImageType(option);
+            setReload(true);
           }}
         >
           {text}
