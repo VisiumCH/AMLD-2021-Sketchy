@@ -23,7 +23,8 @@ from src.api.embeddings_utils import (
     process_graph,
     get_tiles,
 )
-from src.constants import CUSTOM_SKETCH_CLASS, DATA_PATH, FOLDERS, MODELS_PATH, TENSORBOARD_IMAGE
+from src.api.api_performance import ModelPerformance
+from src.constants import CUSTOM_SKETCH_CLASS, DATA_PATH, MODELS_PATH, TENSORBOARD_IMAGE
 
 app = Flask(__name__)
 api = Api(app)
@@ -153,18 +154,43 @@ class ShowEmbeddingImage(Resource):
         return make_response(json.dumps(data), 200)
 
 
+class ScalarPerformance(Resource):
+    """Return the scalar values (loss and metrics) of the model """
+    def post(self):
+        data = performance.get_scalars()
+        return make_response(json.dumps(data), 200)
+
+
+class ImagePerformance(Resource):
+    """Return the custom sketch or the image selected on the embedding graph"""
+
+    def post(self):
+        json_data = request.get_json()
+
+        if "image_type" not in json_data.keys():
+            return {"ERROR": "Image Type not provided"}, 400
+
+        data = performance.get_image(json_data["image_type"])
+        print(data)
+        print(type(data["0"]))
+        return make_response(json.dumps(data), 200)
+
+
 api.add_resource(APIList, "/api_list")
 api.add_resource(Inferrence, "/find_images")
 api.add_resource(Embeddings, "/get_embeddings")
 api.add_resource(Dataset, "/get_dataset_images")
 api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
+api.add_resource(ScalarPerformance, "/scalar_perf")
+api.add_resource(ImagePerformance, "/image_perf")
 
-    
+
 if __name__ == "__main__":
 
     args = ApiOptions().parse()
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
     print("Cuda:\t" + str(args.cuda))
+    args.cuda=False
 
     args.save = MODELS_PATH + args.name + '/'
     args.dataset, args.emb_size, embedding_number = get_parameters(args.save)
@@ -181,4 +207,5 @@ if __name__ == "__main__":
     df = pd.DataFrame() 
 
     inference = ApiInference(args, "test")
+    performance = ModelPerformance(args.save)
     app.run(host="0.0.0.0", port="5000", debug=True)

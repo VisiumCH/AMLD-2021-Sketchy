@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Plot from "react-plotly.js";
 import {
   Box,
@@ -21,7 +21,7 @@ import {
   colors,
   custom_sketch_class,
 } from "./constants";
-import { BiPencil, BiImages } from "react-icons/bi";
+import { PageDrawer } from "./drawer.js";
 
 function Embeddings() {
   const { state } = useLocation();
@@ -275,41 +275,7 @@ function Embeddings() {
           </GridItem>
 
           <GridItem rowSpan={1} colSpan={1}>
-            <VStack spacing={3} direction="row" align="center">
-              <Text fontSize="xl" color={textColor} align="center">
-                Change page
-              </Text>
-              <Link to="/drawing" className="drawing_link">
-                <Button
-                  leftIcon={<BiPencil />}
-                  color={backgroundColor}
-                  border="2px"
-                  borderColor={darkGray}
-                  variant="solid"
-                  size="lg"
-                  height={buttonHeight}
-                  width={buttonWidth}
-                >
-                  {" "}
-                  Draw
-                </Button>
-              </Link>
-              <Link to="/" className="explore_link">
-                <Button
-                  leftIcon={<BiImages />}
-                  color={backgroundColor}
-                  border="2px"
-                  borderColor={darkGray}
-                  variant="solid"
-                  size="lg"
-                  height={buttonHeight}
-                  width={buttonWidth}
-                >
-                  {" "}
-                  Dataset
-                </Button>
-              </Link>
-            </VStack>
+            {PageDrawer()}
           </GridItem>
           <GridItem rowSpan={1} colSpan={1} align="center">
             <Text fontSize="xl" color={textColor} align="center">

@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Link } from "react-router-dom";
 import {
   Box,
   ChakraProvider,
@@ -18,13 +17,12 @@ import {
   darkGray,
   datasets,
   categories,
-  buttonHeight,
-  buttonWidth,
   formLabelWidth,
   white,
   nb_to_show,
 } from "./constants";
-import { BiPencil, BiShapePolygon, BiRefresh } from "react-icons/bi";
+import { PageDrawer } from "./drawer.js";
+import { BiRefresh } from "react-icons/bi";
 
 function Dataset() {
   const [isSending, setIsSending] = useState(false);
@@ -192,43 +190,8 @@ function Dataset() {
           <GridItem rowSpan={4} colSpan={2}>
             <HStack align="center">{renderSketches}</HStack>
           </GridItem>
-          <GridItem rowSpan={1} colSpan={1}>
-            <Link to="/drawing" className="drawing_link">
-              <Button
-                leftIcon={<BiPencil />}
-                color={backgroundColor}
-                borderColor={darkGray}
-                height={buttonHeight}
-                width={buttonWidth}
-                border="2px"
-                variant="solid"
-                size="lg"
-              >
-                {" "}
-                Draw
-              </Button>
-            </Link>
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1}>
-            <Link
-              to={{
-                pathname: "/embeddings",
-              }}
-            >
-              <Button
-                leftIcon={<BiShapePolygon />}
-                color={backgroundColor}
-                borderColor={darkGray}
-                height={buttonHeight}
-                width={buttonWidth}
-                border="2px"
-                variant="solid"
-                size="lg"
-              >
-                {" "}
-                Embeddings
-              </Button>
-            </Link>
+          <GridItem rowSpan={1} colSpan={2}>
+            {PageDrawer("undefined")}
           </GridItem>
           <GridItem rowSpan={1} colSpan={2} align="right">
             <Text fontSize="xs" color={textColor}>

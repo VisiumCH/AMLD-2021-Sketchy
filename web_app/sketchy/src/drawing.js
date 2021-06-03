@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
 // import { Link as ReachLink } from 'react-router-dom'
-import { Link } from "react-router-dom";
 import {
   Box,
   ChakraProvider,
@@ -24,7 +23,9 @@ import {
   white,
   black,
 } from "./constants";
-import { BiPencil, BiEraser, BiShapePolygon, BiImages } from "react-icons/bi";
+import { PageDrawer } from "./drawer.js";
+
+import { BiPencil, BiEraser } from "react-icons/bi";
 
 const progress = (
   <CircularProgress
@@ -318,48 +319,8 @@ function Drawing() {
               Restart!
             </Button>
           </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
-            <Link
-              to={{
-                pathname: "/",
-              }}
-            >
-              <Button
-                leftIcon={<BiImages />}
-                color={backgroundColor}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-              >
-                {" "}
-                Dataset
-              </Button>
-            </Link>
-          </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
-            <Link
-              to={{
-                pathname: "/embeddings",
-                state: svg,
-              }}
-            >
-              <Button
-                color={backgroundColor}
-                leftIcon={<BiShapePolygon />}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-              >
-                {" "}
-                Embeddings
-              </Button>
-            </Link>
+          <GridItem rowSpan={2} colSpan={4}>
+            {PageDrawer(svg)}
           </GridItem>
         </Grid>
       </Box>

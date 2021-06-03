@@ -3,6 +3,8 @@ import { Switch, Route } from "react-router-dom";
 import Dataset from "./seeDataset.js";
 import Drawing from "./drawing.js";
 import Embeddings from "./embeddingsPlot.js";
+import ScalarPerformance from "./scalarPerformance.js";
+import ImagePerformance from "./imagePerformance.js";
 
 const App = () => {
   return (
@@ -12,6 +14,12 @@ const App = () => {
       </Route>
       <Route path="/embeddings">
         <Embeddings />
+      </Route>
+      <Route path="/scalar_perf">
+        <ScalarPerformance />
+      </Route>
+      <Route path="/image_perf">
+        <ImagePerformance />
       </Route>
       <Route path="/">
         <Dataset />
