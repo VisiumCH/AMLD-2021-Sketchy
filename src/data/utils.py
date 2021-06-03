@@ -154,7 +154,13 @@ def dataset_split(args, dataset_folder, training_split, valid_split):
     valid_data = [fnames_im_valid, cls_im_valid, fnames_sk_valid, cls_sk_valid]
     test_data = [fnames_im_test, cls_im_test, fnames_sk_test, cls_sk_test]
 
+    save_class_split(args, cls_im_train, cls_im_valid, cls_im_test)
+
     return train_data, valid_data, test_data
+
+
+def save_class_split(args, cls_im_train, cls_im_valid, cls_im_test):
+    pass
 
 
 def get_loader(dataset):

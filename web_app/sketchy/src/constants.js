@@ -1,3 +1,4 @@
+import { CircularProgress } from "@chakra-ui/react";
 export const gray = "#F7FAFC";
 export const black = "#000000";
 export const white = "#FFFFFF";
@@ -8,6 +9,14 @@ export const buttonHeight = "48px";
 export const buttonWidth = "180px";
 export const formLabelWidth = "200px";
 export const custom_sketch_class = "My Custom Sketch"; // update python constant if modify
+export const progress = (
+  <CircularProgress
+    isIndeterminate
+    color={backgroundColor}
+    size="180px"
+    thickness="4px"
+  />
+);
 export const colors = [
   "#e6194b",
   "#3cb44b",

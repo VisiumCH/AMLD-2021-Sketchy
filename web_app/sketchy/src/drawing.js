@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
 // import { Link as ReachLink } from 'react-router-dom'
-import { Link } from "react-router-dom";
 import {
   Box,
   ChakraProvider,
@@ -11,7 +10,6 @@ import {
   Heading,
   Grid,
   GridItem,
-  CircularProgress,
 } from "@chakra-ui/react";
 import { useSvgDrawing } from "react-hooks-svgdrawing";
 import {
@@ -23,19 +21,11 @@ import {
   buttonWidth,
   white,
   black,
+  progress,
 } from "./constants";
-import { BiPencil, BiEraser, BiShapePolygon, BiImages } from "react-icons/bi";
-// import cursorEraser from "./cursorEraser.png";
-// import cursorPencil from "./cursorPencil.png";
+import { PageDrawer } from "./drawer.js";
 
-const progress = (
-  <CircularProgress
-    isIndeterminate
-    color={backgroundColor}
-    size="180px"
-    thickness="4px"
-  />
-);
+import { BiPencil, BiEraser } from "react-icons/bi";
 
 function Drawing() {
   const [isSending, setIsSending] = useState(false);
@@ -148,7 +138,7 @@ function Drawing() {
 
   return (
     <ChakraProvider>
-      <Box bg={backgroundColor}>
+      <Box bg={backgroundColor} align="center">
         <Heading fontSize="4xl" color={textColor} align="center">
           AMLD 2021 Visium's Sketchy App
         </Heading>
@@ -166,15 +156,13 @@ function Drawing() {
         >
           <GridItem rowSpan={1} colSpan={8}>
             <Text fontSize="4xl" color={textColor}>
-              {" "}
               Draw Sketch Here:
             </Text>
           </GridItem>
 
           <GridItem rowSpan={1} colSpan={4}>
             <Text fontSize="4xl" color={textColor}>
-              {" "}
-              Closest Images:{" "}
+              Closest Images:
             </Text>
           </GridItem>
 
@@ -188,7 +176,6 @@ function Drawing() {
               borderColor="#A3A8B0"
               ref={divRef}
               style={{ cursor: cursor }}
-              // onTouchEnd={() => sendRequest(getSvgXML())} // touch screen
               onMouseMove={() => {
                 setSvg(getSvgXML());
               }}
@@ -323,48 +310,8 @@ function Drawing() {
               Restart!
             </Button>
           </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
-            <Link
-              to={{
-                pathname: "/",
-              }}
-            >
-              <Button
-                leftIcon={<BiImages />}
-                color={backgroundColor}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-              >
-                {" "}
-                Dataset
-              </Button>
-            </Link>
-          </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
-            <Link
-              to={{
-                pathname: "/embeddings",
-                state: svg,
-              }}
-            >
-              <Button
-                color={backgroundColor}
-                leftIcon={<BiShapePolygon />}
-                border="2px"
-                borderColor={darkGray}
-                variant="solid"
-                size="lg"
-                height={buttonHeight}
-                width={buttonWidth}
-              >
-                {" "}
-                Embeddings
-              </Button>
-            </Link>
+          <GridItem rowSpan={2} colSpan={4}>
+            {PageDrawer(svg)}
           </GridItem>
         </Grid>
       </Box>
