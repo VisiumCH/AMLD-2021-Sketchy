@@ -12,7 +12,7 @@ from src.models.encoder import EncoderCNN
 from src.models.metrics import (
     get_similarity,
     compare_classes,
-    get_map_prec_200,
+    get_map_prec,
     get_map_all,
 )
 from src.models.utils import load_model, get_parameters
@@ -120,54 +120,30 @@ def test(args, im_loader, sk_loader, model, inference_logger=None):
     sk_net.eval()
     torch.set_grad_enabled(False)
 
+    im_fnames, im_embeddings, im_class = get_test_data(im_loader, im_net, args)
+    _, sk_embeddings, sk_class = get_test_data(sk_loader, sk_net, args)
+
+    # Similarity
+    similarity = get_similarity(sk_embeddings, im_embeddings)
+    class_matches = compare_classes(im_class, sk_class)
+    del sk_embeddings, im_embeddings
+
+    # Mean average precision
     num_cores = min(multiprocessing.cpu_count(), 32)
-    map_200_list, prec_200_list, map_all_list = [], [], []
-    similarities, images_fnames, images_classes = [], [], []
-
-    nb_iterations = len(sk_loader) // args.max_images_test + 1
-    for part_index in range(nb_iterations):
-        im_fnames, im_embeddings, im_class = get_part_of_test_data(
-            im_loader, im_net, args, part_index
-        )
-        _, sk_embeddings, sk_class = get_part_of_test_data(
-            sk_loader, sk_net, args, part_index
-        )
-
-        # Similarity
-        similarity = get_similarity(sk_embeddings, im_embeddings)
-        class_matches = compare_classes(im_class, sk_class)
-
-        # Mean average precision
-        map_200, prec_200 = get_map_prec_200(similarity, class_matches, num_cores)
-        _, map_all = get_map_all(similarity, class_matches, num_cores)
-
-        map_200_list.append(map_200)
-        prec_200_list.append(prec_200)
-        map_all_list.append(map_all)
-
-        similarities.extend(similarity)
-        images_fnames.extend(im_fnames)
-        images_classes.extend(im_class)
-
-
-    map_200, prec_200, map_all = (
-        np.mean(map_200_list),
-        np.mean(prec_200_list),
-        np.mean(map_all_list),
-    )
+    map, prec = get_map_prec(similarity, class_matches, num_cores, args.metric_limit)
+    map_all = get_map_all(similarity, class_matches, num_cores)
 
     if inference_logger:
-        inference_logger.plot_inference(similarities, images_fnames, images_classes)
-
+        inference_logger.plot_inference(similarity, im_fnames, im_class)
 
     # Measure elapsed time
     batch_time = time.time() - end
     print("Avg Time x Batch {b_time:.3f}".format(b_time=batch_time))
     print("* mAP {mean_ap:.3f}".format(mean_ap=map_all))
-    print("* mAP@200 {mean_ap_200:.3f}".format(mean_ap_200=map_200))
-    print("* Precision@200 {prec_200:.3f}".format(prec_200=prec_200))
+    print("* mAP@200 {mean_ap_200:.3f}".format(mean_ap_200=map))
+    print("* Precision@200 {prec_200:.3f}".format(prec_200=prec))
 
-    return map_all, map_200, prec_200
+    return map_all, map, prec
 
 
 def main():

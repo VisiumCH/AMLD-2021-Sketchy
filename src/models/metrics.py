@@ -60,24 +60,25 @@ def sort_by_similarity(similarity, class_matches):
     return sorted_similarity, sorted_class_matches
 
 
-def get_map_prec_200(similarity, class_matches, num_cores):
+def get_map_prec(similarity, class_matches, num_cores, metric_limit):
     '''
-    Mean average precision considering the 200 most similar embeddings
-    Precision at the place 200
+    Mean average precision considering the 100 most similar embeddings
+    Precision at the place 100
     '''
     sorted_similarity, sorted_class_matches = sort_by_similarity(similarity, class_matches)
 
     nq = class_matches.shape[0]
-    aps_200 = Parallel(n_jobs=num_cores)(delayed(average_precision_score)
-                                         (sorted_class_matches[iq, 0:200], sorted_similarity[iq, 0:200])
-                                         for iq in range(nq))
-    aps_200_actual = [0.0 if math.isnan(x) else x for x in aps_200]
-    map_200 = np.mean(aps_200_actual)
+    aps = Parallel(n_jobs=num_cores)(delayed(average_precision_score)(
+        sorted_class_matches[iq, 0:metric_limit],
+        sorted_similarity[iq, 0:metric_limit])
+        for iq in range(nq))
+    aps_actual = [0.0 if math.isnan(x) else x for x in aps]
+    map = np.mean(aps_actual)
 
-    # Precision@200 means at the place 200th
-    prec_200 = np.mean(sorted_class_matches[:, 200])
+    # Precision@metric_limit means at the place metric_limith
+    prec = np.mean(sorted_class_matches[:, metric_limit])
 
-    return map_200, prec_200
+    return map, prec
 
 
 def get_map_all(similarity, class_matches, num_cores):
@@ -89,4 +90,4 @@ def get_map_all(similarity, class_matches, num_cores):
                                         (class_matches[iq], similarity[iq]) for iq in range(nq))
     map_all = np.nanmean(ap_all)
 
-    return ap_all, map_all
+    return map_all
