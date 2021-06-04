@@ -27,6 +27,8 @@ function Embeddings() {
   const { state } = useLocation();
   const [result, setResult] = useState({});
   const [nbDimensions, setNbDimensions] = useState(3);
+  const [reductionAlgo, setReductionAlgo] = useState("PCA");
+  const [isLoading, setIsLoading] = useState(true);
   const [clickedClass, setClickedClass] = useState("");
   const [clickedX, setClickedX] = useState(0);
   const [clickedY, setClickedY] = useState(0);
@@ -34,11 +36,12 @@ function Embeddings() {
   const [sketch, setSketch] = useState([]);
   const [showImage, setShowImage] = useState([]);
   const point = useRef({ clickedX, clickedY, clickedZ });
+
   let traces = [];
 
   // get the embedding graph in 2D or 3D
   useEffect(() => {
-    let to_send = { nb_dim: nbDimensions };
+    let to_send = { nb_dim: nbDimensions, reduction_algo: reductionAlgo };
     if (typeof state !== "undefined") {
       to_send["sketch"] = state;
     }
@@ -61,7 +64,7 @@ function Embeddings() {
 
     getEmbeddings(to_send);
     setClickedClass(custom_sketch_class);
-  }, [state, nbDimensions]);
+  }, [state, nbDimensions, reductionAlgo]);
 
   useEffect(() => {
     let to_send = { class: clickedClass };
@@ -168,6 +171,7 @@ function Embeddings() {
       text = "Switch to 2D";
       dim = 2;
     }
+
     return (
       <Button
         color={backgroundColor}
@@ -182,6 +186,29 @@ function Embeddings() {
         }}
       >
         {text}
+      </Button>
+    );
+  }
+
+  function getReductionAlgoButton() {
+    let algo = "PCA";
+    if (reductionAlgo === "PCA") {
+      algo = "TSNE";
+    }
+    return (
+      <Button
+        color={backgroundColor}
+        border="2px"
+        borderColor={darkGray}
+        variant="solid"
+        size="lg"
+        height={buttonHeight}
+        width={buttonWidth}
+        onClick={() => {
+          setReductionAlgo(algo);
+        }}
+      >
+        {algo}
       </Button>
     );
   }
@@ -213,7 +240,8 @@ function Embeddings() {
             AMLD 2021 Visium's Sketchy App
           </Heading>
           <Text fontSize="2xl" color={textColor} align="center">
-            Embeddings: Images and Sketches in latent space
+            Embeddings: Images and Sketches in {nbDimensions}D after{" "}
+            {reductionAlgo} projection
           </Text>
         </VStack>
 
@@ -227,10 +255,14 @@ function Embeddings() {
         >
           <GridItem rowSpan={1} colSpan={1} align="center">
             <VStack spacing={3} direction="row" align="center">
-              <Text fontSize="xl" color={textColor} align="center">
-                Dimension: {nbDimensions}D
+              <Text fontSize="2xl" color={textColor} align="center">
+                Options
               </Text>
               {getDimensionButton()}
+              {getReductionAlgoButton()}
+              <Text fontSize="xs" color={textColor} align="center">
+                *TSNE takes ~20 seconds to load
+              </Text>
             </VStack>
           </GridItem>
 
@@ -274,9 +306,6 @@ function Embeddings() {
             />
           </GridItem>
 
-          <GridItem rowSpan={1} colSpan={1}>
-            {PageDrawer()}
-          </GridItem>
           <GridItem rowSpan={1} colSpan={1} align="center">
             <Text fontSize="xl" color={textColor} align="center">
               My Sketch
@@ -288,6 +317,9 @@ function Embeddings() {
               Clicked image
             </Text>
             {showImage}
+          </GridItem>
+          <GridItem rowSpan={1} colSpan={1}>
+            {PageDrawer()}
           </GridItem>
         </Grid>
       </Box>

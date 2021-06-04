@@ -106,12 +106,18 @@ class Embeddings(Resource):
         # Verify the data
         if "nb_dim" not in json_data.keys():
             return {"ERROR": "Number of dimensions not provided"}, 400
+        if "reduction_algo" not in json_data.keys():
+            return {"ERROR": "Reduction algorithm not provided"}, 400
         nb_dimensions = json_data["nb_dim"]
+        reduction_algo = json_data["reduction_algo"]
 
         global df
         if "sketch" not in json_data.keys():
             df = process_graph(
-                args.embeddings_path, n_components=nb_dimensions, sketch_emb=False
+                args.embeddings_path,
+                nb_dimensions=nb_dimensions,
+                reduction_algo=reduction_algo,
+                sketch_emb=False
             )
         else:
             sketch = svg_to_png(json_data["sketch"])
@@ -119,7 +125,8 @@ class Embeddings(Resource):
 
             df = process_graph(
                 args.embeddings_path,
-                n_components=nb_dimensions,
+                nb_dimensions=nb_dimensions,
+                reduction_algo=reduction_algo,
                 sketch_emb=sketch_embedding,
             )
 
