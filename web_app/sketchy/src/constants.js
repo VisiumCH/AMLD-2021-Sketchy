@@ -42,6 +42,7 @@ export const colors = [
 ];
 export const nb_to_show = 5;
 export const datasets = ["Sketchy", "TU-Berlin", "Quickdraw"];
+export const dimReductionAlgorithms = ["PCA", "TSNE", "UMAP"];
 
 export const categories = {
   Quickdraw: [

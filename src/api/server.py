@@ -1,21 +1,16 @@
 import flask_restful
-from src.constants import CUSTOM_SKETCH_CLASS, DATA_PATH, MODELS_PATH, TENSORBOARD_IMAGE
-from src.api.api_performance import ModelPerformance
-from src.api.embeddings_utils import (
-    prepare_embeddings_data,
-    process_graph,
-    get_tiles,
-)
+from src.constants import CUSTOM_SKETCH_CLASS, DATA_PATH, MODELS_PATH
 from src.api.utils import (
     svg_to_png,
     prepare_images_data,
     prepare_dataset,
     prepare_sketch,
     get_parameters,
-    get_last_epoch_number
 )
+from src.api.api_dimensionality_reduction import DimensionalityReduction
 from src.api.api_options import ApiOptions
 from src.api.api_inference import ApiInference
+from src.api.api_performance import ModelPerformance
 import torch
 import pandas as pd
 import numpy as np
@@ -102,35 +97,21 @@ class Embeddings(Resource):
 
     def post(self):
         json_data = request.get_json()
+        print("\n\n Embeddings")
+        print(json_data)
 
         # Verify the data
         if "nb_dim" not in json_data.keys():
             return {"ERROR": "Number of dimensions not provided"}, 400
         if "reduction_algo" not in json_data.keys():
             return {"ERROR": "Reduction algorithm not provided"}, 400
-        nb_dimensions = json_data["nb_dim"]
-        reduction_algo = json_data["reduction_algo"]
 
-        global df
         if "sketch" not in json_data.keys():
-            df = process_graph(
-                args.embeddings_path,
-                nb_dimensions=nb_dimensions,
-                reduction_algo=reduction_algo,
-                sketch_emb=False
-            )
+            data = dim_red.get_projection(json_data["reduction_algo"], json_data["nb_dim"])
         else:
             sketch = svg_to_png(json_data["sketch"])
             sketch_embedding = inference.inference_sketch(sketch)
-
-            df = process_graph(
-                args.embeddings_path,
-                nb_dimensions=nb_dimensions,
-                reduction_algo=reduction_algo,
-                sketch_emb=sketch_embedding,
-            )
-
-        data = prepare_embeddings_data(df, nb_dimensions)
+            data = dim_red.get_projection(json_data["reduction_algo"], json_data["nb_dim"], sketch_embedding)
 
         return make_response(json.dumps(data), 200)
 
@@ -150,18 +131,14 @@ class ShowEmbeddingImage(Resource):
             sketch = prepare_sketch(json_data["sketch"])
             data = {"image": sketch}
         else:
+            if "nb_dim" not in json_data.keys():
+                return {"ERROR": "Number of dimensions not provided"}, 400
+            if "reduction_algo" not in json_data.keys():
+                return {"ERROR": "Reduction algorithm not provided"}, 400
             if "x" not in json_data.keys() or "y" not in json_data.keys():
                 return {"ERROR": "Pointnumber not provided"}, 400
 
-            if "z" in json_data.keys():
-                point = json_data["x"], json_data["y"], json_data["z"]
-                dist = np.sum((df[["x", "y", "z"]].values - point) ** 2, axis=1)
-            else:
-                point = json_data["x"], json_data["y"]
-                dist = np.sum((df[["x", "y"]].values - point) ** 2, axis=1)
-
-            # find index of closest image to x y z in dataframe.
-            data = {"image": tiles[np.argmin(dist)]}
+            data = dim_red.get_closest_image(json_data)
 
         return make_response(json.dumps(data), 200)
 
@@ -204,19 +181,11 @@ if __name__ == "__main__":
     args.cuda = False
 
     args.save = MODELS_PATH + args.name + '/'
-    args.dataset, args.emb_size, embedding_number = get_parameters(args.save)
+    args.dataset, args.emb_size, nb_embeddings = get_parameters(args.save)
     args.load = args.save + "checkpoint.pth"
-
-    # Precompute the images from the large tensorboard sprite
-    epoch_number = get_last_epoch_number(args.save)
-    args.embeddings_path = args.save + epoch_number + "/default/"
-    tiles = get_tiles(args.embeddings_path + TENSORBOARD_IMAGE, embedding_number)
-
-    # Global dataframe
-    # Gets data when opening embedding graphs ("/get_embeddings")
-    # Is later called when image are clicked in another api ("/get_embedding_images")
-    df = pd.DataFrame()
 
     inference = ApiInference(args, "test")
     performance = ModelPerformance(args.save)
+    dim_red = DimensionalityReduction(args.save, nb_embeddings)
+
     app.run(host="0.0.0.0", port="5000", debug=True)

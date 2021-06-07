@@ -10,6 +10,8 @@ import {
   VStack,
   Grid,
   GridItem,
+  FormControl,
+  Select,
 } from "@chakra-ui/react";
 import {
   gray,
@@ -20,6 +22,9 @@ import {
   buttonWidth,
   colors,
   custom_sketch_class,
+  dimReductionAlgorithms,
+  formLabelWidth,
+  white,
 } from "./constants";
 import { PageDrawer } from "./drawer.js";
 
@@ -28,7 +33,6 @@ function Embeddings() {
   const [result, setResult] = useState({});
   const [nbDimensions, setNbDimensions] = useState(3);
   const [reductionAlgo, setReductionAlgo] = useState("PCA");
-  const [isLoading, setIsLoading] = useState(true);
   const [clickedClass, setClickedClass] = useState("");
   const [clickedX, setClickedX] = useState(0);
   const [clickedY, setClickedY] = useState(0);
@@ -36,14 +40,18 @@ function Embeddings() {
   const [sketch, setSketch] = useState([]);
   const [showImage, setShowImage] = useState([]);
   const point = useRef({ clickedX, clickedY, clickedZ });
+  const algorithmOptions = dimReductionAlgorithms.map((algorithm) => (
+    <option>{algorithm}</option>
+  ));
 
   let traces = [];
 
   // get the embedding graph in 2D or 3D
   useEffect(() => {
     let to_send = { nb_dim: nbDimensions, reduction_algo: reductionAlgo };
-    if (typeof state !== "undefined") {
+    if (state !== "undefined") {
       to_send["sketch"] = state;
+      setClickedClass(custom_sketch_class);
     }
 
     async function getEmbeddings(to_send) {
@@ -63,11 +71,14 @@ function Embeddings() {
     }
 
     getEmbeddings(to_send);
-    setClickedClass(custom_sketch_class);
   }, [state, nbDimensions, reductionAlgo]);
 
   useEffect(() => {
-    let to_send = { class: clickedClass };
+    let to_send = {
+      class: clickedClass,
+      nb_dim: nbDimensions,
+      reduction_algo: reductionAlgo,
+    };
     if (clickedClass === custom_sketch_class) {
       to_send["sketch"] = state;
     } else {
@@ -126,11 +137,14 @@ function Embeddings() {
     let marker_line_width = 0.1;
     let i = 0;
     for (let key in result) {
+      console.log(key);
       if (key === custom_sketch_class) {
+        console.log("in");
         marker_size = 10;
         marker_line_color = "rgb(0,0,0)";
         marker_line_width = 1;
       } else {
+        console.log("out");
         marker_line_color = colors[i];
         marker_line_width = 0.1;
         marker_size = 6;
@@ -190,31 +204,31 @@ function Embeddings() {
     );
   }
 
-  function getReductionAlgoButton() {
-    let algo = "PCA";
-    if (reductionAlgo === "PCA") {
-      algo = "TSNE";
-    }
+  function getReductionAlgoSelection() {
     return (
-      <Button
-        color={backgroundColor}
-        border="2px"
-        borderColor={darkGray}
-        variant="solid"
-        size="lg"
-        height={buttonHeight}
-        width={buttonWidth}
-        onClick={() => {
-          setReductionAlgo(algo);
-        }}
-      >
-        {algo}
-      </Button>
+      <form>
+        <FormControl
+          id="algorithm"
+          color={backgroundColor}
+          width={buttonWidth}
+          bg={white}
+        >
+          <Select
+            value={reductionAlgo}
+            color={backgroundColor}
+            onChange={(e) => {
+              setReductionAlgo(e.target.value);
+            }}
+          >
+            {algorithmOptions}
+          </Select>
+        </FormControl>
+      </form>
     );
   }
 
   function showSketch() {
-    if (typeof state !== "undefined") {
+    if (state !== "undefined") {
       return sketch;
     } else {
       return (
@@ -259,10 +273,7 @@ function Embeddings() {
                 Options
               </Text>
               {getDimensionButton()}
-              {getReductionAlgoButton()}
-              <Text fontSize="xs" color={textColor} align="center">
-                *TSNE takes ~20 seconds to load
-              </Text>
+              {getReductionAlgoSelection()}
             </VStack>
           </GridItem>
 
