@@ -2,11 +2,9 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
-  ChakraProvider,
   Grid,
   GridItem,
   Text,
-  Heading,
   Slider,
   SliderTrack,
   SliderFilledTrack,
@@ -18,6 +16,7 @@ import {
   backgroundColor,
   buttonHeight,
   progress,
+  heading,
 } from "./constants";
 import { PageDrawer } from "./drawer.js";
 import { BiRefresh } from "react-icons/bi";
@@ -95,7 +94,7 @@ function ImagePerformance() {
               setReload(true);
             }}
           >
-            Load another image
+            Another
           </Button>
         </>
       );
@@ -125,69 +124,62 @@ function ImagePerformance() {
   }
 
   return (
-    <ChakraProvider>
-      <Box bg={backgroundColor} align="center">
-        <Heading fontSize="4xl" color={textColor} align="center">
-          AMLD 2021 Visium's Sketchy App
-        </Heading>
-        <Text fontSize="xs" color={textColor} align="center">
-          --------------------------------------------------------
-        </Text>
-        <Text fontSize="xs" color={backgroundColor} align="center">
-          .
-        </Text>
-        <Grid
-          h="91vh"
-          w="98vw"
-          gap={4}
-          align="center"
-          templateRows="repeat(8, 1fr)"
-          templateColumns="repeat(3, 1fr)"
-        >
-          <GridItem rowSpan={1} colSpan={1}>
-            {selectOption("inference", "See Inference")}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1}>
-            {selectOption("attention_sketch", "See Attention on Sketch")}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1}>
-            {selectOption("attention_image", "See Attention on Image")}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={3}>
-            <Box bg={backgroundColor} align="center" pr={40} pl={40}>
-              <Text fontSize="xl" color={textColor} align="center">
-                Epoch number: {epoch}
-              </Text>
-              <Slider
-                aria-label="slider-ex-2"
-                colorScheme="red"
-                defaultValue={images.length - 1}
-                min={0}
-                max={images.length - 1}
-                step={1}
-                onChangeEnd={(val) => {
-                  setEpoch(val);
-                  setEpochImage(images[val]);
-                }}
-              >
-                <SliderTrack>
-                  <Box position="relative" right={10} />
-                  <SliderFilledTrack />
-                </SliderTrack>
-                <SliderThumb />
-              </Slider>
-            </Box>
-          </GridItem>
+    <>
+      {heading}
+      <Text fontSize="xs" color={backgroundColor} align="center">
+        .
+      </Text>
+      <Grid
+        h="91vh"
+        w="98vw"
+        gap={4}
+        align="center"
+        templateRows="repeat(8, 1fr)"
+        templateColumns="repeat(3, 1fr)"
+      >
+        <GridItem rowSpan={1} colSpan={1}>
+          {selectOption("inference", "See Inference")}
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={1}>
+          {selectOption("attention_sketch", "See Attention on Sketch")}
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={1}>
+          {selectOption("attention_image", "See Attention on Image")}
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={3}>
+          <Box bg={backgroundColor} align="center" pr={40} pl={40}>
+            <Text fontSize="xl" color={textColor} align="center">
+              Epoch number: {epoch}
+            </Text>
+            <Slider
+              aria-label="slider-ex-2"
+              colorScheme="red"
+              defaultValue={images.length - 1}
+              min={0}
+              max={images.length - 1}
+              step={1}
+              onChangeEnd={(val) => {
+                setEpoch(val);
+                setEpochImage(images[val]);
+              }}
+            >
+              <SliderTrack>
+                <Box position="relative" right={10} />
+                <SliderFilledTrack />
+              </SliderTrack>
+              <SliderThumb />
+            </Slider>
+          </Box>
+        </GridItem>
 
-          <GridItem rowSpan={5} colSpan={3}>
-            {showImage()}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={3}>
-            {PageDrawer()}
-          </GridItem>
-        </Grid>
-      </Box>
-    </ChakraProvider>
+        <GridItem rowSpan={5} colSpan={3}>
+          {showImage()}
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={3}>
+          {PageDrawer()}
+        </GridItem>
+      </Grid>
+    </>
   );
 }
 

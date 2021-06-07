@@ -1,9 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import {
   Box,
-  ChakraProvider,
   Text,
-  Heading,
   Select,
   Button,
   Grid,
@@ -20,6 +18,7 @@ import {
   formLabelWidth,
   white,
   nb_to_show,
+  heading,
 } from "./constants";
 import { PageDrawer } from "./drawer.js";
 import { BiRefresh } from "react-icons/bi";
@@ -104,31 +103,51 @@ function Dataset() {
   ));
 
   return (
-    <ChakraProvider>
-      <Box bg={backgroundColor} h="100vh" w="100vw">
-        <Heading fontSize="4xl" color={textColor} align="center">
-          AMLD 2021 Visium's Sketchy App
-        </Heading>
-        <Text fontSize="xs" color={textColor} align="center">
-          --------------------------------------------------------
-        </Text>
-        <Text fontSize="xs" color={backgroundColor} align="center">
-          .
-        </Text>
-        <Grid
-          h="90%"
-          w="98%"
-          gap={4}
-          align="center"
-          templateRows="repeat(10, 1fr)"
-          templateColumns="repeat(2, 1fr)"
-        >
-          <GridItem rowSpan={1} colSpan={1} align="right">
-            <Text fontSize="2xl" color={textColor}>
-              Choose a dataset:
-            </Text>
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1} align="left">
+    <>
+      {heading}
+      <Text fontSize="xs" align="center">
+        .
+      </Text>
+      <Grid
+        h="91vh"
+        gap={4}
+        align="center"
+        templateRows="repeat(11, 1fr)"
+        templateColumns="repeat(2, 1fr)"
+      >
+        <GridItem rowSpan={1} colSpan={1} align="right">
+          <Text fontSize="2xl" color={textColor}>
+            Choose a dataset:
+          </Text>
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={1} align="left">
+          <form>
+            <FormControl
+              id="category"
+              color={backgroundColor}
+              width={formLabelWidth}
+              bg={white}
+            >
+              <Select
+                value={currentDataset}
+                color={backgroundColor}
+                onChange={(e) => {
+                  setCurrentDataset(e.target.value);
+                  setCurrentCategory("pineapple");
+                }}
+              >
+                {datasetsOptions}
+              </Select>
+            </FormControl>
+          </form>
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={1} align="right">
+          <Text fontSize="2xl" color={textColor}>
+            Choose a categories to see some samples:
+          </Text>
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={1} align="left">
+          <HStack>
             <form>
               <FormControl
                 id="category"
@@ -137,70 +156,37 @@ function Dataset() {
                 bg={white}
               >
                 <Select
-                  value={currentDataset}
+                  value={currentCategory}
                   color={backgroundColor}
-                  onChange={(e) => {
-                    setCurrentDataset(e.target.value);
-                    setCurrentCategory("pineapple");
-                  }}
+                  onChange={(e) => setCurrentCategory(e.target.value)}
                 >
-                  {datasetsOptions}
+                  {categoriesOptions}
                 </Select>
               </FormControl>
             </form>
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1} align="right">
-            <Text fontSize="2xl" color={textColor}>
-              Choose a categories to see some samples:
-            </Text>
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1} align="left">
-            <HStack>
-              <form>
-                <FormControl
-                  id="category"
-                  color={backgroundColor}
-                  width={formLabelWidth}
-                  bg={white}
-                >
-                  <Select
-                    value={currentCategory}
-                    color={backgroundColor}
-                    onChange={(e) => setCurrentCategory(e.target.value)}
-                  >
-                    {categoriesOptions}
-                  </Select>
-                </FormControl>
-              </form>
-              <Button
-                leftIcon={<BiRefresh />}
-                border="1px"
-                borderColor={darkGray}
-                variant="solid"
-                size="md"
-                onClick={() => {
-                  getImages(currentCategory, currentDataset);
-                }}
-              ></Button>
-            </HStack>
-          </GridItem>
-          <GridItem rowSpan={4} colSpan={2}>
-            <HStack align="center">{renderImages}</HStack>
-          </GridItem>
-          <GridItem rowSpan={4} colSpan={2}>
-            <HStack align="center">{renderSketches}</HStack>
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={2}>
-            {PageDrawer("undefined")}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={2} align="right">
-            <Text fontSize="xs" color={textColor}>
-              .....
-            </Text>
-          </GridItem>
-        </Grid>
-      </Box>
-    </ChakraProvider>
+            <Button
+              leftIcon={<BiRefresh />}
+              border="1px"
+              borderColor={darkGray}
+              variant="solid"
+              size="md"
+              onClick={() => {
+                getImages(currentCategory, currentDataset);
+              }}
+            ></Button>
+          </HStack>
+        </GridItem>
+        <GridItem rowSpan={4} colSpan={2}>
+          <HStack align="center">{renderImages}</HStack>
+        </GridItem>
+        <GridItem rowSpan={4} colSpan={2}>
+          <HStack align="center">{renderSketches}</HStack>
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={2}>
+          {PageDrawer("undefined")}
+        </GridItem>
+      </Grid>
+    </>
   );
 }
 

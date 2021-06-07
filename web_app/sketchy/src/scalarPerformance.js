@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  ChakraProvider,
-  Grid,
-  GridItem,
-  Text,
-  Heading,
-} from "@chakra-ui/react";
+import { Grid, GridItem, Text } from "@chakra-ui/react";
 import Plot from "react-plotly.js";
-import { gray, textColor, backgroundColor } from "./constants";
+import { gray, backgroundColor, heading } from "./constants";
 import { PageDrawer } from "./drawer.js";
 
 function ScalarPerformance() {
@@ -83,35 +76,27 @@ function ScalarPerformance() {
   }
 
   return (
-    <ChakraProvider>
-      <Box bg={backgroundColor} align="center">
-        <Heading fontSize="4xl" color={textColor} align="center">
-          AMLD 2021 Visium's Sketchy App
-        </Heading>
-        <Text fontSize="xs" color={textColor} align="center">
-          --------------------------------------------------------
-        </Text>
-        <Grid
-          h="90%"
-          w="98%"
-          gap={4}
-          align="center"
-          templateRows="repeat(2, 1fr)"
-          templateColumns="repeat(3, 1fr)"
-        >
-          {plotValues("Domain Loss", domainValues)}
-          {plotValues("Triplet Loss", tripletValues)}
-          {plotValues("Total Loss", lossValues)}
-          {plotValues("MAP", mapValues)}
-          {plotValues("MAP@200", map200Values)}
-          {plotValues("Precision", precisionValues)}
-        </Grid>
-        {PageDrawer()}
-        <Text fontSize="xl" color={backgroundColor} align="center">
-          {"blank"}
-        </Text>
-      </Box>
-    </ChakraProvider>
+    <>
+      {heading}
+      <Grid
+        h="85.9vh"
+        gap={4}
+        align="center"
+        templateRows="repeat(2, 1fr)"
+        templateColumns="repeat(3, 1fr)"
+      >
+        {plotValues("Domain Loss", domainValues)}
+        {plotValues("Triplet Loss", tripletValues)}
+        {plotValues("Total Loss", lossValues)}
+        {plotValues("MAP", mapValues)}
+        {plotValues("MAP@200", map200Values)}
+        {plotValues("Precision", precisionValues)}
+      </Grid>
+      {PageDrawer()}
+      <Text fontSize="xs" color={backgroundColor}>
+        I need a space.
+      </Text>
+    </>
   );
 }
 

@@ -2,12 +2,10 @@ import React, { useState, useCallback, useEffect } from "react";
 // import { Link as ReachLink } from 'react-router-dom'
 import {
   Box,
-  ChakraProvider,
   Button,
   HStack,
   VStack,
   Text,
-  Heading,
   Grid,
   GridItem,
 } from "@chakra-ui/react";
@@ -22,6 +20,7 @@ import {
   white,
   black,
   progress,
+  heading,
 } from "./constants";
 import { PageDrawer } from "./drawer.js";
 
@@ -137,185 +136,177 @@ function Drawing() {
   }, [sendRequest, svg]);
 
   return (
-    <ChakraProvider>
-      <Box bg={backgroundColor} align="center">
-        <Heading fontSize="4xl" color={textColor} align="center">
-          AMLD 2021 Visium's Sketchy App
-        </Heading>
-        <Text fontSize="xs" color={textColor} align="center">
-          --------------------------------------------------------
-        </Text>
+    <>
+      {heading}
+      <Grid
+        h="93vh"
+        w="98vw"
+        gap={4}
+        align="center"
+        templateRows="repeat(14, 1fr)"
+        templateColumns="repeat(12, 1fr)"
+      >
+        <GridItem rowSpan={1} colSpan={8}>
+          <Text fontSize="4xl" color={textColor}>
+            Draw Sketch Here:
+          </Text>
+        </GridItem>
 
-        <Grid
-          h="95vh"
-          w="98vw"
-          gap={4}
-          align="center"
-          templateRows="repeat(14, 1fr)"
-          templateColumns="repeat(12, 1fr)"
-        >
-          <GridItem rowSpan={1} colSpan={8}>
-            <Text fontSize="4xl" color={textColor}>
-              Draw Sketch Here:
-            </Text>
-          </GridItem>
+        <GridItem rowSpan={1} colSpan={4}>
+          <Text fontSize="4xl" color={textColor}>
+            Closest Images:
+          </Text>
+        </GridItem>
 
-          <GridItem rowSpan={1} colSpan={4}>
-            <Text fontSize="4xl" color={textColor}>
-              Closest Images:
-            </Text>
-          </GridItem>
-
-          <GridItem rowSpan={11} colSpan={8}>
-            <Box
-              h="74.5vh"
-              w="62vw"
-              bg={white}
-              borderWidth="5px"
-              borderRadius="lg"
-              borderColor="#A3A8B0"
-              ref={divRef}
-              style={{ cursor: cursor }}
-              onMouseMove={() => {
-                setSvg(getSvgXML());
-              }}
-            ></Box>
-          </GridItem>
-
-          <GridItem rowSpan={5} colSpan={4}>
-            <Box>
-              <HStack
-                align="center"
-                borderWidth="5px"
-                borderRadius="lg"
-                borderColor="#A3A8B0"
-                bg={gray}
-              >
-                <Box h="33vh" w="20vw">
-                  <VStack>
-                    <Text fontSize="2xl" color={backgroundColor} as="em">
-                      {inferredLabel[0]}
-                    </Text>
-                    <Box w="100%" h="35%">
-                      {inferredImage[0]}
-                    </Box>
-                  </VStack>
-                </Box>
-                <Box h="33vh" w="20vw">
-                  <VStack>
-                    <Text fontSize="2xl" color={backgroundColor} as="em">
-                      {inferredLabel[1]}
-                    </Text>
-                    <Box bg={gray} w="100%" h="35%">
-                      {inferredImage[1]}
-                    </Box>
-                  </VStack>
-                </Box>
-              </HStack>
-            </Box>
-          </GridItem>
-
-          <GridItem rowSpan={1} colSpan={4} bg={backgroundColor}>
-            <Text fontSize="4xl" color={textColor}>
-              Attention Map
-            </Text>
-          </GridItem>
-
-          <GridItem
-            rowSpan={5}
-            colSpan={4}
+        <GridItem rowSpan={11} colSpan={8}>
+          <Box
+            h="73vh"
+            w="62vw"
+            bg={white}
             borderWidth="5px"
             borderRadius="lg"
             borderColor="#A3A8B0"
-            bg={gray}
-          >
-            <Box h="35vh" w="21vw">
-              {attention}
-            </Box>
-          </GridItem>
+            ref={divRef}
+            style={{ cursor: cursor }}
+            onMouseMove={() => {
+              setSvg(getSvgXML());
+            }}
+          ></Box>
+        </GridItem>
 
-          <GridItem rowSpan={2} colSpan={2}>
-            <Button
-              disabled={disableDrawing}
-              leftIcon={<BiPencil />}
-              color={backgroundColor}
-              border="2px"
-              borderColor={darkGray}
-              variant="solid"
-              size="lg"
-              height={buttonHeight}
-              width={buttonWidth}
-              onClick={() => {
-                if (drawingMode === "erasing") {
-                  changeDrawingMode();
-                }
-              }}
+        <GridItem rowSpan={5} colSpan={4}>
+          <Box>
+            <HStack
+              align="center"
+              borderWidth="5px"
+              borderRadius="lg"
+              borderColor="#A3A8B0"
+              bg={gray}
             >
-              Drawing
-            </Button>
-          </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
-            <Button
-              disabled={disableErasing}
-              leftIcon={<BiEraser />}
-              color={backgroundColor}
-              border="2px"
-              borderColor={darkGray}
-              variant="solid"
-              size="lg"
-              height={buttonHeight}
-              width={buttonWidth}
-              onClick={() => {
-                if (drawingMode === "drawing") {
-                  changeDrawingMode();
-                }
-              }}
-            >
-              Erasing
-            </Button>
-          </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
-            <Button
-              color={backgroundColor}
-              border="2px"
-              borderColor={darkGray}
-              variant="solid"
-              size="lg"
-              height={buttonHeight}
-              width={buttonWidth}
-              onClick={() => {
-                undo();
-                sendRequest(getSvgXML());
-              }}
-            >
-              Undo
-            </Button>
-          </GridItem>
-          <GridItem rowSpan={2} colSpan={2}>
-            <Button
-              color={backgroundColor}
-              border="2px"
-              borderColor={darkGray}
-              variant="solid"
-              size="lg"
-              height={buttonHeight}
-              width={buttonWidth}
-              onClick={() => {
-                clear();
-                setInferredImage([]);
-                setInferredLabel([]);
-                setAttention("");
-              }}
-            >
-              Restart!
-            </Button>
-          </GridItem>
-          <GridItem rowSpan={2} colSpan={4}>
-            {PageDrawer(svg)}
-          </GridItem>
-        </Grid>
-      </Box>
-    </ChakraProvider>
+              <Box h="33vh" w="20vw">
+                <VStack>
+                  <Text fontSize="2xl" color={backgroundColor} as="em">
+                    {inferredLabel[0]}
+                  </Text>
+                  <Box w="100%" h="35%">
+                    {inferredImage[0]}
+                  </Box>
+                </VStack>
+              </Box>
+              <Box h="33vh" w="20vw">
+                <VStack>
+                  <Text fontSize="2xl" color={backgroundColor} as="em">
+                    {inferredLabel[1]}
+                  </Text>
+                  <Box bg={gray} w="100%" h="35%">
+                    {inferredImage[1]}
+                  </Box>
+                </VStack>
+              </Box>
+            </HStack>
+          </Box>
+        </GridItem>
+
+        <GridItem rowSpan={1} colSpan={4} bg={backgroundColor}>
+          <Text fontSize="4xl" color={textColor}>
+            Attention Map
+          </Text>
+        </GridItem>
+
+        <GridItem
+          rowSpan={5}
+          colSpan={4}
+          borderWidth="5px"
+          borderRadius="lg"
+          borderColor="#A3A8B0"
+          bg={gray}
+        >
+          <Box h="35vh" w="21vw">
+            {attention}
+          </Box>
+        </GridItem>
+
+        <GridItem rowSpan={2} colSpan={2}>
+          <Button
+            disabled={disableDrawing}
+            leftIcon={<BiPencil />}
+            color={backgroundColor}
+            border="2px"
+            borderColor={darkGray}
+            variant="solid"
+            size="lg"
+            height={buttonHeight}
+            width={buttonWidth}
+            onClick={() => {
+              if (drawingMode === "erasing") {
+                changeDrawingMode();
+              }
+            }}
+          >
+            Drawing
+          </Button>
+        </GridItem>
+        <GridItem rowSpan={2} colSpan={2}>
+          <Button
+            disabled={disableErasing}
+            leftIcon={<BiEraser />}
+            color={backgroundColor}
+            border="2px"
+            borderColor={darkGray}
+            variant="solid"
+            size="lg"
+            height={buttonHeight}
+            width={buttonWidth}
+            onClick={() => {
+              if (drawingMode === "drawing") {
+                changeDrawingMode();
+              }
+            }}
+          >
+            Erasing
+          </Button>
+        </GridItem>
+        <GridItem rowSpan={2} colSpan={2}>
+          <Button
+            color={backgroundColor}
+            border="2px"
+            borderColor={darkGray}
+            variant="solid"
+            size="lg"
+            height={buttonHeight}
+            width={buttonWidth}
+            onClick={() => {
+              undo();
+              sendRequest(getSvgXML());
+            }}
+          >
+            Undo
+          </Button>
+        </GridItem>
+        <GridItem rowSpan={2} colSpan={2}>
+          <Button
+            color={backgroundColor}
+            border="2px"
+            borderColor={darkGray}
+            variant="solid"
+            size="lg"
+            height={buttonHeight}
+            width={buttonWidth}
+            onClick={() => {
+              clear();
+              setInferredImage([]);
+              setInferredLabel([]);
+              setAttention("");
+            }}
+          >
+            Restart!
+          </Button>
+        </GridItem>
+        <GridItem rowSpan={2} colSpan={4}>
+          {PageDrawer(svg)}
+        </GridItem>
+      </Grid>
+    </>
   );
 }
 

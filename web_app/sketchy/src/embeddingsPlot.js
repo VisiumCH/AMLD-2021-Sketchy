@@ -2,10 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Plot from "react-plotly.js";
 import {
-  Box,
-  ChakraProvider,
   Text,
-  Heading,
   Stack,
   VStack,
   Grid,
@@ -19,6 +16,7 @@ import {
   backgroundColor,
   colors,
   custom_sketch_class,
+  heading,
 } from "./constants";
 import { PageDrawer } from "./drawer.js";
 
@@ -186,119 +184,105 @@ function Embeddings() {
   }
 
   return (
-    <ChakraProvider>
-      <Box bg={backgroundColor} h="100vh">
-        <VStack spacing={4} align="center" h="10%" w="100%">
-          <Heading fontSize="4xl" color={textColor} align="center">
-            AMLD 2021 Visium's Sketchy App
-          </Heading>
-          <Text fontSize="2xl" color={textColor} align="center">
-            Embeddings: Images and Sketches in {nbDimensions}D after{" "}
-            {reductionAlgo} projection
-          </Text>
-        </VStack>
+    <>
+      {heading}
+      <Text fontSize="2xl" color={textColor} align="center">
+        Embeddings: Images and Sketches in {nbDimensions}D after {reductionAlgo}{" "}
+        projection
+      </Text>
 
-        <Grid
-          h="90%"
-          w="94%"
-          gap={4}
-          align="center"
-          templateRows="repeat(4, 1fr)"
-          templateColumns="repeat(7, 1fr)"
-        >
-          <GridItem rowSpan={1} colSpan={1} align="center">
-            <VStack spacing={3} direction="row" align="center">
-              <Text fontSize="2xl" color={textColor} align="center" as="u">
-                Options
-              </Text>
-              <RadioGroup
-                onChange={setNbDimensions}
-                value={nbDimensions}
-                colorScheme="white"
-                defaultValue="2"
-                color={textColor}
-                size="lg"
-              >
-                <Stack direction="row">
-                  <Radio value="2">2D</Radio>
-                  <Radio value="3">3D</Radio>
-                </Stack>
-              </RadioGroup>
-              <RadioGroup
-                onChange={setReductionAlgo}
-                value={reductionAlgo}
-                colorScheme="white"
-                defaultValue="2"
-                color={textColor}
-                size="lg"
-              >
-                <Stack direction="row">
-                  <Radio value="PCA">PCA</Radio>
-                  <Radio value="TSNE">TSNE</Radio>
-                  <Radio value="UMAP">UMAP</Radio>
-                </Stack>
-              </RadioGroup>
-            </VStack>
-          </GridItem>
-
-          <GridItem rowSpan={4} colSpan={6}>
-            <Plot
-              data={traces}
-              layout={{
-                width: 1350,
-                height: 740,
-                hovermode: "closest",
-                showlegend: true,
-                margin: {
-                  l: 0,
-                  r: 0,
-                  b: 0,
-                  t: 0,
-                },
-                legend: {
-                  title: {
-                    text: "Categories",
-                    font: {
-                      size: 20,
-                      color: backgroundColor,
-                    },
-                  },
-                  font: {
-                    size: 16,
-                    color: backgroundColor,
-                  },
-                  orientation: "v",
-                  itemsizing: "constant",
-                  x: 0.9,
-                  y: 0.5,
-                },
-                font: {
-                  color: backgroundColor,
-                },
-                paper_bgcolor: gray,
-              }}
-              onClick={(e) => getClickedImage(e)}
-            />
-          </GridItem>
-
-          <GridItem rowSpan={1} colSpan={1} align="center">
+      <Grid
+        h="88.9vh"
+        gap={4}
+        align="center"
+        templateRows="repeat(1, 1fr)"
+        templateColumns="repeat(10, 1fr)"
+      >
+        <GridItem rowSpan={1} colSpan={2} align="center">
+          <VStack spacing={3} direction="row" align="center">
+            <Text fontSize="2xl" color={textColor} align="center" as="u">
+              Options
+            </Text>
+            <RadioGroup
+              onChange={setNbDimensions}
+              value={nbDimensions}
+              colorScheme="white"
+              defaultValue="2"
+              color={textColor}
+              size="lg"
+            >
+              <Stack direction="row">
+                <Radio value="2">2D</Radio>
+                <Radio value="3">3D</Radio>
+              </Stack>
+            </RadioGroup>
+            <RadioGroup
+              onChange={setReductionAlgo}
+              value={reductionAlgo}
+              colorScheme="white"
+              defaultValue="2"
+              color={textColor}
+              size="lg"
+            >
+              <Stack direction="row">
+                <Radio value="PCA">PCA</Radio>
+                <Radio value="TSNE">TSNE</Radio>
+                <Radio value="UMAP">UMAP</Radio>
+              </Stack>
+            </RadioGroup>
             <Text fontSize="2xl" color={textColor} align="center" as="u">
               My Sketch
             </Text>
             {showSketch()}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1} align="center">
             <Text fontSize="2xl" color={textColor} align="center" as="u">
               Clicked image
             </Text>
             {showImage}
-          </GridItem>
-          <GridItem rowSpan={1} colSpan={1}>
             {PageDrawer()}
-          </GridItem>
-        </Grid>
-      </Box>
-    </ChakraProvider>
+          </VStack>
+        </GridItem>
+
+        <GridItem rowSpan={1} colSpan={8}>
+          <Plot
+            data={traces}
+            layout={{
+              width: 1200,
+              height: 730,
+              hovermode: "closest",
+              showlegend: true,
+              margin: {
+                l: 0,
+                r: 0,
+                b: 0,
+                t: 0,
+              },
+              legend: {
+                title: {
+                  text: "Categories",
+                  font: {
+                    size: 20,
+                    color: backgroundColor,
+                  },
+                },
+                font: {
+                  size: 16,
+                  color: backgroundColor,
+                },
+                orientation: "v",
+                itemsizing: "constant",
+                x: 0.9,
+                y: 0.5,
+              },
+              font: {
+                color: backgroundColor,
+              },
+              paper_bgcolor: gray,
+            }}
+            onClick={(e) => getClickedImage(e)}
+          />
+        </GridItem>
+      </Grid>
+    </>
   );
 }
 

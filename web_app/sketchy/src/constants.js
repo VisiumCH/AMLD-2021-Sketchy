@@ -1,4 +1,4 @@
-import { CircularProgress } from "@chakra-ui/react";
+import { CircularProgress, Heading, Text } from "@chakra-ui/react";
 export const gray = "#F7FAFC";
 export const black = "#000000";
 export const white = "#FFFFFF";
@@ -16,6 +16,16 @@ export const progress = (
     size="180px"
     thickness="4px"
   />
+);
+export const heading = (
+  <>
+    <Heading fontSize="4xl" color={textColor} align="center">
+      AMLD 2021 Visium's Sketchy App
+    </Heading>
+    <Text fontSize="xs" color={textColor} align="center">
+      --------------------------------------------------------
+    </Text>
+  </>
 );
 export const colors = [
   "#e6194b",
