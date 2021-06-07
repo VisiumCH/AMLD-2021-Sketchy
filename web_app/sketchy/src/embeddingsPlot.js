@@ -4,34 +4,28 @@ import Plot from "react-plotly.js";
 import {
   Box,
   ChakraProvider,
-  Button,
   Text,
   Heading,
+  Stack,
   VStack,
   Grid,
   GridItem,
-  FormControl,
-  Select,
+  Radio,
+  RadioGroup,
 } from "@chakra-ui/react";
 import {
   gray,
-  darkGray,
   textColor,
   backgroundColor,
-  buttonHeight,
-  buttonWidth,
   colors,
   custom_sketch_class,
-  dimReductionAlgorithms,
-  formLabelWidth,
-  white,
 } from "./constants";
 import { PageDrawer } from "./drawer.js";
 
 function Embeddings() {
   const { state } = useLocation();
   const [result, setResult] = useState({});
-  const [nbDimensions, setNbDimensions] = useState(3);
+  const [nbDimensions, setNbDimensions] = useState("3");
   const [reductionAlgo, setReductionAlgo] = useState("PCA");
   const [clickedClass, setClickedClass] = useState("");
   const [clickedX, setClickedX] = useState(0);
@@ -40,9 +34,6 @@ function Embeddings() {
   const [sketch, setSketch] = useState([]);
   const [showImage, setShowImage] = useState([]);
   const point = useRef({ clickedX, clickedY, clickedZ });
-  const algorithmOptions = dimReductionAlgorithms.map((algorithm) => (
-    <option>{algorithm}</option>
-  ));
 
   let traces = [];
 
@@ -85,13 +76,13 @@ function Embeddings() {
       if (
         point.current.clickedX === clickedX ||
         point.current.clickedY === clickedY ||
-        (nbDimensions === 3 && point.current.clickedZ === clickedZ)
+        (nbDimensions === "3" && point.current.clickedZ === clickedZ)
       ) {
         return;
       } else {
         to_send["x"] = clickedX;
         to_send["y"] = clickedY;
-        if (nbDimensions === 3) {
+        if (nbDimensions === "3") {
           to_send["z"] = clickedZ;
         }
         point.current = { clickedX, clickedY, clickedZ };
@@ -137,14 +128,11 @@ function Embeddings() {
     let marker_line_width = 0.1;
     let i = 0;
     for (let key in result) {
-      console.log(key);
       if (key === custom_sketch_class) {
-        console.log("in");
         marker_size = 10;
         marker_line_color = "rgb(0,0,0)";
         marker_line_width = 1;
       } else {
-        console.log("out");
         marker_line_color = colors[i];
         marker_line_width = 0.1;
         marker_size = 6;
@@ -164,7 +152,7 @@ function Embeddings() {
         },
         hoverinfo: "name",
       };
-      if (nbDimensions === 3) {
+      if (nbDimensions === "3") {
         trace["z"] = result[key]["z"];
         trace["type"] = "scatter3d";
         trace["marker"]["size"] = marker_size;
@@ -177,55 +165,6 @@ function Embeddings() {
     }
   }
   fillTraces();
-
-  function getDimensionButton() {
-    let text = "Switch to 3D";
-    let dim = 3;
-    if (nbDimensions === 3) {
-      text = "Switch to 2D";
-      dim = 2;
-    }
-
-    return (
-      <Button
-        color={backgroundColor}
-        border="2px"
-        borderColor={darkGray}
-        variant="solid"
-        size="lg"
-        height={buttonHeight}
-        width={buttonWidth}
-        onClick={() => {
-          setNbDimensions(dim);
-        }}
-      >
-        {text}
-      </Button>
-    );
-  }
-
-  function getReductionAlgoSelection() {
-    return (
-      <form>
-        <FormControl
-          id="algorithm"
-          color={backgroundColor}
-          width={buttonWidth}
-          bg={white}
-        >
-          <Select
-            value={reductionAlgo}
-            color={backgroundColor}
-            onChange={(e) => {
-              setReductionAlgo(e.target.value);
-            }}
-          >
-            {algorithmOptions}
-          </Select>
-        </FormControl>
-      </form>
-    );
-  }
 
   function showSketch() {
     if (state !== "undefined") {
@@ -272,8 +211,33 @@ function Embeddings() {
               <Text fontSize="2xl" color={textColor} align="center">
                 Options
               </Text>
-              {getDimensionButton()}
-              {getReductionAlgoSelection()}
+              <RadioGroup
+                onChange={setNbDimensions}
+                value={nbDimensions}
+                colorScheme="white"
+                defaultValue="2"
+                color={textColor}
+                size="lg"
+              >
+                <Stack direction="row">
+                  <Radio value="2">2D</Radio>
+                  <Radio value="3">3D</Radio>
+                </Stack>
+              </RadioGroup>
+              <RadioGroup
+                onChange={setReductionAlgo}
+                value={reductionAlgo}
+                colorScheme="white"
+                defaultValue="2"
+                color={textColor}
+                size="lg"
+              >
+                <Stack direction="row">
+                  <Radio value="PCA">PCA</Radio>
+                  <Radio value="TSNE">TSNE</Radio>
+                  <Radio value="UMAP">UMAP</Radio>
+                </Stack>
+              </RadioGroup>
             </VStack>
           </GridItem>
 

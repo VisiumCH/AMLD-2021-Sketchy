@@ -64,23 +64,23 @@ class DimensionalityReduction():
         }
 
     def get_projection(self, reduction_algo, nb_dimensions, sketch_embedding=False):
-        df = self.projected_embeddings[reduction_algo][str(nb_dimensions)]
+        df = self.projected_embeddings[reduction_algo][nb_dimensions]
 
         # Prepare data in object
         data = {}
 
         if reduction_algo != "TSNE" and torch.is_tensor(sketch_embedding):
-            fitted_pca = self.fitted_algorithm[reduction_algo][str(nb_dimensions)]
+            fitted_pca = self.fitted_algorithm[reduction_algo][nb_dimensions]
             embedding = fitted_pca.transform(sketch_embedding.cpu().detach().numpy())[0]
             data[CUSTOM_SKETCH_CLASS] = {"x": [float(embedding[0])], "y": [float(embedding[1])]}
-            if nb_dimensions == 3:
+            if nb_dimensions == "3":
                 data[CUSTOM_SKETCH_CLASS]['z'] = [float(embedding[2])]
 
         for _class in self.class_set:
             data[_class] = {}
             data[_class]["x"] = list(df[df["classes"] == _class]["x"])
             data[_class]["y"] = list(df[df["classes"] == _class]["y"])
-            if nb_dimensions == 3:
+            if nb_dimensions == "3":
                 data[_class]["z"] = list(df[df["classes"] == _class]["z"])
 
         return data

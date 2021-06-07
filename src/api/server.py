@@ -97,9 +97,7 @@ class Embeddings(Resource):
 
     def post(self):
         json_data = request.get_json()
-        print("\n\n Embeddings")
         print(json_data)
-
         # Verify the data
         if "nb_dim" not in json_data.keys():
             return {"ERROR": "Number of dimensions not provided"}, 400
