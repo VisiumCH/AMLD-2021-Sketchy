@@ -171,8 +171,8 @@ function Embeddings() {
       return sketch;
     } else {
       return (
-        <Text fontSize="l" color={textColor} align="center">
-          No sketch drawn, click on "Draw" to draw one!
+        <Text fontSize="xl" color={textColor} align="center">
+          No sketch drawn, go to "Draw" to draw one!
         </Text>
       );
     }
@@ -208,7 +208,7 @@ function Embeddings() {
         >
           <GridItem rowSpan={1} colSpan={1} align="center">
             <VStack spacing={3} direction="row" align="center">
-              <Text fontSize="2xl" color={textColor} align="center">
+              <Text fontSize="2xl" color={textColor} align="center" as="u">
                 Options
               </Text>
               <RadioGroup
@@ -282,13 +282,13 @@ function Embeddings() {
           </GridItem>
 
           <GridItem rowSpan={1} colSpan={1} align="center">
-            <Text fontSize="xl" color={textColor} align="center">
+            <Text fontSize="2xl" color={textColor} align="center" as="u">
               My Sketch
             </Text>
             {showSketch()}
           </GridItem>
           <GridItem rowSpan={1} colSpan={1} align="center">
-            <Text fontSize="xl" color={textColor} align="center">
+            <Text fontSize="2xl" color={textColor} align="center" as="u">
               Clicked image
             </Text>
             {showImage}
