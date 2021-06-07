@@ -1,4 +1,3 @@
-import flask_restful
 from src.constants import CUSTOM_SKETCH_CLASS, DATA_PATH, MODELS_PATH
 from src.api.utils import (
     svg_to_png,
@@ -12,8 +11,6 @@ from src.api.api_options import ApiOptions
 from src.api.api_inference import ApiInference
 from src.api.api_performance import ModelPerformance
 import torch
-import pandas as pd
-import numpy as np
 import json
 from flask_restful import Resource, Api
 from flask import Flask, request, make_response
@@ -33,12 +30,18 @@ class APIList(Resource):
     def get(self):
         api_json = {
             "cmd: /api_list": "Input: None. Return the list of available commands.",
-            "cmd: /find_images": "Input: an svg base 64 string of a sketch. Returns base 64 string of its closest images, the associated labels and the attention map",
-            "cmd: /get_embeddings": "Inputs: a dimension number (2 or 3) and optinally a sketch. Returns the projected points of the embeddings.",
-            "cmd: /get_dataset_images": "Input: a category name. Returns 5 random images and sketches of this category.",
-            "cmd: /get_embedding_images": "Input: a class and clicked position. Returns the closest image to the clicked position.",
-            "cmd: /scalar_perf": "Input: None. Returns the values of the loss and metrics during training.",
-            "cmd: /image_perf": "Input: an image type (inference, sketch or image attention). Returns how the model performed at each epoch of the training.",
+            "cmd: /find_images": "Input: an svg base 64 string of a sketch. \
+                Returns base 64 string of its closest images, the associated labels and the attention map",
+            "cmd: /get_embeddings": "Inputs: a dimension number (2 or 3) and optinally a sketch. \
+                Returns the projected points of the embeddings.",
+            "cmd: /get_dataset_images": "Input: a category name. \
+                Returns 5 random images and sketches of this category.",
+            "cmd: /get_embedding_images": "Input: a class and clicked position. \
+                Returns the closest image to the clicked position.",
+            "cmd: /scalar_perf": "Input: None. \
+                Returns the values of the loss and metrics during training.",
+            "cmd: /image_perf": "Input: an image type (inference, sketch or image attention). \
+                Returns how the model performed at each epoch of the training.",
         }
         print("In api list function of server")
         return {

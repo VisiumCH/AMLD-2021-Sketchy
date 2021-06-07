@@ -1,7 +1,6 @@
 """
 Tensorboard saves the scalar and images (other then the embeddings) in a tfevent s file
 """
-import base64
 import io
 from PIL import Image
 from glob import glob

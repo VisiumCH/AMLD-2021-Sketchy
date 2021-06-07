@@ -1,9 +1,7 @@
 from locust import HttpUser, task, between
-import json
-
 
 test_data = {
-    'class': 'butterfly', 
+    'class': 'butterfly',
     'x': 0.0,
     'y': 0.0,
     'z': 0.0

@@ -12,6 +12,6 @@ class ApiOptions:
             "--ngpu", type=int, default=1, help="0 = CPU, 1 = CUDA, 1 < DataParallel"
         )
         self.parser = parser
-    
+
     def parse(self):
         return self.parser.parse_args()

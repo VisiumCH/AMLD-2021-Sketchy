@@ -43,7 +43,7 @@ def prepare_dataset(dataset_path, image_type, category, dataset_folder):
     else:
         print("Type must be either images or sketches.")
         sys.exit()
-    
+
     loader = get_loader(dataset_folder)
 
     data = {}
@@ -106,11 +106,11 @@ def get_parameters(fpath):
     param = {}
     with open(fpath + PARAMETERS, "r") as f:
         data = [line.rstrip("\n") for line in f]
-    
+
     for line in data:
         key, val = line.split(' ')
         param[key] = val
-        
+
     return param["dataset"], int(param["emb_size"]), int(param["embedding_number"])
 
 
