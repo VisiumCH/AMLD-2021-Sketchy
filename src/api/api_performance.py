@@ -37,11 +37,37 @@ class ModelPerformance():
         self.prec_valid = [value[2] for value in self.ea.Scalars('prec_valid_200')]
 
     def __prepare_images(self):
-        image_tags = self.ea.Tags()['images']
+        tag_list = self.ea.Tags()['images']
 
-        self.inference_tags = [tag for tag in image_tags if tag.startswith('Inference')]
-        self.image_attention_tags = [tag for tag in image_tags if tag.startswith('im')]
-        self.sketch_attention_tags = [tag for tag in image_tags if tag.startswith('sk')]
+        self.inference_dict = self.__prepare_image_type(tag_list, "Inference")
+        self.im_attention_dict = self.__prepare_image_type(tag_list, "im")
+        self.sk_attention_dict = self.__prepare_image_type(tag_list, "sk")
+
+        # self.inference_tags = [tag for tag in image_tags if tag.startswith('Inference')]
+        # self.image_attention_tags = [tag for tag in image_tags if tag.startswith('im')]
+        # self.sketch_attention_tags = [tag for tag in image_tags if tag.startswith('sk')]
+
+    def __prepare_image_type(self, tag_list, keyword):
+        tags = [tag for tag in tag_list if tag.startswith(keyword)]
+
+        if keyword == 'Inference':
+            left, top, right, bottom = INFERENCE_CROP
+        else:
+            left, top, right, bottom = ATTENTION_CROP
+
+        prepared_data = {}
+        for tag in tags:
+            image_list = self.ea.Images(tag)
+            images_processed = [Image.open(io.BytesIO(image[2])).crop(
+                (left, top, right, bottom)) for image in image_list]
+
+            if keyword != 'Inference':  # resize attention
+                images_processed = [image.resize((int(image.size[0]/1.5), int(image.size[1]/1.5)))
+                                    for image in images_processed]
+
+            prepared_data[tag] = {str(epoch[1]): base64_encoding(image)
+                                  for epoch, image in zip(image_list, images_processed)}
+        return prepared_data
 
     def get_scalars(self):
         return {
@@ -54,26 +80,41 @@ class ModelPerformance():
         }
 
     def get_image(self, image_type):
-        if image_type == 'inference':
-            tags = self.inference_tags
-            left, top, right, bottom = INFERENCE_CROP
-        elif image_type == 'attention_image':
-            tags = self.image_attention_tags
-            left, top, right, bottom = ATTENTION_CROP
-        elif image_type == 'attention_sketch':
-            tags = self.sketch_attention_tags
-            left, top, right, bottom = ATTENTION_CROP
+        if image_type == 'Inference':
+            images_processed = self.inference_dict
+        elif image_type == 'image_attention':
+            images_processed = self.im_attention_dict
+        elif image_type == 'sketch_attention':
+            images_processed = self.sk_attention_dict
         else:
             raise Exception(f"Image type {image_type} not implemented.")
 
-        image_list = self.ea.Images(random.choice(tags))
-
-        images_processed = [Image.open(io.BytesIO(image[2])).crop(
-            (left, top, right, bottom)) for image in image_list]
-        if image_type != 'inference':
-            images_processed = [image.resize((int(image.size[0]/1.5), int(image.size[1]/1.5)))
-                                for image in images_processed]
-
-        data = {str(epoch[1]): base64_encoding(image) for epoch, image in zip(image_list, images_processed)}
+        keys = list(images_processed.keys())
+        data = images_processed[random.choice(keys)]
         data['length'] = len(data)
         return data
+
+    # def get_image(self, image_type):
+    #     if image_type == 'Inference':
+    #         tags = self.inference_tags
+    #         left, top, right, bottom = INFERENCE_CROP
+    #     elif image_type == 'image_attention':
+    #         tags = self.image_attention_tags
+    #         left, top, right, bottom = ATTENTION_CROP
+    #     elif image_type == 'sketch_attention':
+    #         tags = self.sketch_attention_tags
+    #         left, top, right, bottom = ATTENTION_CROP
+    #     else:
+    #         raise Exception(f"Image type {image_type} not implemented.")
+
+    #     image_list = self.ea.Images(random.choice(tags))
+
+    #     images_processed = [Image.open(io.BytesIO(image[2])).crop(
+    #         (left, top, right, bottom)) for image in image_list]
+    #     if image_type != 'inference':
+    #         images_processed = [image.resize((int(image.size[0]/1.5), int(image.size[1]/1.5)))
+    #                             for image in images_processed]
+
+    #     data = {str(epoch[1]): base64_encoding(image) for epoch, image in zip(image_list, images_processed)}
+    #     data['length'] = len(data)
+    #     return data

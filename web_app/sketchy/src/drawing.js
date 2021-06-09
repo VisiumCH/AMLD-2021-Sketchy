@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect } from "react";
-// import { Link as ReachLink } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -10,20 +9,8 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 import { useSvgDrawing } from "react-hooks-svgdrawing";
-import {
-  gray,
-  darkGray,
-  textColor,
-  backgroundColor,
-  buttonHeight,
-  buttonWidth,
-  white,
-  black,
-  progress,
-  heading,
-} from "./constants";
+import { black, progress, heading } from "./constants";
 import { PageDrawer } from "./drawer.js";
-
 import { BiPencil, BiEraser } from "react-icons/bi";
 
 function Drawing() {
@@ -47,7 +34,7 @@ function Drawing() {
 
   function changeDrawingMode() {
     if (drawingMode === "drawing") {
-      changePenColor(white);
+      changePenColor("white");
       changePenWidth(25);
       setDrawingMode("erasing");
       setDisableDrawing(false);
@@ -147,13 +134,13 @@ function Drawing() {
         templateColumns="repeat(12, 1fr)"
       >
         <GridItem rowSpan={1} colSpan={8}>
-          <Text fontSize="4xl" color={textColor}>
+          <Text fontSize="4xl" color="white">
             Draw Sketch Here:
           </Text>
         </GridItem>
 
         <GridItem rowSpan={1} colSpan={4}>
-          <Text fontSize="4xl" color={textColor}>
+          <Text fontSize="4xl" color="white">
             Closest Images:
           </Text>
         </GridItem>
@@ -162,7 +149,7 @@ function Drawing() {
           <Box
             h="73vh"
             w="62vw"
-            bg={white}
+            bg="white"
             borderWidth="5px"
             borderRadius="lg"
             borderColor="#A3A8B0"
@@ -181,11 +168,11 @@ function Drawing() {
               borderWidth="5px"
               borderRadius="lg"
               borderColor="#A3A8B0"
-              bg={gray}
+              bg="gray"
             >
               <Box h="33vh" w="20vw">
                 <VStack>
-                  <Text fontSize="2xl" color={backgroundColor} as="em">
+                  <Text fontSize="2xl" color="backgroundColor" as="em">
                     {inferredLabel[0]}
                   </Text>
                   <Box w="100%" h="35%">
@@ -195,10 +182,10 @@ function Drawing() {
               </Box>
               <Box h="33vh" w="20vw">
                 <VStack>
-                  <Text fontSize="2xl" color={backgroundColor} as="em">
+                  <Text fontSize="2xl" color="backgroundColor" as="em">
                     {inferredLabel[1]}
                   </Text>
-                  <Box bg={gray} w="100%" h="35%">
+                  <Box bg="gray" w="100%" h="35%">
                     {inferredImage[1]}
                   </Box>
                 </VStack>
@@ -207,8 +194,8 @@ function Drawing() {
           </Box>
         </GridItem>
 
-        <GridItem rowSpan={1} colSpan={4} bg={backgroundColor}>
-          <Text fontSize="4xl" color={textColor}>
+        <GridItem rowSpan={1} colSpan={4} bg="backgroundColor">
+          <Text fontSize="4xl" color="white">
             Attention Map
           </Text>
         </GridItem>
@@ -219,7 +206,7 @@ function Drawing() {
           borderWidth="5px"
           borderRadius="lg"
           borderColor="#A3A8B0"
-          bg={gray}
+          bg="gray"
         >
           <Box h="35vh" w="21vw">
             {attention}
@@ -230,13 +217,7 @@ function Drawing() {
           <Button
             disabled={disableDrawing}
             leftIcon={<BiPencil />}
-            color={backgroundColor}
-            border="2px"
-            borderColor={darkGray}
-            variant="solid"
-            size="lg"
-            height={buttonHeight}
-            width={buttonWidth}
+            variant="primary"
             onClick={() => {
               if (drawingMode === "erasing") {
                 changeDrawingMode();
@@ -250,13 +231,7 @@ function Drawing() {
           <Button
             disabled={disableErasing}
             leftIcon={<BiEraser />}
-            color={backgroundColor}
-            border="2px"
-            borderColor={darkGray}
-            variant="solid"
-            size="lg"
-            height={buttonHeight}
-            width={buttonWidth}
+            variant="primary"
             onClick={() => {
               if (drawingMode === "drawing") {
                 changeDrawingMode();
@@ -268,13 +243,7 @@ function Drawing() {
         </GridItem>
         <GridItem rowSpan={2} colSpan={2}>
           <Button
-            color={backgroundColor}
-            border="2px"
-            borderColor={darkGray}
-            variant="solid"
-            size="lg"
-            height={buttonHeight}
-            width={buttonWidth}
+            variant="primary"
             onClick={() => {
               undo();
               sendRequest(getSvgXML());
@@ -285,13 +254,7 @@ function Drawing() {
         </GridItem>
         <GridItem rowSpan={2} colSpan={2}>
           <Button
-            color={backgroundColor}
-            border="2px"
-            borderColor={darkGray}
-            variant="solid"
-            size="lg"
-            height={buttonHeight}
-            width={buttonWidth}
+            variant="primary"
             onClick={() => {
               clear();
               setInferredImage([]);

@@ -2,14 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Box, ChakraProvider } from "@chakra-ui/react";
-import { backgroundColor } from "./constants";
+import { theme } from "./styles/theme";
 import App from "./App";
 
 ReactDOM.render(
   <React.StrictMode>
     <Router>
-      <ChakraProvider>
-        <Box bg={backgroundColor} h="100%" w="100%" align="center">
+      <ChakraProvider resetCSS theme={theme}>
+        <Box bg="backgroundColor" h="100%" w="100%" align="center">
           <App />
         </Box>
       </ChakraProvider>

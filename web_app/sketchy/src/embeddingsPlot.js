@@ -10,14 +10,7 @@ import {
   Radio,
   RadioGroup,
 } from "@chakra-ui/react";
-import {
-  gray,
-  textColor,
-  backgroundColor,
-  colors,
-  custom_sketch_class,
-  heading,
-} from "./constants";
+import { colors, custom_sketch_class, heading } from "./constants";
 import { PageDrawer } from "./drawer.js";
 
 function Embeddings() {
@@ -169,7 +162,7 @@ function Embeddings() {
       return sketch;
     } else {
       return (
-        <Text fontSize="xl" color={textColor} align="center">
+        <Text fontSize="xl" color="white" align="center">
           No sketch drawn, go to "Draw" to draw one!
         </Text>
       );
@@ -186,7 +179,7 @@ function Embeddings() {
   return (
     <>
       {heading}
-      <Text fontSize="2xl" color={textColor} align="center">
+      <Text fontSize="2xl" color="white" align="center">
         Embeddings: Images and Sketches in {nbDimensions}D after {reductionAlgo}{" "}
         projection
       </Text>
@@ -200,7 +193,7 @@ function Embeddings() {
       >
         <GridItem rowSpan={1} colSpan={2} align="center">
           <VStack spacing={3} direction="row" align="center">
-            <Text fontSize="2xl" color={textColor} align="center" as="u">
+            <Text fontSize="2xl" color="white" align="center" as="u">
               Options
             </Text>
             <RadioGroup
@@ -208,7 +201,7 @@ function Embeddings() {
               value={nbDimensions}
               colorScheme="white"
               defaultValue="2"
-              color={textColor}
+              color="white"
               size="lg"
             >
               <Stack direction="row">
@@ -221,7 +214,7 @@ function Embeddings() {
               value={reductionAlgo}
               colorScheme="white"
               defaultValue="2"
-              color={textColor}
+              color="white"
               size="lg"
             >
               <Stack direction="row">
@@ -230,11 +223,11 @@ function Embeddings() {
                 <Radio value="UMAP">UMAP</Radio>
               </Stack>
             </RadioGroup>
-            <Text fontSize="2xl" color={textColor} align="center" as="u">
+            <Text fontSize="2xl" color="white" align="center" as="u">
               My Sketch
             </Text>
             {showSketch()}
-            <Text fontSize="2xl" color={textColor} align="center" as="u">
+            <Text fontSize="2xl" color="white" align="center" as="u">
               Clicked image
             </Text>
             {showImage}
@@ -261,12 +254,12 @@ function Embeddings() {
                   text: "Categories",
                   font: {
                     size: 20,
-                    color: backgroundColor,
+                    color: "backgroundColor",
                   },
                 },
                 font: {
                   size: 16,
-                  color: backgroundColor,
+                  color: "backgroundColor",
                 },
                 orientation: "v",
                 itemsizing: "constant",
@@ -274,9 +267,9 @@ function Embeddings() {
                 y: 0.5,
               },
               font: {
-                color: backgroundColor,
+                color: "backgroundColor",
               },
-              paper_bgcolor: gray,
+              paper_bgcolor: "white",
             }}
             onClick={(e) => getClickedImage(e)}
           />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Grid, GridItem, Text } from "@chakra-ui/react";
 import Plot from "react-plotly.js";
-import { gray, backgroundColor, heading } from "./constants";
+import { heading } from "./constants";
 import { PageDrawer } from "./drawer.js";
 
 function ScalarPerformance() {
@@ -63,9 +63,9 @@ function ScalarPerformance() {
                 t: 60,
               },
               font: {
-                color: backgroundColor,
+                color: "backgroundColor",
               },
-              paper_bgcolor: gray,
+              paper_bgcolor: "white",
               xaxis: { ticks: "outside", title: { text: "Epoch" } },
               yaxis: { ticks: "outside", title: { text: "Performance" } },
             }}
@@ -93,7 +93,7 @@ function ScalarPerformance() {
         {plotValues("Precision", precisionValues)}
       </Grid>
       {PageDrawer()}
-      <Text fontSize="xs" color={backgroundColor}>
+      <Text fontSize="xs" color="backgroundColor">
         I need a space.
       </Text>
     </>

@@ -29,9 +29,10 @@ class APIList(Resource):
 
     def get(self):
         api_json = {
-            "cmd: /api_list": "Input: None. Return the list of available commands.",
+            "cmd: /api_list": "Input: None. \
+                Return the list of available commands.",
             "cmd: /find_images": "Input: an svg base 64 string of a sketch. \
-                Returns base 64 string of its closest images, the associated labels and the attention map",
+                Returns base 64 string of its closest images, the associated labels and the attention map.",
             "cmd: /get_embeddings": "Inputs: a dimension number (2 or 3) and optinally a sketch. \
                 Returns the projected points of the embeddings.",
             "cmd: /get_dataset_images": "Input: a category name. \

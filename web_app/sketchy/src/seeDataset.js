@@ -3,20 +3,16 @@ import {
   Box,
   Text,
   Select,
-  Button,
+  IconButton,
   Grid,
   GridItem,
   FormControl,
   HStack,
 } from "@chakra-ui/react";
 import {
-  textColor,
-  backgroundColor,
-  darkGray,
   datasets,
   categories,
   formLabelWidth,
-  white,
   nb_to_show,
   heading,
 } from "./constants";
@@ -116,7 +112,7 @@ function Dataset() {
         templateColumns="repeat(2, 1fr)"
       >
         <GridItem rowSpan={1} colSpan={1} align="right">
-          <Text fontSize="2xl" color={textColor}>
+          <Text fontSize="2xl" color="white">
             Choose a dataset:
           </Text>
         </GridItem>
@@ -124,13 +120,13 @@ function Dataset() {
           <form>
             <FormControl
               id="category"
-              color={backgroundColor}
+              color="backgroundColor"
               width={formLabelWidth}
-              bg={white}
+              bg="white"
             >
               <Select
                 value={currentDataset}
-                color={backgroundColor}
+                color="backgroundColor"
                 onChange={(e) => {
                   setCurrentDataset(e.target.value);
                   setCurrentCategory("pineapple");
@@ -142,7 +138,7 @@ function Dataset() {
           </form>
         </GridItem>
         <GridItem rowSpan={1} colSpan={1} align="right">
-          <Text fontSize="2xl" color={textColor}>
+          <Text fontSize="2xl" color="white">
             Choose a categories to see some samples:
           </Text>
         </GridItem>
@@ -151,29 +147,30 @@ function Dataset() {
             <form>
               <FormControl
                 id="category"
-                color={backgroundColor}
+                color="backgroundColor"
                 width={formLabelWidth}
-                bg={white}
+                bg="white"
               >
                 <Select
                   value={currentCategory}
-                  color={backgroundColor}
+                  color="backgroundColor"
                   onChange={(e) => setCurrentCategory(e.target.value)}
                 >
                   {categoriesOptions}
                 </Select>
               </FormControl>
             </form>
-            <Button
-              leftIcon={<BiRefresh />}
-              border="1px"
-              borderColor={darkGray}
+            <IconButton
+              color="white"
+              icon={<BiRefresh />}
+              border="2px"
+              borderColor="darkGray"
               variant="solid"
               size="md"
               onClick={() => {
                 getImages(currentCategory, currentDataset);
               }}
-            ></Button>
+            ></IconButton>
           </HStack>
         </GridItem>
         <GridItem rowSpan={4} colSpan={2}>

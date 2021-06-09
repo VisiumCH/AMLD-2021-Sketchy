@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
+  IconButton,
   Grid,
   GridItem,
   Text,
@@ -10,20 +11,13 @@ import {
   SliderFilledTrack,
   SliderThumb,
 } from "@chakra-ui/react";
-import {
-  darkGray,
-  textColor,
-  backgroundColor,
-  buttonHeight,
-  progress,
-  heading,
-} from "./constants";
+import { progress, heading } from "./constants";
 import { PageDrawer } from "./drawer.js";
 import { BiRefresh } from "react-icons/bi";
+import { CgArrowsHAlt } from "react-icons/cg";
 
 function ImagePerformance() {
-  const buttonWidth = "230px";
-  const [imageType, setImageType] = useState("inference");
+  const [imageType, setImageType] = useState("Inference");
   const [images, setImages] = useState([]);
   const [epochImage, setEpochImage] = useState(progress);
   const [epoch, setEpoch] = useState(0);
@@ -49,9 +43,11 @@ function ImagePerformance() {
         let img = "";
 
         for (i = 0; i < nb_images; i++) {
-          img = res[String(i)].split("'")[1];
-          let image = <img src={`data:image/jpeg;base64,${img}`} alt="img" />;
-          setImages((images) => [...images, image]);
+          try {
+            img = res[String(i)].split("'")[1];
+            let image = <img src={`data:image/jpeg;base64,${img}`} alt="img" />;
+            setImages((images) => [...images, image]);
+          } catch (TypeError) {}
         }
       }
     }
@@ -66,14 +62,14 @@ function ImagePerformance() {
       return (
         <>
           <Box
-            bg={backgroundColor}
+            bg="backgroundColor"
             align="center"
             pr={10}
             pl={10}
             pb={10}
           ></Box>
           {progress}
-          <Text fontSize="l" color={textColor} align="center">
+          <Text fontSize="l" color="white" align="center">
             Loading random image for all epochs.
           </Text>
         </>
@@ -81,21 +77,21 @@ function ImagePerformance() {
     } else {
       return (
         <>
-          <Box bg={backgroundColor} align="center" pr={10} pl={10} pb={5}>
+          <Box bg="backgroundColor" align="center" pr={10} pl={10} pb={5}>
             {epochImage};
           </Box>
-          <Button
-            leftIcon={<BiRefresh />}
+          <IconButton
+            color="white"
+            icon={<BiRefresh />}
             border="2px"
-            borderColor={darkGray}
-            variant="solid"
+            borderColor="darkGray"
             size="lg"
+            borderRadius="30px"
+            width="50px"
             onClick={() => {
               setReload(true);
             }}
-          >
-            Another
-          </Button>
+          ></IconButton>
         </>
       );
     }
@@ -105,13 +101,8 @@ function ImagePerformance() {
     return (
       <>
         <Button
-          color={backgroundColor}
-          border="2px"
-          borderColor={darkGray}
-          variant="solid"
-          size="lg"
-          height={buttonHeight}
-          width={buttonWidth}
+          variant="primary"
+          width="230px"
           onClick={() => {
             setImageType(option);
             setReload(true);
@@ -126,7 +117,7 @@ function ImagePerformance() {
   return (
     <>
       {heading}
-      <Text fontSize="xs" color={backgroundColor} align="center">
+      <Text fontSize="xs" color="backgroundColor" align="center">
         .
       </Text>
       <Grid
@@ -138,37 +129,41 @@ function ImagePerformance() {
         templateColumns="repeat(3, 1fr)"
       >
         <GridItem rowSpan={1} colSpan={1}>
-          {selectOption("inference", "See Inference")}
+          {selectOption("Inference", "See Inference")}
         </GridItem>
         <GridItem rowSpan={1} colSpan={1}>
-          {selectOption("attention_sketch", "See Attention on Sketch")}
+          {selectOption("sketch_attention", "See Attention on Sketch")}
         </GridItem>
         <GridItem rowSpan={1} colSpan={1}>
-          {selectOption("attention_image", "See Attention on Image")}
+          {selectOption("image_attention", "See Attention on Image")}
         </GridItem>
         <GridItem rowSpan={1} colSpan={3}>
-          <Box bg={backgroundColor} align="center" pr={40} pl={40}>
-            <Text fontSize="xl" color={textColor} align="center">
+          <Box bg="backgroundColor" align="center" pr={40} pl={40}>
+            <Text fontSize="xl" color="white" align="center">
               Epoch number: {epoch}
             </Text>
-            <Slider
-              aria-label="slider-ex-2"
-              colorScheme="red"
-              defaultValue={images.length - 1}
-              min={0}
-              max={images.length - 1}
-              step={1}
-              onChangeEnd={(val) => {
-                setEpoch(val);
-                setEpochImage(images[val]);
-              }}
-            >
-              <SliderTrack>
-                <Box position="relative" right={10} />
-                <SliderFilledTrack />
-              </SliderTrack>
-              <SliderThumb />
-            </Slider>
+            <Box bg="lightGray" align="center" pr={2} pl={2} borderRadius="md">
+              <Slider
+                aria-label="slider-ex-2"
+                colorScheme="red"
+                defaultValue={images.length - 1}
+                min={0}
+                max={images.length - 1}
+                step={1}
+                onChangeEnd={(val) => {
+                  setEpoch(val);
+                  setEpochImage(images[val]);
+                }}
+              >
+                <SliderTrack>
+                  <Box position="relative" right={10} />
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb boxSize={5}>
+                  <Box color="tomato" as={CgArrowsHAlt} />
+                </SliderThumb>
+              </Slider>
+            </Box>
           </Box>
         </GridItem>
 

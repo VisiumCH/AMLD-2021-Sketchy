@@ -13,12 +13,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import {
-  backgroundColor,
-  darkGray,
-  buttonHeight,
-  buttonWidth,
-} from "./constants";
-import {
   BiImage,
   BiImages,
   BiPencil,
@@ -33,17 +27,7 @@ export function PageDrawer(svg) {
 
   return (
     <>
-      <Button
-        leftIcon={<BiFoodMenu />}
-        color={backgroundColor}
-        borderColor={darkGray}
-        height={buttonHeight}
-        width={buttonWidth}
-        border="2px"
-        variant="solid"
-        size="lg"
-        onClick={onOpen}
-      >
+      <Button leftIcon={<BiFoodMenu />} variant="primary" onClick={onOpen}>
         Change Page
       </Button>
       <Drawer
@@ -54,40 +38,22 @@ export function PageDrawer(svg) {
       >
         <DrawerOverlay />
         <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader>Sketchy App</DrawerHeader>
+          <DrawerCloseButton color="backgroundColor" />
+          <DrawerHeader color="backgroundColor">Sketchy App </DrawerHeader>
 
           <DrawerBody>
             <VStack spacing="24px">
-              <Text fontSize="xl" color={backgroundColor} align="center">
+              <Text fontSize="xl" color="backgroundColor" as="u">
                 Interact with data
               </Text>
               <Link to="/" className="explore_link">
-                <Button
-                  leftIcon={<BiImage />}
-                  color={backgroundColor}
-                  borderColor={darkGray}
-                  height={buttonHeight}
-                  width={buttonWidth}
-                  border="2px"
-                  variant="solid"
-                  size="lg"
-                >
+                <Button leftIcon={<BiImage />} variant="secondary">
                   {" "}
                   Dataset
                 </Button>
               </Link>
               <Link to="/drawing" className="drawing_link">
-                <Button
-                  leftIcon={<BiPencil />}
-                  color={backgroundColor}
-                  borderColor={darkGray}
-                  height={buttonHeight}
-                  width={buttonWidth}
-                  border="2px"
-                  variant="solid"
-                  size="lg"
-                >
+                <Button leftIcon={<BiPencil />} variant="secondary">
                   {" "}
                   Draw
                 </Button>
@@ -98,16 +64,7 @@ export function PageDrawer(svg) {
                   state: svg,
                 }}
               >
-                <Button
-                  leftIcon={<BiShapePolygon />}
-                  color={backgroundColor}
-                  borderColor={darkGray}
-                  height={buttonHeight}
-                  width={buttonWidth}
-                  border="2px"
-                  variant="solid"
-                  size="lg"
-                >
+                <Button leftIcon={<BiShapePolygon />} variant="secondary">
                   {" "}
                   Embeddings
                 </Button>
@@ -116,7 +73,7 @@ export function PageDrawer(svg) {
           </DrawerBody>
           <DrawerBody>
             <VStack spacing="24px">
-              <Text fontSize="xl" color={backgroundColor} align="center">
+              <Text fontSize="xl" color="backgroundColor" as="u">
                 See model performance
               </Text>
               <Link
@@ -124,16 +81,7 @@ export function PageDrawer(svg) {
                   pathname: "/scalar_perf",
                 }}
               >
-                <Button
-                  leftIcon={<AiOutlineLineChart />}
-                  color={backgroundColor}
-                  borderColor={darkGray}
-                  height={buttonHeight}
-                  width="210px"
-                  border="2px"
-                  variant="solid"
-                  size="lg"
-                >
+                <Button leftIcon={<AiOutlineLineChart />} variant="secondary">
                   {" "}
                   Scalar Performance
                 </Button>
@@ -143,16 +91,7 @@ export function PageDrawer(svg) {
                   pathname: "/image_perf",
                 }}
               >
-                <Button
-                  leftIcon={<BiImages />}
-                  color={backgroundColor}
-                  borderColor={darkGray}
-                  height={buttonHeight}
-                  width="210px"
-                  border="2px"
-                  variant="solid"
-                  size="lg"
-                >
+                <Button leftIcon={<BiImages />} variant="secondary">
                   {" "}
                   Image Performance
                 </Button>
