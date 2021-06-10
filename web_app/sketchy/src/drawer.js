@@ -12,13 +12,8 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
-import {
-  BiImage,
-  BiImages,
-  BiPencil,
-  BiShapePolygon,
-  BiFoodMenu,
-} from "react-icons/bi";
+import { BiImage, BiImages, BiPencil, BiShapePolygon } from "react-icons/bi";
+import { CgMenuBoxed } from "react-icons/cg";
 import { AiOutlineLineChart } from "react-icons/ai";
 
 export function PageDrawer(svg) {
@@ -27,7 +22,7 @@ export function PageDrawer(svg) {
 
   return (
     <>
-      <Button leftIcon={<BiFoodMenu />} variant="primary" onClick={onOpen}>
+      <Button leftIcon={<CgMenuBoxed />} variant="primary" onClick={onOpen}>
         Change Page
       </Button>
       <Drawer

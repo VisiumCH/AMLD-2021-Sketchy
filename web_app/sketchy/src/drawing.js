@@ -128,7 +128,7 @@ function Drawing() {
       <Grid
         h="93vh"
         w="98vw"
-        gap={4}
+        gap={2}
         align="center"
         templateRows="repeat(14, 1fr)"
         templateColumns="repeat(12, 1fr)"
@@ -152,7 +152,7 @@ function Drawing() {
             bg="white"
             borderWidth="5px"
             borderRadius="lg"
-            borderColor="#A3A8B0"
+            borderColor="darkGray"
             ref={divRef}
             style={{ cursor: cursor }}
             onMouseMove={() => {
@@ -164,10 +164,9 @@ function Drawing() {
         <GridItem rowSpan={5} colSpan={4}>
           <Box>
             <HStack
-              align="center"
               borderWidth="5px"
               borderRadius="lg"
-              borderColor="#A3A8B0"
+              borderColor="darkGray"
               bg="gray"
             >
               <Box h="33vh" w="20vw">
@@ -249,7 +248,7 @@ function Drawing() {
               sendRequest(getSvgXML());
             }}
           >
-            Undo
+            Undo last line
           </Button>
         </GridItem>
         <GridItem rowSpan={2} colSpan={2}>
@@ -260,6 +259,9 @@ function Drawing() {
               setInferredImage([]);
               setInferredLabel([]);
               setAttention("");
+              if (drawingMode === "erasing") {
+                changeDrawingMode();
+              }
             }}
           >
             Restart!

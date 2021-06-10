@@ -142,11 +142,17 @@ function ImagePerformance() {
             <Text fontSize="xl" color="white" align="center">
               Epoch number: {epoch}
             </Text>
-            <Box bg="lightGray" align="center" pr={2} pl={2} borderRadius="md">
+            <Box
+              bg="backgroundColor"
+              align="center"
+              pr={2}
+              pl={2}
+              borderRadius="md"
+            >
               <Slider
                 aria-label="slider-ex-2"
                 colorScheme="red"
-                defaultValue={images.length - 1}
+                defaultValue={2}
                 min={0}
                 max={images.length - 1}
                 step={1}

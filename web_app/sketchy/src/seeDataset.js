@@ -93,7 +93,7 @@ function Dataset() {
   ));
 
   const renderSketches = sketches.map((sketch) => (
-    <Box w="30vw" h="30vh">
+    <Box w="50vw" h="30vh">
       {sketch}
     </Box>
   ));
@@ -101,9 +101,7 @@ function Dataset() {
   return (
     <>
       {heading}
-      <Text fontSize="xs" align="center">
-        .
-      </Text>
+      <Text fontSize="xs">.</Text>
       <Grid
         h="91vh"
         gap={4}
@@ -174,10 +172,10 @@ function Dataset() {
           </HStack>
         </GridItem>
         <GridItem rowSpan={4} colSpan={2}>
-          <HStack align="center">{renderImages}</HStack>
+          <HStack>{renderImages}</HStack>
         </GridItem>
         <GridItem rowSpan={4} colSpan={2}>
-          <HStack align="center">{renderSketches}</HStack>
+          <HStack>{renderSketches}</HStack>
         </GridItem>
         <GridItem rowSpan={1} colSpan={2}>
           {PageDrawer("undefined")}
