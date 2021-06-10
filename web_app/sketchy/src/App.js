@@ -1,10 +1,10 @@
 import React from "react";
 import { Switch, Route } from "react-router-dom";
-import Dataset from "./seeDataset.js";
-import Drawing from "./drawing.js";
-import Embeddings from "./embeddingsPlot.js";
-import ScalarPerformance from "./scalarPerformance.js";
-import ImagePerformance from "./imagePerformance.js";
+import Dataset from "./interactionPages/seeDataset.js";
+import Drawing from "./interactionPages/drawing.js";
+import Embeddings from "./interactionPages/embeddingsPlot.js";
+import ScalarPerformance from "./performancePages/scalarPerformance.js";
+import ImagePerformance from "./performancePages/imagePerformance.js";
 
 const App = () => {
   return (

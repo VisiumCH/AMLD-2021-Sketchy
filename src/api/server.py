@@ -44,7 +44,6 @@ class APIList(Resource):
             "cmd: /image_perf": "Input: an image type (inference, sketch or image attention). \
                 Returns how the model performed at each epoch of the training.",
         }
-        print("In api list function of server")
         return {
             "available-apis": [
                 {"api-key": k, "description": v} for k, v in api_json.items()
@@ -101,7 +100,7 @@ class Embeddings(Resource):
 
     def post(self):
         json_data = request.get_json()
-        print(json_data)
+
         # Verify the data
         if "nb_dim" not in json_data.keys():
             return {"ERROR": "Number of dimensions not provided"}, 400

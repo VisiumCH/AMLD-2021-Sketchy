@@ -49,9 +49,6 @@ make sync_raw_data
     │
     ├── notebooks          <- Jupyter notebooks.
     │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
-    │
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
@@ -59,37 +56,42 @@ make sync_raw_data
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
-    │   ├── api            <- Scripts to serve model predictions via API
-    │   │   └── server.py
+    │   ├── api                 <- Scripts to serve model predictions via API
+    |   |   └── test_scaling         <- tests with locust to assess the number of people that can use the app at the same time
+    │   │   └── api_dim_reduction.py <- class to return the projected embeddings and clicked images
+    │   │   └── api_inference.py     <- class for returning closest images and attention to drawn sketch
+    │   │   └── api_options.py       <- command line options to load chosen model for training
+    │   │   └── api_performance.py   <- class for returning the model performance (graphs and images at all epochs)
+    │   │   └── server.py            <- implements all the flask api to communicate with the web app
+    │   │   └── utils.py             <- utils function for the web app server
     │   |
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │   └── default_dataset.py <- Default class to load a dataset (Sketchy, tU-Berlin, Quickdraw)
+    │   ├── data               <- Scripts to prepare and load datasets
+    │   │   └── composite_dataset.py <- Class to load multiple dataset in the same training (Sketchy + TU-Berlin) or (Sketchy + TU-Berlin + Quickdraw)
+    │   │   └── default_dataset.py <- Default class to load a dataset (Sketchy, TU-Berlin, Quickdraw)
     │   │   └── loader_factory.py  <- Factory to load chosen dataset
-    │   │   └── sktu_extended.py   <- Class to load both Sketchy and TU-Berlin in the same training
-    │   │   └── sktuqg_extended.py <- Class to load Sketchy, TU-Berlin and Quickdraw in the same training
     │   │   └── utils.py           <- utils function for data
-    │   │
-    │   ├── tests         <- Tests for src content
-    │   │   ├── test_all.py
-    │   │   └── test_api.py
-    │   │   └── test_data.py
-    │   │   └── test_models.py
-    │   │   └── test_visualization.py
     |   |
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
+    │   ├── models            <- Scripts to train and test models and then use trained models to make predictions
     │   │   ├── inference
     │   │   │   └── inference.py             <- inference script to ouptput visual results
     │   │   │   └── preprocess_embeddings.py <- preprocess embeddings in advance for inference
     │   │   └── encoder.py    <- structure of the encoder network
     │   │   └── logs.py       <- logger for tensorboard: scalar metrics, attention plot, embeddings projector
     │   │   └── loss.py       <- loss of the network
-    │   │   └── metrics.py    <- metrics (mean average precision, mean average precision@200, precision@200)
+    │   │   └── metrics.py    <- metrics (mean average precision, mean average precision, precision)
     │   │   └── test.py       <- test to log metrics of a model
     │   │   └── train.py      <- training: starts and handles the training
     │   │   └── utils.py      <- utils function for data
     │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-    │   └── options.py  <- Contains all constants and meta information
+    │   └── constants.py   <- Contains all constants of the projects
+    │   └── options.py     <- Contains all meta information that can be passsed as command line arguments
+    │
+    ├── web_app            <- React web application folder
+    │   ├── sketchy        <- Scripts to serve model predictions via API
+    |   |   └── public     <- index and icons
+    |   |   └── src        <- Source code for the web app
+    │   │   │   └── styles
+    │   │   │   │   └── components
+    │   │   │   │   │   │   └── buttonStyles.js <- define the style of the buttons
+    │   │   │   │   │   └── theme.js            <- define the default colors if the web app
+    │   │   │   └──

@@ -1,32 +1,8 @@
-import { CircularProgress, Heading, Text } from "@chakra-ui/react";
-export const gray = "#F7FAFC";
-export const black = "#000000";
-export const white = "#FFFFFF";
-export const darkGray = "#A3A8B0";
-export const textColor = white;
-export const backgroundColor = "#1A365D";
-export const buttonHeight = "48px";
-export const buttonWidth = "180px";
-export const formLabelWidth = "200px";
 export const custom_sketch_class = "My Custom Sketch"; // update python constant if modify
-export const progress = (
-  <CircularProgress
-    isIndeterminate
-    color={backgroundColor}
-    size="180px"
-    thickness="4px"
-  />
-);
-export const heading = (
-  <>
-    <Heading fontSize="4xl" color={textColor} align="center">
-      AMLD 2021 Visium's Sketchy App
-    </Heading>
-    <Text fontSize="xs" color={textColor} align="center">
-      --------------------------------------------------------
-    </Text>
-  </>
-);
+export const nb_to_show = 5;
+export const datasets = ["Sketchy", "TU-Berlin", "Quickdraw"];
+export const dimReductionAlgorithms = ["PCA", "TSNE", "UMAP"];
+
 export const colors = [
   "#e6194b",
   "#3cb44b",
@@ -50,9 +26,6 @@ export const colors = [
   "#808080",
   "#000000",
 ];
-export const nb_to_show = 5;
-export const datasets = ["Sketchy", "TU-Berlin", "Quickdraw"];
-export const dimReductionAlgorithms = ["PCA", "TSNE", "UMAP"];
 
 export const categories = {
   Quickdraw: [

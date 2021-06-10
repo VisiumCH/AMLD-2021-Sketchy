@@ -89,9 +89,6 @@ io
 # Mypy cache
 .mypy_cache/
 node_modules
-<<<<<<< HEAD
-=======
 
 # Personal notebooks
 notebooks/pml-*.ipynb
->>>>>>> web_app

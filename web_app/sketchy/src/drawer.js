@@ -33,12 +33,12 @@ export function PageDrawer(svg) {
       >
         <DrawerOverlay />
         <DrawerContent>
-          <DrawerCloseButton color="backgroundColor" />
-          <DrawerHeader color="backgroundColor">Sketchy App </DrawerHeader>
+          <DrawerCloseButton color="darkBlue" />
+          <DrawerHeader color="darkBlue">Sketchy App </DrawerHeader>
 
           <DrawerBody>
             <VStack spacing="24px">
-              <Text fontSize="xl" color="backgroundColor" as="u">
+              <Text fontSize="xl" color="darkBlue" as="u">
                 Interact with data
               </Text>
               <Link to="/" className="explore_link">
@@ -68,7 +68,7 @@ export function PageDrawer(svg) {
           </DrawerBody>
           <DrawerBody>
             <VStack spacing="24px">
-              <Text fontSize="xl" color="backgroundColor" as="u">
+              <Text fontSize="xl" color="darkBlue" as="u">
                 See model performance
               </Text>
               <Link

@@ -9,14 +9,9 @@ import {
   FormControl,
   HStack,
 } from "@chakra-ui/react";
-import {
-  datasets,
-  categories,
-  formLabelWidth,
-  nb_to_show,
-  heading,
-} from "./constants";
-import { PageDrawer } from "./drawer.js";
+import { datasets, categories, nb_to_show } from "../constants";
+import { heading } from "../ui_utils";
+import { PageDrawer } from "../drawer.js";
 import { BiRefresh } from "react-icons/bi";
 
 function Dataset() {
@@ -118,13 +113,13 @@ function Dataset() {
           <form>
             <FormControl
               id="category"
-              color="backgroundColor"
-              width={formLabelWidth}
+              color="darkBlue"
+              width="200px"
               bg="white"
             >
               <Select
                 value={currentDataset}
-                color="backgroundColor"
+                color="darkBlue"
                 onChange={(e) => {
                   setCurrentDataset(e.target.value);
                   setCurrentCategory("pineapple");
@@ -145,13 +140,13 @@ function Dataset() {
             <form>
               <FormControl
                 id="category"
-                color="backgroundColor"
-                width={formLabelWidth}
+                color="darkBlue"
+                width="200px"
                 bg="white"
               >
                 <Select
                   value={currentCategory}
-                  color="backgroundColor"
+                  color="darkBlue"
                   onChange={(e) => setCurrentCategory(e.target.value)}
                 >
                   {categoriesOptions}

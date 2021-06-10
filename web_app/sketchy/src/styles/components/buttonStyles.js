@@ -9,7 +9,7 @@ export const Button = {
   variants: {
     primary: {
       bg: "lightGray",
-      color: "backgroundColor",
+      color: "darkBlue",
 
       height: "48px",
       width: "180px",
@@ -19,7 +19,7 @@ export const Button = {
     },
     secondary: {
       bg: "lightGray",
-      color: "backgroundColor",
+      color: "darkBlue",
 
       height: "48px",
       width: "210px",

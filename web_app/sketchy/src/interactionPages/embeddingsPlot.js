@@ -10,8 +10,9 @@ import {
   Radio,
   RadioGroup,
 } from "@chakra-ui/react";
-import { colors, custom_sketch_class, heading } from "./constants";
-import { PageDrawer } from "./drawer.js";
+import { colors, custom_sketch_class } from "../constants";
+import { heading } from "../ui_utils";
+import { PageDrawer } from "../drawer.js";
 
 function Embeddings() {
   const { state } = useLocation();
@@ -254,12 +255,12 @@ function Embeddings() {
                   text: "Categories",
                   font: {
                     size: 20,
-                    color: "backgroundColor",
+                    color: "darkBlue",
                   },
                 },
                 font: {
                   size: 16,
-                  color: "backgroundColor",
+                  color: "darkBlue",
                 },
                 orientation: "v",
                 itemsizing: "constant",
@@ -267,7 +268,7 @@ function Embeddings() {
                 y: 0.5,
               },
               font: {
-                color: "backgroundColor",
+                color: "darkBlue",
               },
               paper_bgcolor: "white",
             }}

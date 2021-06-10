@@ -11,8 +11,8 @@ import {
   SliderFilledTrack,
   SliderThumb,
 } from "@chakra-ui/react";
-import { progress, heading } from "./constants";
-import { PageDrawer } from "./drawer.js";
+import { progress, heading } from "../ui_utils";
+import { PageDrawer } from "../drawer.js";
 import { BiRefresh } from "react-icons/bi";
 import { CgArrowsHAlt } from "react-icons/cg";
 
@@ -61,13 +61,7 @@ function ImagePerformance() {
     if (images.length === 0) {
       return (
         <>
-          <Box
-            bg="backgroundColor"
-            align="center"
-            pr={10}
-            pl={10}
-            pb={10}
-          ></Box>
+          <Box bg="darkBlue" align="center" pr={10} pl={10} pb={10}></Box>
           {progress}
           <Text fontSize="l" color="white" align="center">
             Loading random image for all epochs.
@@ -77,7 +71,7 @@ function ImagePerformance() {
     } else {
       return (
         <>
-          <Box bg="backgroundColor" align="center" pr={10} pl={10} pb={5}>
+          <Box bg="darkBlue" align="center" pr={10} pl={10} pb={5}>
             {epochImage};
           </Box>
           <IconButton
@@ -117,7 +111,7 @@ function ImagePerformance() {
   return (
     <>
       {heading}
-      <Text fontSize="xs" color="backgroundColor" align="center">
+      <Text fontSize="xs" color="darkBlue" align="center">
         .
       </Text>
       <Grid
@@ -138,17 +132,11 @@ function ImagePerformance() {
           {selectOption("image_attention", "See Attention on Image")}
         </GridItem>
         <GridItem rowSpan={1} colSpan={3}>
-          <Box bg="backgroundColor" align="center" pr={40} pl={40}>
+          <Box bg="darkBlue" align="center" pr={40} pl={40}>
             <Text fontSize="xl" color="white" align="center">
               Epoch number: {epoch}
             </Text>
-            <Box
-              bg="backgroundColor"
-              align="center"
-              pr={2}
-              pl={2}
-              borderRadius="md"
-            >
+            <Box bg="darkBlue" align="center" pr={2} pl={2} borderRadius="md">
               <Slider
                 aria-label="slider-ex-2"
                 colorScheme="red"
@@ -161,7 +149,7 @@ function ImagePerformance() {
                   setEpochImage(images[val]);
                 }}
               >
-                <SliderTrack>
+                <SliderTrack bg="white">
                   <Box position="relative" right={10} />
                   <SliderFilledTrack />
                 </SliderTrack>

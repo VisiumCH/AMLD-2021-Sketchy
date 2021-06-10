@@ -9,7 +9,7 @@ ReactDOM.render(
   <React.StrictMode>
     <Router>
       <ChakraProvider resetCSS theme={theme}>
-        <Box bg="backgroundColor" h="100%" w="100%" align="center">
+        <Box bg="darkBlue" h="100%" w="100%" align="center">
           <App />
         </Box>
       </ChakraProvider>

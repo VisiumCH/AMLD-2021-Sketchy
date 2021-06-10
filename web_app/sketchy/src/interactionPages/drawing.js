@@ -9,8 +9,8 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 import { useSvgDrawing } from "react-hooks-svgdrawing";
-import { black, progress, heading } from "./constants";
-import { PageDrawer } from "./drawer.js";
+import { progress, heading } from "../ui_utils";
+import { PageDrawer } from "../drawer.js";
 import { BiPencil, BiEraser } from "react-icons/bi";
 
 function Drawing() {
@@ -27,7 +27,7 @@ function Drawing() {
   const [divRef, { getSvgXML, changePenColor, changePenWidth, undo, clear }] =
     useSvgDrawing({
       penWidth: 3, // pen width (similar as database width)
-      penColor: black, // pen color
+      penColor: "black", // pen color
       width: 300, // drawing area width
       height: 300, // drawing area height
     });
@@ -41,7 +41,7 @@ function Drawing() {
       setDisableErasing(true);
       setCursor("crosshair");
     } else if (drawingMode === "erasing") {
-      changePenColor(black);
+      changePenColor("black");
       changePenWidth(3);
       setDrawingMode("drawing");
       setDisableDrawing(true);
@@ -171,7 +171,7 @@ function Drawing() {
             >
               <Box h="33vh" w="20vw">
                 <VStack>
-                  <Text fontSize="2xl" color="backgroundColor" as="em">
+                  <Text fontSize="2xl" color="darkBlue" as="em">
                     {inferredLabel[0]}
                   </Text>
                   <Box w="100%" h="35%">
@@ -181,7 +181,7 @@ function Drawing() {
               </Box>
               <Box h="33vh" w="20vw">
                 <VStack>
-                  <Text fontSize="2xl" color="backgroundColor" as="em">
+                  <Text fontSize="2xl" color="darkBlue" as="em">
                     {inferredLabel[1]}
                   </Text>
                   <Box bg="gray" w="100%" h="35%">
@@ -193,7 +193,7 @@ function Drawing() {
           </Box>
         </GridItem>
 
-        <GridItem rowSpan={1} colSpan={4} bg="backgroundColor">
+        <GridItem rowSpan={1} colSpan={4}>
           <Text fontSize="4xl" color="white">
             Attention Map
           </Text>
