@@ -49,9 +49,6 @@ make sync_raw_data
     │
     ├── notebooks          <- Jupyter notebooks.
     │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
-    │
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
@@ -63,19 +60,10 @@ make sync_raw_data
     │   │   └── server.py
     │   |
     │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │   └── default_dataset.py <- Default class to load a dataset (Sketchy, tU-Berlin, Quickdraw)
+    │   │   └── composite_dataset.py <- Class to load multiple dataset in the same training (Sketchy + TU-Berlin) or (Sketchy + TU-Berlin + Quickdraw)
+    │   │   └── default_dataset.py <- Default class to load a dataset (Sketchy, TU-Berlin, Quickdraw)
     │   │   └── loader_factory.py  <- Factory to load chosen dataset
-    │   │   └── sktu_extended.py   <- Class to load both Sketchy and TU-Berlin in the same training
-    │   │   └── sktuqg_extended.py <- Class to load Sketchy, TU-Berlin and Quickdraw in the same training
     │   │   └── utils.py           <- utils function for data
-    │   │
-    │   ├── tests         <- Tests for src content
-    │   │   ├── test_all.py
-    │   │   └── test_api.py
-    │   │   └── test_data.py
-    │   │   └── test_models.py
-    │   │   └── test_visualization.py
     |   |
     │   ├── models         <- Scripts to train models and then use trained models to make
     │   │   │                 predictions
@@ -85,11 +73,10 @@ make sync_raw_data
     │   │   └── encoder.py    <- structure of the encoder network
     │   │   └── logs.py       <- logger for tensorboard: scalar metrics, attention plot, embeddings projector
     │   │   └── loss.py       <- loss of the network
-    │   │   └── metrics.py    <- metrics (mean average precision, mean average precision@200, precision@200)
+    │   │   └── metrics.py    <- metrics (mean average precision, mean average precision, precision)
     │   │   └── test.py       <- test to log metrics of a model
     │   │   └── train.py      <- training: starts and handles the training
     │   │   └── utils.py      <- utils function for data
     │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-    │   └── options.py  <- Contains all constants and meta information
+    │   └── constants.py   <- Contains all constants of the projects
+    │   └── options.py     <- Contains all meta information that can be passsed as command line arguments
