@@ -93,5 +93,16 @@ make sync_raw_data
     │   │   │   └── styles
     │   │   │   │   └── components
     │   │   │   │   │   │   └── buttonStyles.js <- define the style of the buttons
-    │   │   │   │   │   └── theme.js            <- define the default colors if the web app
-    │   │   │   └──
+    │   │   │   │   └── theme.js                <- define the default colors if the web app
+    │   │   │   └── interactionPages
+    │   │   │   │   └── drawing.js              <- /drawing page: user draw sketch and images are retrieved
+    │   │   │   │   └── embeddingsPlot.js       <- /embeddings page: play around with different embedding projections
+    │   │   │   │   └── seeDataset.js           <- / page: see the different datasets data and classes
+    │   │   │   └── performancePages
+    │   │   │   │   └── scalarPerformance.js    <- /scalar_perf page: see the scalar performance of the model (plots)
+    │   │   │   │   └── imagePerformance.js     <- /image_perf page: see the inference and attention at different epochs
+    │   │   │   └── App.js                      <- define the route of the pages
+    │   │   │   └── constants.js                <- constants of web app
+    │   │   │   └── drawer.js                   <- drawer to choose page to go to
+    │   │   │   └── index.js                    <- root of the app
+    │   │   │   └── ui_utils.js                 <- define ui that are used in multiple pages
