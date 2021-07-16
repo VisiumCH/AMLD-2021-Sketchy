@@ -126,13 +126,23 @@ if it is the first time, you will need to install all the react libraries
 npm install sketchy
 ```
 
-To run the web app, do the following
+To run the web app, you must have already trained a model and precomputed its embeddings:
+
+```bash
+python src/models/train.py *training-name*
+python src/models/inference/preprocess_embeddings.py *training-name*
+```
+
+then, do the following
 
 ### server.py
 
 ```bash
 python src/api/server.py *training-name*
 ```
+
+You should expect to wait a moment (< 5 minutes) for the server to be ready after this command.
+The web app might be irresponsive for a moment (finishing to prepare) if you open it too quickly.
 
 ### web_app/sketchy
 

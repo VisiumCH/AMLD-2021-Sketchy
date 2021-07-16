@@ -16,6 +16,25 @@ If the Google bucket has not been pulled already, or data in bucket has been upd
 make sync_raw_data
 ```
 
+## Instructions
+
+The details to run the training, inference and server are in src/README.md.
+
+To open the workshop notebooks,
+
+```bash
+source env/bin/activate
+jupyter notebook
+```
+
+follow the link and go to notebooks/workshop/.
+
+Then you can choose the notebook you want to work on:
+
+- AMLD-2021-Sketchy-Demo1_Training.ipynb
+- AMLD-2021-Sketchy-Demo2_Performance.ipynb
+- AMLD-2021-Sketchy-Demo3_Web-API.ipynb
+
 # Project Organization
 
 ---
