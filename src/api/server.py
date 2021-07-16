@@ -15,6 +15,7 @@ import json
 from flask_restful import Resource, Api
 from flask import Flask, request, make_response
 import flask.scaffold
+
 flask.helpers._endpoint_from_view_func = flask.scaffold._endpoint_from_view_func
 
 
@@ -87,7 +88,9 @@ class Dataset(Resource):
 
         dataset_path = DATA_PATH + dataset_folder
 
-        data_sketches = prepare_dataset(dataset_path, "sketches", category, dataset_folder)
+        data_sketches = prepare_dataset(
+            dataset_path, "sketches", category, dataset_folder
+        )
         data_images = prepare_dataset(dataset_path, "images", category, dataset_folder)
 
         data = {**data_sketches, **data_images}
@@ -108,11 +111,15 @@ class Embeddings(Resource):
             return {"ERROR": "Reduction algorithm not provided"}, 400
 
         if "sketch" not in json_data.keys():
-            data = dim_red.get_projection(json_data["reduction_algo"], json_data["nb_dim"])
+            data = dim_red.get_projection(
+                json_data["reduction_algo"], json_data["nb_dim"]
+            )
         else:
             sketch = svg_to_png(json_data["sketch"])
             sketch_embedding = inference.inference_sketch(sketch)
-            data = dim_red.get_projection(json_data["reduction_algo"], json_data["nb_dim"], sketch_embedding)
+            data = dim_red.get_projection(
+                json_data["reduction_algo"], json_data["nb_dim"], sketch_embedding
+            )
 
         return make_response(json.dumps(data), 200)
 
@@ -170,7 +177,7 @@ api.add_resource(Inferrence, "/find_images")
 api.add_resource(Embeddings, "/get_embeddings")
 api.add_resource(Dataset, "/get_dataset_images")
 api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
-api.add_resource(ScalarPerformance, "/scalar_perf")
+# api.add_resource(ScalarPerformance, "/scalar_perf")
 api.add_resource(ImagePerformance, "/image_perf")
 
 
@@ -181,7 +188,7 @@ if __name__ == "__main__":
     print("Cuda:\t" + str(args.cuda))
     args.cuda = False
 
-    args.save = MODELS_PATH + args.name + '/'
+    args.save = MODELS_PATH + args.name + "/"
     args.dataset, args.emb_size, nb_embeddings = get_parameters(args.save)
     args.load = args.save + "checkpoint.pth"
 
