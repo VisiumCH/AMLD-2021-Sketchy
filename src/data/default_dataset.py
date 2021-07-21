@@ -4,7 +4,7 @@ import random
 import numpy as np
 import torch.utils.data as data
 
-from src.constants import QUICKDRAW, TUBERLIN, FOLDERS
+from src.constants import DATA_PATH, QUICKDRAW, TUBERLIN, FOLDERS
 from src.data.utils import (
     default_image_loader,
     default_image_loader_tuberlin,
@@ -42,23 +42,31 @@ def make_default_dataset(args, dataset_folder, transform):
         valid_split = args.valid_split
 
     # Get dataset classes
-    dicts_class = get_class_dict(args, dataset_folder)
+    dataset_folder = os.path.join(DATA_PATH, dataset_folder)
+    dicts_class = get_class_dict(dataset_folder)
     train_data, valid_data, test_data = dataset_split(
-        args, dataset_folder, training_split, valid_split
+        dataset_folder, training_split, valid_split
     )
 
     # Data Loaders
     data_args = {
-        "args": args,
         "dataset_folder": dataset_folder,
         "dicts_class": dicts_class,
         "transform": transform,
     }
     train_loader = DefaultDataset(mode="train", data=train_data, **data_args)
-    valid_sk_loader = DefaultDataset(mode="valid", data=valid_data, image_type="sketches", **data_args)
-    valid_im_loader = DefaultDataset(mode="valid", data=valid_data, image_type="images", **data_args)
-    test_sk_loader = DefaultDataset(mode="test", data=test_data, image_type="sketches", **data_args)
-    test_im_loader = DefaultDataset(mode="test", data=test_data, image_type="images", **data_args)
+    valid_sk_loader = DefaultDataset(
+        mode="valid", data=valid_data, image_type="sketches", **data_args
+    )
+    valid_im_loader = DefaultDataset(
+        mode="valid", data=valid_data, image_type="images", **data_args
+    )
+    test_sk_loader = DefaultDataset(
+        mode="test", data=test_data, image_type="sketches", **data_args
+    )
+    test_im_loader = DefaultDataset(
+        mode="test", data=test_data, image_type="images", **data_args
+    )
 
     return (
         train_loader,
@@ -75,7 +83,6 @@ class DefaultDataset(data.Dataset):
 
     def __init__(
         self,
-        args,
         dataset_folder,
         mode,
         dicts_class,
@@ -86,8 +93,7 @@ class DefaultDataset(data.Dataset):
         """
         Initialises the dataset with the corresponding images/sketch path and classes
         Args:
-            - args: arguments reveived from the command line (argparse)
-            - dataset_folder: name of the folder containing the data
+            - dataset_folder: path to the folder containing the data
             - mode: dataset split ('train', 'valid' or 'test')
             - dicts_class:  dictionnnary mapping number to classes
             - data: list data of the classes [images path, image classes, sketch paths, sketch classes]
@@ -100,13 +106,13 @@ class DefaultDataset(data.Dataset):
         self.loader = default_image_loader
         self.image_type = image_type
 
-        if dataset_folder == FOLDERS[TUBERLIN]:
+        if dataset_folder.split("/")[-1] == FOLDERS[TUBERLIN]:
             self.loader_image = default_image_loader_tuberlin
         else:
             self.loader_image = default_image_loader
 
-        self.dir_sketch = os.path.join(args.data_path, dataset_folder, "sketches")
-        self.dir_image = os.path.join(args.data_path, dataset_folder, "images")
+        self.dir_sketch = os.path.join(dataset_folder, "sketches")
+        self.dir_image = os.path.join(dataset_folder, "images")
 
         self.fnames_image, self.cls_image = data[0], data[1]
         self.fnames_sketch, self.cls_sketch = data[2], data[3]

@@ -1,10 +1,12 @@
+import os
+
 import random
 import numpy as np
 import torch.utils.data as data
 
 from src.data.utils import get_class_dict, dataset_split
 
-from src.constants import SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS, SKTU, SKTUQD
+from src.constants import DATA_PATH, SKETCHY, QUICKDRAW, TUBERLIN, FOLDERS, SKTU, SKTUQD
 from src.data.default_dataset import DefaultDataset
 
 
@@ -32,14 +34,17 @@ def make_composite_dataset(args, transform, dataset_name):
         dataset_class = SkTuQd
         datasets_list = [SKETCHY, TUBERLIN, QUICKDRAW]
     else:
-        raise Exception(f"Composite dataset only possible with {SKTU} or {SKTUQD}.\nHere {dataset_name}")
+        raise Exception(
+            f"Composite dataset only possible with {SKTU} or {SKTUQD}.\nHere {dataset_name}"
+        )
 
     # Get Sketchy, TU-Berlin and Quickdraw datasets
     dicts_class, train_data, valid_data, test_data = [], [], [], []
     for dataset in datasets_list:
-        dict_class = get_class_dict(args, FOLDERS[dataset])
+        dataset_folder = os.path.join(DATA_PATH, FOLDERS[dataset])
+        dict_class = get_class_dict(dataset_folder)
         train_dataset, valid_dataset, test_dataset = dataset_split(
-            args, FOLDERS[dataset], args.training_split, args.valid_split
+            dataset_folder, args.training_split, args.valid_split
         )
         dicts_class.append(dict_class)
         train_data.append(train_dataset)
@@ -47,13 +52,24 @@ def make_composite_dataset(args, transform, dataset_name):
         test_data.append(test_dataset)
 
     # Data Loaders
-    train_loader = dataset_class(args, "train", dicts_class, train_data, transform)
-    valid_sk_loader = dataset_class(args, "valid", dicts_class, valid_data, transform, "sketches")
-    valid_im_loader = dataset_class(args, "valid", dicts_class, valid_data, transform, "images")
-    test_sk_loader = dataset_class(args, "test", dicts_class, test_data, transform, "sketches")
-    test_im_loader = dataset_class(args, "test", dicts_class, test_data, transform, "images")
+    train_loader = dataset_class("train", dicts_class, train_data, transform)
+    valid_sk_loader = dataset_class(
+        "valid", dicts_class, valid_data, transform, "sketches"
+    )
+    valid_im_loader = dataset_class(
+        "valid", dicts_class, valid_data, transform, "images"
+    )
+    test_sk_loader = dataset_class(
+        "test", dicts_class, test_data, transform, "sketches"
+    )
+    test_im_loader = dataset_class("test", dicts_class, test_data, transform, "images")
 
-    return train_loader, [valid_sk_loader, valid_im_loader], [test_sk_loader, test_im_loader], dicts_class
+    return (
+        train_loader,
+        [valid_sk_loader, valid_im_loader],
+        [test_sk_loader, test_im_loader],
+        dicts_class,
+    )
 
 
 class SkTu(data.Dataset):
@@ -61,13 +77,10 @@ class SkTu(data.Dataset):
     Custom dataset for Sketchy and TU-Berlin common training
     """
 
-    def __init__(
-        self, args, mode, dicts_class, data, transform, image_type=None
-    ):
+    def __init__(self, mode, dicts_class, data, transform, image_type=None):
         """
         Initialises the dataset with the corresponding images/sketch path and classes
         Args:
-            - args: arguments reveived from the command line (argparse)
             - mode: dataset split ('train', 'valid' or 'test')
             - dicts_class:  dictionnnary mapping number to classes
             - data: list data for each dataset [sketchy_data, tuberlin data]
@@ -80,22 +93,25 @@ class SkTu(data.Dataset):
         self.dicts_class = dicts_class
 
         self.data_args = {
-            "args": args,
             "mode": mode,
             "transform": transform,
-            "image_type": image_type
+            "image_type": image_type,
         }
 
         # Sketchy data
         self.sketchy = DefaultDataset(
-            data=data[0], dicts_class=dicts_class[0], dataset_folder=FOLDERS[SKETCHY],
-            **self.data_args
+            data=data[0],
+            dicts_class=dicts_class[0],
+            dataset_folder=os.path.join(DATA_PATH, FOLDERS[SKETCHY]),
+            **self.data_args,
         )
 
         # Tuberlin data
         self.tuberlin = DefaultDataset(
-            data=data[1], dicts_class=dicts_class[1], dataset_folder=FOLDERS[TUBERLIN],
-            **self.data_args
+            data=data[1],
+            dicts_class=dicts_class[1],
+            dataset_folder=os.path.join(DATA_PATH, FOLDERS[TUBERLIN]),
+            **self.data_args,
         )
 
         # No quickdraw with SkTu only
@@ -115,9 +131,13 @@ class SkTu(data.Dataset):
 
         # Length of the dataset
         if self.mode == "train" or self.image_type == "sketches":
-            self.length = len(self.sketchy.fnames_sketch) + len(self.tuberlin.fnames_sketch)
+            self.length = len(self.sketchy.fnames_sketch) + len(
+                self.tuberlin.fnames_sketch
+            )
         else:
-            self.length = len(self.sketchy.fnames_image) + len(self.tuberlin.fnames_image)
+            self.length = len(self.sketchy.fnames_image) + len(
+                self.tuberlin.fnames_image
+            )
 
     def __getitem__(self, index):
         """
@@ -175,13 +195,10 @@ class SkTuQd(SkTu):
     Custom dataset for Sketchy, TU-Berlin and Quickdraw common training
     """
 
-    def __init__(
-        self, args, mode, dicts_class, data, transform, image_type=None
-    ):
+    def __init__(self, mode, dicts_class, data, transform, image_type=None):
         """
         Initialises the dataset with the corresponding images/sketch path and classes
         Args:
-            - args: arguments reveived from the command line (argparse)
             - mode: dataset split ('train', 'valid' or 'test')
             - dicts_class:  dictionnnary mapping number to classes
             - data: list data for each dataset [sketchy_data, tuberlin data, quickdraw_data]
@@ -190,12 +207,14 @@ class SkTuQd(SkTu):
             - image_type: type of the data: can be either 'sketches' or 'images'
         """
         # Sketchy and Quickdraw data
-        super().__init__(args, mode, dicts_class, data, transform, image_type)
+        super().__init__(DATA_PATH, mode, dicts_class, data, transform, image_type)
 
         # Quickdraw data
         self.quickdraw = DefaultDataset(
-            data=data[2], dicts_class=dicts_class[2], dataset_folder=FOLDERS[QUICKDRAW],
-            **self.data_args
+            data=data[2],
+            dicts_class=dicts_class[2],
+            dataset_folder=os.path.join(DATA_PATH, FOLDERS[QUICKDRAW]),
+            **self.data_args,
         )
 
         # Update length of the dataset

@@ -78,7 +78,13 @@ def load_checkpoint(model_file):
     """
     if os.path.isfile(model_file):
         print("=> loading model '{}'".format(model_file))
-        checkpoint = torch.load(model_file)
+
+        if torch.cuda.is_available():
+            checkpoint = torch.load(model_file)
+        else:
+            checkpoint = torch.load(
+                model_file, map_location=lambda storage, loc: storage
+            )
         print(
             "=> loaded model '{}' (epoch {}, map {})".format(
                 model_file, checkpoint["epoch"], checkpoint["best_map"]
