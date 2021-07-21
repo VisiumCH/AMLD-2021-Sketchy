@@ -6,7 +6,17 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.constants import DICT_CLASS, EMB_ARRAY, EMBEDDINGS, METADATA, SKETCHY, QUICKDRAW, TUBERLIN, SKTU, SKTUQD
+from src.constants import (
+    DICT_CLASS,
+    EMB_ARRAY,
+    EMBEDDINGS,
+    METADATA,
+    SKETCHY,
+    QUICKDRAW,
+    TUBERLIN,
+    SKTU,
+    SKTUQD,
+)
 from src.data.loader_factory import load_data
 from src.models.test import get_test_data
 from src.models.utils import get_model, get_parameters
@@ -27,7 +37,9 @@ def save_embeddings(args, fnames, embeddings, classes, mode):
     meta_path = os.path.join(args.embedding_path, args.dataset + "_" + mode + METADATA)
     df.to_csv(meta_path, sep=" ", header=True)
 
-    array_path = os.path.join(args.embedding_path, args.dataset + "_" + mode + EMB_ARRAY)
+    array_path = os.path.join(
+        args.embedding_path, args.dataset + "_" + mode + EMB_ARRAY
+    )
     with open(array_path, "wb") as f:
         np.save(f, embeddings)
 
@@ -64,26 +76,28 @@ def save_class_dict(args, dict_class):
         json.dump(dict_class, fp)
 
 
-def preprocess_embeddings(args, im_net):
+def preprocess_embeddings(args, im_net, sk_net):
     """
     Loads all the validation and testing data from a dataset, precompute the embeddings and
     saves the data for future inference.
     """
     transform = transforms.Compose([transforms.ToTensor()])
-    _, [_, valid_im_data], [_, test_im_data], dicts_class = load_data(args, transform)
+    _, [_, valid_im_data], [test_sk_data, test_im_data], dicts_class = load_data(
+        args, transform
+    )
     save_class_dict(args, dicts_class)
 
-    print("Valid")
-    valid_fnames, valid_embeddings, valid_classes = get_test_images(
-        args, valid_im_data, im_net
-    )
-    save_embeddings(args, valid_fnames, valid_embeddings, valid_classes, "valid")
-
-    print("Test")
+    print("Test image")
     test_fnames, test_embeddings, test_classes = get_test_images(
         args, test_im_data, im_net
     )
-    save_embeddings(args, test_fnames, test_embeddings, test_classes, "test")
+    save_embeddings(args, test_fnames, test_embeddings, test_classes, "images")
+
+    print("Test sketch")
+    test_fnames, test_embeddings, test_classes = get_test_images(
+        args, test_sk_data, sk_net
+    )
+    save_embeddings(args, test_fnames, test_embeddings, test_classes, "sketches")
 
 
 if __name__ == "__main__":
@@ -97,24 +111,24 @@ if __name__ == "__main__":
         os.makedirs(args.embedding_path)
 
     # Load image model
-    im_net, _ = get_model(args, args.save + "/checkpoint.pth")
+    im_net, sk_net = get_model(args, args.save + "/checkpoint.pth")
     im_net.eval()
     torch.set_grad_enabled(False)
 
     # Compute embeddings on chosen dataset(s)
     dataset = args.dataset
     if dataset in [SKETCHY, TUBERLIN, QUICKDRAW]:
-        preprocess_embeddings(args, im_net)
+        preprocess_embeddings(args, im_net, sk_net)
 
     elif dataset in [SKTU, SKTUQD]:
         args.dataset = SKETCHY
-        preprocess_embeddings(args, im_net)
+        preprocess_embeddings(args, im_net, sk_net)
 
         args.dataset = TUBERLIN
-        preprocess_embeddings(args, im_net)
+        preprocess_embeddings(args, im_net, sk_net)
 
         if dataset == SKTUQD:
             args.dataset = QUICKDRAW
-            preprocess_embeddings(args, im_net)
+            preprocess_embeddings(args, im_net, sk_net)
     else:
         raise Exception(args.dataset + " not implemented.")
