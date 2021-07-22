@@ -34,12 +34,10 @@ def save_embeddings(args, fnames, embeddings, classes, mode):
     """
     df = pd.DataFrame(data=[fnames, classes]).T
     df.columns = ["fnames", "classes"]
-    meta_path = os.path.join(args.embedding_path, args.dataset + "_" + mode + METADATA)
+    meta_path = os.path.join(args.embedding_path, mode + METADATA)
     df.to_csv(meta_path, sep=" ", header=True)
 
-    array_path = os.path.join(
-        args.embedding_path, args.dataset + "_" + mode + EMB_ARRAY
-    )
+    array_path = os.path.join(args.embedding_path, mode + EMB_ARRAY)
     with open(array_path, "wb") as f:
         np.save(f, embeddings)
 
@@ -82,9 +80,7 @@ def preprocess_embeddings(args, im_net, sk_net):
     saves the data for future inference.
     """
     transform = transforms.Compose([transforms.ToTensor()])
-    _, [_, valid_im_data], [test_sk_data, test_im_data], dicts_class = load_data(
-        args, transform
-    )
+    _, [_, _], [test_sk_data, test_im_data], dicts_class = load_data(args, transform)
     save_class_dict(args, dicts_class)
 
     print("Test image")
