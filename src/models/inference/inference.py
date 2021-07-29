@@ -9,10 +9,18 @@ import torch
 from torchvision import transforms
 
 from src.constants import (
-    DICT_CLASS, EMB_ARRAY, EMBEDDINGS, METADATA,
+    DICT_CLASS,
+    EMB_ARRAY,
+    EMBEDDINGS,
+    METADATA,
     NUM_CLOSEST_PLOT,
-    NUMBER_RANDOM_IMAGES, PREDICTION,
-    SKETCHY, TUBERLIN, QUICKDRAW, SKTU, SKTUQD
+    NUMBER_RANDOM_IMAGES,
+    PREDICTION,
+    SKETCHY,
+    TUBERLIN,
+    QUICKDRAW,
+    SKTU,
+    SKTUQD,
 )
 from src.data.loader_factory import load_data
 from src.data.utils import default_image_loader, get_loader, get_dict
@@ -28,7 +36,7 @@ class Inference:
         - ApiInference called from the api to retrieve the closest images of a hand-drawn sketch
     """
 
-    def __init__(self, args, mode):
+    def __init__(self, args):
         """
         Initialises the inference with the trained model and precomputed embeddings
         Args:
@@ -50,9 +58,9 @@ class Inference:
         self.embedding_path = os.path.join(args.save, EMBEDDINGS)
         os.makedirs(self.embedding_path, exist_ok=True)
 
-        self.__get_data(mode)
+        self.__get_data()
 
-    def __get_processed_images(self, mode):
+    def __get_processed_images(self):
         """
         Get the data of images to match with the sketches
         Args:
@@ -63,26 +71,24 @@ class Inference:
             - classes of the images
             - images_embeddings: embeddings of the images
         """
-        dict_path = os.path.join(
-            self.embedding_path, self.args.dataset + DICT_CLASS
-        )
+        dict_path = os.path.join(self.embedding_path, self.args.dataset + DICT_CLASS)
         with open(dict_path, "r") as fp:
             dict_class = json.load(fp)
 
         array_path = os.path.join(
-            self.embedding_path, self.args.dataset + "_" + mode + EMB_ARRAY
+            self.embedding_path, self.args.dataset + "_images" + EMB_ARRAY
         )
         with open(array_path, "rb") as f:
             images_embeddings = np.load(f)
 
         meta_path = os.path.join(
-            self.embedding_path, self.args.dataset + "_" + mode + METADATA
+            self.embedding_path, self.args.dataset + "_images" + METADATA
         )
         df = pd.read_csv(meta_path, sep=" ")
 
         return dict_class, df["fnames"].values, df["classes"].values, images_embeddings
 
-    def __get_data(self, mode):
+    def __get_data(self):
         """
         Loads the paths, classes and embeddings of the images of different datasets
         """
@@ -94,7 +100,7 @@ class Inference:
                 self.images_fnames,
                 self.images_classes,
                 self.images_embeddings,
-            ) = self.__get_processed_images(mode)
+            ) = self.__get_processed_images()
             self.sketchy_limit = None
             self.tuberlin_limit = None
 
@@ -105,7 +111,7 @@ class Inference:
                 self.images_fnames,
                 self.images_classes,
                 self.images_embeddings,
-            ) = self.__get_processed_images(mode)
+            ) = self.__get_processed_images()
 
             self.sketchy_limit = len(self.images_fnames)
             self.tuberlin_limit = None
@@ -116,7 +122,7 @@ class Inference:
                 images_fnames,
                 images_classes,
                 images_embeddings,
-            ) = self.__get_processed_images(mode)
+            ) = self.__get_processed_images()
             self.dict_class = [dict_class_sk, dict_class_tu]
 
             self.images_fnames = np.concatenate(
@@ -138,7 +144,7 @@ class Inference:
                     images_fnames,
                     images_classes,
                     images_embeddings,
-                ) = self.__get_processed_images(mode)
+                ) = self.__get_processed_images()
                 self.dict_class.append(dict_class_qd)
 
                 self.images_fnames = np.concatenate(
@@ -173,10 +179,12 @@ class Inference:
         arg_sorted_sim = (-similarity).argsort()
 
         self.sorted_fnames = [
-            self.images_fnames[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST_PLOT + 1]
+            self.images_fnames[i]
+            for i in arg_sorted_sim[0][0 : NUM_CLOSEST_PLOT + 1]  # noqa E203
         ]
         self.sorted_labels = [
-            self.images_classes[i] for i in arg_sorted_sim[0][0: NUM_CLOSEST_PLOT + 1]
+            self.images_classes[i]
+            for i in arg_sorted_sim[0][0 : NUM_CLOSEST_PLOT + 1]  # noqa E203
         ]
         return sketch_embedding
 
@@ -222,7 +230,9 @@ class PlotInference(Inference):
         Plots a sketch with its closest images in the embedding space.
         The images are stored in the same folder as the best model in a subfolder called 'predictions'
         """
-        fig, axes = plt.subplots(1, NUM_CLOSEST_PLOT + 2, figsize=((NUM_CLOSEST_PLOT + 1) * 4, 8))
+        fig, axes = plt.subplots(
+            1, NUM_CLOSEST_PLOT + 2, figsize=((NUM_CLOSEST_PLOT + 1) * 4, 8)
+        )
 
         axes[0].imshow(self.sk)
         axes[0].set(title="Sketch \n Label: " + sketch_fname.split("/")[-2])

@@ -6,8 +6,8 @@ import numpy as np
 class ApiInference(Inference):
     """ Retrive the attention map and closest images of the hand-drawn sketch"""
 
-    def __init__(self, args, mode):
-        super().__init__(args, mode)
+    def __init__(self, args):
+        super().__init__(args)
 
     def get_closest(self, number):
         """ Get a list of the 'number' closest images with their labels"""

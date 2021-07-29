@@ -182,18 +182,17 @@ api.add_resource(ImagePerformance, "/image_perf")
 
 
 if __name__ == "__main__":
-
     args = ApiOptions().parse()
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
-    print("Cuda:\t" + str(args.cuda))
-    args.cuda = False
 
     args.save = MODELS_PATH + args.name + "/"
     args.dataset, args.emb_size, nb_embeddings = get_parameters(args.save)
     args.load = args.save + "checkpoint.pth"
+    print("Preparing everything. You should expect to wait for 5 minutes.")
 
-    inference = ApiInference(args, "test")
+    inference = ApiInference(args)
     performance = ModelPerformance(args.save)
     dim_red = DimensionalityReduction(args.save, nb_embeddings)
+    print("Preparation done. You can launch the app!")
 
-    app.run(host="0.0.0.0", port="5000", debug=True)
+    app.run(host="0.0.0.0", port=args.port, debug=True)
