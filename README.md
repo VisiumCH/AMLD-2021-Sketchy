@@ -2,12 +2,17 @@
 
 ## Open workshop notebooks in colab
 
-Go to [this](https://drive.google.com/drive/folders/1MxGWvnBYtAzlmXSDVKc0U7uX-AjLrtVx) google drive folder and open the notebooks:
+Click to go to [this](https://colab.research.google.com/drive/1UwoqjtDoMmCsW1MWe6d6BVwqzdIlU4Tk) empty google colaboratory file.
+
+Click on `File -> Open notebooks` and a window similar as the one below should open
+![]("notebooks/workshop/images/window.png")
+
+As in the image, write VisiumCH as user, VisiumCH/AMLD-2021-Sketchy as repository, choose the workshop_notebooks branch and click the notebooks:
 
 - AMLD-2021-Sketchy-Demo1_Training.ipynb
 - AMLD-2021-Sketchy-Demo2_Performance.ipynb
 
-with google colab. After running the first cell, everything should be installed properly.
+to open them. After running the first cell, everything should be installed properly.
 
 ## Run the codebase locally
 
@@ -22,25 +27,20 @@ make init
 ```
 
 From there, you should have a folder named **io/** at the root of the project. This folder is a symlink to **/io/** so you can share the raw (and processd) data as well as the resulting models.
+You should have the data in 'io/models/quickdraw_models/' folder.
 
 ### Run the Web App locally
 
-Once the repository is installed, you should download the trained model and precomputed embeddings with the following command
+To install the web application (the first time only),
 
 ```bash
-get data
-```
-
-To run the web application,
-
-1. Install all the React
-   dependencies (the first time only):
-
-```bash
+cd web_app/sketchy
 npm install sketchy
 ```
 
-2. Start the server:
+To start using the application,
+
+1. Start the server:
 
 ```bash
 python src/api/server.py
