@@ -1,8 +1,21 @@
 # Getting started
 
-Clone the repo in your working machine (usually Google Cloud instance).
+## Open workshop notebooks in colab
+
+Go to [this](https://drive.google.com/drive/folders/1MxGWvnBYtAzlmXSDVKc0U7uX-AjLrtVx) google drive folder and open the notebooks:
+
+- AMLD-2021-Sketchy-Demo1_Training.ipynb
+- AMLD-2021-Sketchy-Demo2_Performance.ipynb
+
+with google colab. After running the first cell, everything should be installed properly.
+
+## Run the codebase locally
+
+Clone the repo in your working machine and set up the environment.
 
 ```bash
+git clone git@github.com:VisiumCH/AMLD-2021-Sketchy.git AMLD-2021-Sketchy
+cd AMLD-2021-Sketchy
 make env
 source env/bin/activate
 make init
@@ -10,30 +23,44 @@ make init
 
 From there, you should have a folder named **io/** at the root of the project. This folder is a symlink to **/io/** so you can share the raw (and processd) data as well as the resulting models.
 
-If the Google bucket has not been pulled already, or data in bucket has been updated recently:
+### Run the Web App locally
+
+Once the repository is installed, you should download the trained model and precomputed embeddings with the following command
 
 ```bash
-make sync_raw_data
+get data
 ```
 
-## Instructions
+To run the web application,
 
-The details to run the training, inference and server are in src/README.md.
-
-To open the workshop notebooks,
+1. Install all the React
+   dependencies (the first time only):
 
 ```bash
-source env/bin/activate
-jupyter notebook
+npm install sketchy
 ```
 
-follow the link and go to notebooks/workshop/.
+2. Start the server:
 
-Then you can choose the notebook you want to work on:
+```bash
+python src/api/server.py
+```
 
-- AMLD-2021-Sketchy-Demo1_Training.ipynb
-- AMLD-2021-Sketchy-Demo2_Performance.ipynb
-- AMLD-2021-Sketchy-Demo3_Web-API.ipynb
+You should expect to wait a moment (around 5 minutes) for the server to be ready after this command.
+The web app might be irresponsive for a moment (finishing to prepare) if you open it too quickly.
+
+3. Start the web application: open a new terminal (without stopping the server!) and:
+
+```bash
+cd web_app/sketchy
+npm start
+```
+
+### Training and inference of a new model
+
+Training a model takes a lot of time (quickdraw_training, used in the workshop, took almost a months to train for instance). So it is not done in the workshop notebooks.
+
+All explanations therefore are in [src/README.md](https://github.com/VisiumCH/AMLD-2021-Sketchy/blob/workshop_notebook/src/README.md) of this repository.
 
 # Project Organization
 
