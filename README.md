@@ -5,7 +5,7 @@
 Click to go to [this](https://colab.research.google.com/drive/1UwoqjtDoMmCsW1MWe6d6BVwqzdIlU4Tk) empty google colaboratory file.
 
 Click on `File -> Open notebooks` and a window similar as the one below should open
-![image]("./notebooks/workshop/images/window.png")
+![image](https://github.com/VisiumCH/AMLD-2021-Sketchy/blob/workshop_notebook/notebooks/workshop/images/window.png)
 
 As in the image, write VisiumCH as user, VisiumCH/AMLD-2021-Sketchy as repository, choose the workshop_notebooks branch and click the notebooks:
 
