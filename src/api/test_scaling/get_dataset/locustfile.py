@@ -1,6 +1,4 @@
 from locust import HttpUser, task, between
-import json
-
 
 test_data = {"category": "pineapple", "dataset": "quickdraw"}
 
