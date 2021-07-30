@@ -4,7 +4,7 @@
 
 ### Prepare the data
 
-Click to go to the [google drive worksop folder](https://drive.google.com/drive/folders/1MxGWvnBYtAzlmXSDVKc0U7uX-AjLrtVx).
+Click to go to the [google drive workshop folder](https://drive.google.com/drive/folders/1MxGWvnBYtAzlmXSDVKc0U7uX-AjLrtVx).
 Right click on `AMLD data sketchy` (folder name at the top of the page) and select _Add shortcut to drive_.
 Let My Drive as the selected entry and click on _Add Shortcut_.
 
@@ -17,7 +17,7 @@ Click to go to [this](https://colab.research.google.com/drive/1UwoqjtDoMmCsW1MWe
 Click on `File -> Open notebooks` and a window similar as the one below should open
 ![image](https://github.com/VisiumCH/AMLD-2021-Sketchy/blob/workshop_notebook/notebooks/workshop/images/window.png)
 
-As in the image, write VisiumCH as user, VisiumCH/AMLD-2021-Sketchy as repository, choose the workshop_notebooks branch and click the notebooks:
+Write VisiumCH as user, VisiumCH/AMLD-2021-Sketchy as repository, choose the workshop_notebooks branch and click on the notebooks:
 
 - AMLD-2021-Sketchy-Demo1_Training.ipynb
 - AMLD-2021-Sketchy-Demo2_Performance.ipynb
