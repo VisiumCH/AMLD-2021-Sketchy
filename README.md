@@ -1,6 +1,16 @@
 # Getting started
 
-## Open workshop notebooks in colab
+## Workshop notebooks in colab
+
+### Prepare the data
+
+Click to go to the [google drive worksop folder](https://drive.google.com/drive/folders/1MxGWvnBYtAzlmXSDVKc0U7uX-AjLrtVx).
+Right click on `AMLD data sketchy` (folder name at the top of the page) and select _Add shortcut to drive_.
+Let My Drive as the selected entry and click on _Add Shortcut_.
+
+If you now go back to your `My Drive`, you should have a folder named `AMLD data sketchy`.
+
+### Open the notebook
 
 Click to go to [this](https://colab.research.google.com/drive/1UwoqjtDoMmCsW1MWe6d6BVwqzdIlU4Tk) empty google colaboratory file.
 
