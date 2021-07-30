@@ -171,7 +171,7 @@ Go in the folder in which locustfile.py is located and run the command:
 locust
 ```
 
-You can then open [localhost:8089/](http://localhost:8089/). There is a user interface on which you can select the number of users and the spawn rate of their arrival.
+You can then open [localhost:8089](http://localhost:8089/). There is a user interface on which you can select the number of users and the spawn rate of their arrival.
 By default, the host of the server is assumed to be 5000, but you can change it in the web app UI before launching the stress testing (in the image below, replace http://localhost:5000 by http://localhost:YOUR_PORT).
 ![image](https://github.com/VisiumCH/AMLD-2021-Sketchy/blob/workshop_notebook/src/api/test_scaling/locust.png)
 
