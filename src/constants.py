@@ -1,9 +1,9 @@
 # ----------------- IO PATH -------------------
-MODELS_PATH = "io/models/"
-DATA_PATH = "io/data/raw/"
+MODELS_PATH = "/io/models/"
+DATA_PATH = "/io/data/raw/"
 
 # ---------------- DATASETS -------------------
-PROCESSED_PATH = "io/data/processed/"
+PROCESSED_PATH = "/io/data/processed/"
 SKETCHY = "sketchy"
 TUBERLIN = "tuberlin"
 QUICKDRAW = "quickdraw"

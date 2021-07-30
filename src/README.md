@@ -154,3 +154,29 @@ npm start
 ```
 
 the web application should open in your brower at http://localhost:3000/
+
+### server stress testing
+
+To perform the stress testing, `locust` is used. For each api, you can decide how many users (and at which spawn rate) use the api. There needs to be a file called `locustfile.py` in a folder for each api.
+
+While the server is running,
+
+```bash
+python src/api/server.py *training-name*
+```
+
+Go in the folder in which locustfile.py is located and run the command:
+
+```bash
+locust
+```
+
+You can then open [localhost:8089/](http://localhost:8089/). There is a user interface on which you can select the number of users and the spawn rate of their arrival.
+By default, the host of the server is assumed to be 5000, but you can change it in the web app UI before launching the stress testing (in the image below, replace http://localhost:5000 by http://localhost:YOUR_PORT).
+![image](https://github.com/VisiumCH/AMLD-2021-Sketchy/blob/workshop_notebook/src/api/test_scaling/locust.png)
+
+Then click `Start swarming`, it will POST requests to the API and you will see graphs of the scalability of the server.
+
+To have further explanation see [this post](https://towardsdatascience.com/performance-testing-an-ml-serving-api-with-locust-ecd98ab9b7f7)
+
+It will make the virtual machine crash at the limit.

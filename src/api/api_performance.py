@@ -62,7 +62,6 @@ class ModelPerformance:
         prepared_data = {}
         for tag in tags:
             image_list = self.ea.Images(tag)
-            image_list = image_list[::3]
             images_processed = [
                 Image.open(io.BytesIO(image[2])).crop((left, top, right, bottom))
                 for image in image_list

@@ -1,5 +1,7 @@
-from locust import HttpUser, task, between
+from locust import task
 import json
+
+from src.api.test_scaling.default_locust import APIUser
 
 
 # Loading the test JSON data
@@ -9,12 +11,7 @@ test_data["nb_dim"] = 3
 test_data["reduction_algo"] = "TSNE"
 
 
-class APIUser(HttpUser):
-    # Setting the host name and wait_time
-    host = "http://localhost:5000"
-    wait_time = between(3, 5)
-
-    # Defining the post task using the JSON test data
+class getEmbedding(APIUser):
     @task()
     def predict_endpoint(self):
         self.client.post("/get_embeddings", json=test_data)
