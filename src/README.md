@@ -177,6 +177,6 @@ By default, the host of the server is assumed to be 5000, but you can change it 
 
 Then click `Start swarming`, it will POST requests to the API and you will see graphs of the scalability of the server.
 
-To have further explanation see [this post](https://towardsdatascience.com/performance-testing-an-ml-serving-api-with-locust-ecd98ab9b7f7)
+To have further explanation see [this post](https://towardsdatascience.com/performance-testing-an-ml-serving-api-with-locust-ecd98ab9b7f7).
 
-It will make the virtual machine crash at the limit.
+_Warning_: It will make the virtual machine crash if it reaches the limit.
