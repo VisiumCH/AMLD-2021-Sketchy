@@ -53,22 +53,19 @@ def get_random_file_from_path(file_path):
     return np.random.choice(f_list, 1)[0]
 
 
-def get_class_dict(args, dataset_folder):
+def get_class_dict(data_path):
     """ Get a dictionnary of the class based on the folders' classes """
-    class_directories = glob(os.path.join(args.data_path, dataset_folder, "images/*/"))
+    class_directories = glob(os.path.join(data_path, "images/*/"))
     list_class = [class_path.split("/")[-2] for class_path in class_directories]
     dicts_class = create_dict_texts(list_class)
     return dicts_class
 
 
-def dataset_class_split(
-    args, dataset_folder, training_split, validation_split, image_type
-):
+def dataset_class_split(dataset_folder, training_split, validation_split, image_type):
     """
     Splits the data of a class between test, valid and train split
     Args:
-        - args: metadata provided in src/options.py
-        - dataset_folder: name of the folder containing the data
+        - dataset_folder: path to the folder containing the data
         - training_split: proportion of data in the training set
         - validation_split: proportion of data in the validation set
         - image_type: sketch or image
@@ -81,16 +78,14 @@ def dataset_class_split(
         - cls_test: classes associated to the images in the test set
     """
     # Random seed
-    random.seed(args.seed)
+    random.seed(42)
 
     _ext = ".png" if image_type == "sketches" else ".jpg"
 
     fnames_train, fnames_valid, fnames_test = [], [], []
     cls_train, cls_valid, cls_test = [], [], []
 
-    class_directories = glob(
-        os.path.join(args.data_path, dataset_folder, image_type, "*/")
-    )
+    class_directories = glob(os.path.join(dataset_folder, image_type, "*/"))
 
     for class_dir in class_directories:
         cls_name = class_dir.split("/")[-2]
@@ -117,12 +112,11 @@ def dataset_class_split(
     return fnames_train, cls_train, fnames_valid, cls_valid, fnames_test, cls_test
 
 
-def dataset_split(args, dataset_folder, training_split, valid_split):
+def dataset_split(dataset_folder, training_split=0.8, valid_split=0.1):
     """
     Splits the data of all classes between test, valid and train split
     Args:
-        - args: metadata provided in src/options.py
-        - dataset_folder: name of the folder containing the data
+        - dataset_folder: path to the folder containing the data
         - training_split: proportion of data in the training set
         - validation_split: proportion of data in the validation set
     Return:
@@ -137,7 +131,7 @@ def dataset_split(args, dataset_folder, training_split, valid_split):
         cls_im_valid,
         fnames_im_test,
         cls_im_test,
-    ) = dataset_class_split(args, dataset_folder, training_split, valid_split, "images")
+    ) = dataset_class_split(dataset_folder, training_split, valid_split, "images")
 
     (
         fnames_sk_train,
@@ -146,9 +140,7 @@ def dataset_split(args, dataset_folder, training_split, valid_split):
         cls_sk_valid,
         fnames_sk_test,
         cls_sk_test,
-    ) = dataset_class_split(
-        args, dataset_folder, training_split, valid_split, "sketches"
-    )
+    ) = dataset_class_split(dataset_folder, training_split, valid_split, "sketches")
 
     train_data = [fnames_im_train, cls_im_train, fnames_sk_train, cls_sk_train]
     valid_data = [fnames_im_valid, cls_im_valid, fnames_sk_valid, cls_sk_valid]

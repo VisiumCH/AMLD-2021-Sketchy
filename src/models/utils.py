@@ -19,7 +19,6 @@ def get_parameters():
         "name", type=str, help="Name of the training folder of the model to test."
     )
     argument = parser.parse_args()
-
     args = get_saved_params(MODELS_PATH + argument.name)
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
     return args
@@ -79,7 +78,13 @@ def load_checkpoint(model_file):
     """
     if os.path.isfile(model_file):
         print("=> loading model '{}'".format(model_file))
-        checkpoint = torch.load(model_file)
+
+        if torch.cuda.is_available():
+            checkpoint = torch.load(model_file)
+        else:
+            checkpoint = torch.load(
+                model_file, map_location=lambda storage, loc: storage
+            )
         print(
             "=> loaded model '{}' (epoch {}, map {})".format(
                 model_file, checkpoint["epoch"], checkpoint["best_map"]

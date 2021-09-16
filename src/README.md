@@ -46,7 +46,6 @@ Dataset tuberlin
         * Length sketch test: 2000
         * Length image test: 20518
 
-
 Dataset sk+tu
 
         * Length sketch train: 76335
@@ -56,7 +55,6 @@ Dataset sk+tu
         * Length sketch test: 9603
         * Length image test: 27826
 
-
 Dataset quickdraw
 
         * Length sketch train: 265809
@@ -65,7 +63,6 @@ Dataset quickdraw
         * Length image valid: 20293
         * Length sketch test: 33336
         * Length image test: 20351
-
 
 Dataset sk+tu+qd
 
@@ -122,6 +119,64 @@ selects 20 random sketches. For each sketch, computes the embedding and the 4 cl
 
 ## api/
 
+The web application calls the api in server.py.
+if it is the first time, you will need to install all the react libraries
+
+```bash
+npm install sketchy
+```
+
+To run the web app, you must have already trained a model and precomputed its embeddings:
+
+```bash
+python src/models/train.py *training-name*
+python src/models/inference/preprocess_embeddings.py *training-name*
+```
+
+then, do the following
+
 ### server.py
 
-TODO: this is in the web app PR
+```bash
+python src/api/server.py *training-name*
+```
+
+You should expect to wait a moment (< 5 minutes) for the server to be ready after this command.
+The web app might be irresponsive for a moment (finishing to prepare) if you open it too quickly.
+
+### web_app/sketchy
+
+To launch the app, run
+
+```bash
+cd web_app/sketchy
+npm start
+```
+
+the web application should open in your brower at http://localhost:3000/
+
+### server stress testing
+
+To perform the stress testing, `locust` is used. For each api, you can decide how many users (and at which spawn rate) use the api. There needs to be a file called `locustfile.py` in a folder for each api.
+
+While the server is running,
+
+```bash
+python src/api/server.py *training-name*
+```
+
+Go in the folder in which locustfile.py is located and run the command:
+
+```bash
+locust
+```
+
+You can then open [localhost:8089](http://localhost:8089/). There is a user interface on which you can select the number of users and the spawn rate of their arrival.
+By default, the host of the server is assumed to be 5000, but you can change it in the web app UI before launching the stress testing (in the image below, replace http://localhost:5000 by http://localhost:YOUR_PORT).
+![image](https://github.com/VisiumCH/AMLD-2021-Sketchy/blob/workshop_notebook/src/api/test_scaling/locust.png)
+
+Then click `Start swarming`, it will POST requests to the API and you will see graphs of the scalability of the server.
+
+To have further explanation see [this post](https://towardsdatascience.com/performance-testing-an-ml-serving-api-with-locust-ecd98ab9b7f7).
+
+_Warning_: It will make the virtual machine crash if it reaches the limit.

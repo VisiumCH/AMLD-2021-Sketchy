@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import multiprocessing
+import tqdm
 
 import torch
 from torchvision import transforms
@@ -33,7 +34,7 @@ def get_test_data(data_loader, model, args):
         model = model.cuda()
 
     fnames = []
-    for i, (image, fname, target) in enumerate(data_loader):
+    for i, (image, fname, target) in enumerate(tqdm.tqdm(data_loader)):
         # Data to Variable
         if args.cuda:
             image, target = image.cuda(), target.cuda()
@@ -58,7 +59,7 @@ def get_test_data(data_loader, model, args):
     return fnames, embeddings, classes
 
 
-def get_part_of_test_data(data_loader, model, args, part_index):
+def get_part_of_test_data(data_loader, model, args, part_index=0):
     """
     Get part of features, paths and target class of images (or sketches) of data loader
     Args:
@@ -72,15 +73,17 @@ def get_part_of_test_data(data_loader, model, args, part_index):
     if args.cuda:
         model = model.cuda()
 
-    images_indexes_min = part_index * args.max_images_test
-    images_indexes_max = (part_index + 1) * args.max_images_test
+    images_indexes_min = part_index * args.num_test_batches
+    images_indexes_max = (part_index + 1) * args.num_test_batches
 
     fnames = []
-    for i, (image, fname, target) in enumerate(data_loader):
+    for i, (image, fname, target) in enumerate(
+        tqdm.tqdm(data_loader, total=args.num_test_batches)
+    ):
 
         if i < images_indexes_min:
             continue
-        elif i > images_indexes_max:
+        elif i >= images_indexes_max:
             break
 
         # Data to Variable
@@ -96,6 +99,8 @@ def get_part_of_test_data(data_loader, model, args, part_index):
         if args.cuda:
             out_features = out_features.cpu().data.numpy()
             target = target.cpu().data.numpy()
+        else:
+            out_features = out_features.detach().numpy()
 
         if i == images_indexes_min:
             embeddings = out_features

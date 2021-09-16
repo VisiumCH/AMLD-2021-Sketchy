@@ -11,9 +11,8 @@ def get_similarity(sk_embeddings, im_embeddings):
     '''
     Sort images by similarity (closest to sketch) in the feature space
     The distance is computed as the euclidean distance (or cosine distance)
-    To later compute the precision, we need the probabilitity estimate of a class.
-    It has reverse interpretation than the distance (closer is more similar and pobable)
-    Hence Similarity = 1 - distance (or 1/(1+distance))
+    It has reverse interpretation than the distance (closer is more similar and probable)
+    Hence Similarity = 1/(1+distance)
     Args:
         - sk_embeddings: embeddings of the sketches [NxE]
         - im_embeddings: embeddings of the images [MxE]
@@ -53,7 +52,6 @@ def sort_by_similarity(similarity, class_matches):
         sorted_similarity.append(similarity[indx, arg_sorted_sim[indx, :]])
         sorted_lst.append(class_matches[indx, arg_sorted_sim[indx, :]])
 
-    del similarity, arg_sorted_sim
     sorted_similarity = np.array(sorted_similarity)
     sorted_class_matches = np.array(sorted_lst)
 

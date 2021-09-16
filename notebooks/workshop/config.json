@@ -1,0 +1,20 @@
+{
+  "dataset": "quickdraw",
+  "data_path": "/io/data/raw/",
+  "save": "/io/models/sktu_copy/",
+  "load": "/io/models/sktu_copy/checkpoint.pth",
+  "embedding_path": "00053/default/",
+
+  "emb_size": 256,
+  "cuda": false,
+  "seed": 42,
+
+  "training_split": 0.8,
+  "valid_split": 0.1,
+  "qd_training_split": 0.9,
+  "qd_valid_split": 0.05,
+  "batch_size": 10,
+  "prefetch": 2,
+  "attn": true,
+  "margin": 1
+}

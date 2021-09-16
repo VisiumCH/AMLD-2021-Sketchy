@@ -45,10 +45,10 @@ class DomainLoss(nn.Module):
             nn.Linear(hidden_size, 1),
         )
 
-    def forward(self, input, target):
-        input = self.map(input)
-        input = torch.sigmoid(input).squeeze()
-        return F.binary_cross_entropy(input, target)
+    def forward(self, x, target):
+        x = self.map(x)
+        x = torch.sigmoid(x).squeeze()
+        return F.binary_cross_entropy(x, target)
 
 
 class DetangledJoinDomainLoss(nn.Module):
