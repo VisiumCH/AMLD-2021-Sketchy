@@ -4,17 +4,9 @@
 
 ### Open the notebook
 
-Click to go to [this](https://colab.research.google.com/drive/1UwoqjtDoMmCsW1MWe6d6BVwqzdIlU4Tk) empty google colaboratory file.
+First notebook: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VisiumCH/AMLD-2021-Sketchy/blob/master/notebooks/workshop/AMLD-2021-Sketchy-Demo1_Training.ipynb)
 
-Click on `File -> Open notebooks` and a window similar as the one below should open
-![image](https://github.com/VisiumCH/AMLD-2021-Sketchy/blob/workshop_notebook/notebooks/workshop/images/window.png)
-
-Write VisiumCH as user, VisiumCH/AMLD-2021-Sketchy as repository, choose the workshop_notebooks branch and click on the notebooks:
-
-- AMLD-2021-Sketchy-Demo1_Training.ipynb
-- AMLD-2021-Sketchy-Demo2_Performance.ipynb
-
-to open them. After running the first cell, everything should be installed properly.
+Second notebook: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VisiumCH/AMLD-2021-Sketchy/blob/master/notebooks/workshop/AMLD-2021-Sketchy-Demo2_Performance.ipynb)
 
 ## Run the codebase locally
 
