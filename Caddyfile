@@ -1,0 +1,10 @@
+amld.visium.ch {
+    route /api/* {
+       uri strip_prefix /api
+       reverse_proxy http://backend:5000
+    }
+ 
+    route {
+       reverse_proxy http://frontend:8080
+    }
+}

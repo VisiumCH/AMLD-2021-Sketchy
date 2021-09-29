@@ -15,7 +15,7 @@ function ScalarPerformance() {
   useEffect(() => {
     async function getValues() {
       // Send to back end
-      const response = await fetch("/scalar_perf", {
+      const response = await fetch("/api/scalar_perf", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

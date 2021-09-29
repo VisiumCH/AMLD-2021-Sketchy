@@ -40,7 +40,7 @@ function Embeddings() {
 
     async function getEmbeddings(to_send) {
       // Send to back end
-      const response = await fetch('/get_embeddings', {
+      const response = await fetch('/api/get_embeddings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ function Embeddings() {
 
     async function getClickedImage(to_send) {
       // Send to back end
-      const response = await fetch('/get_embedding_images', {
+      const response = await fetch('/api/get_embedding_images', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

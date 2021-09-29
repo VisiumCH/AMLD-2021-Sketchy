@@ -12,15 +12,12 @@ from src.api.api_inference import ApiInference
 from src.api.api_performance import ModelPerformance
 import torch
 import json
+from argparse import Namespace
 from flask_restful import Resource, Api
 from flask import Flask, request, make_response
 import flask.scaffold
 
 flask.helpers._endpoint_from_view_func = flask.scaffold._endpoint_from_view_func
-
-
-app = Flask(__name__)
-api = Api(app)
 
 
 class APIList(Resource):
@@ -52,8 +49,12 @@ class APIList(Resource):
         }
 
 
-class Inferrence(Resource):
+class Inference(Resource):
     """ Receives a sketch and returns its closest images. """
+
+    def __init__(self, inference):
+        super().__init__()
+        self.inference = inference
 
     def post(self):
         json_data = request.get_json()
@@ -64,9 +65,9 @@ class Inferrence(Resource):
 
         sketch = svg_to_png(json_data["sketch"])
 
-        inference.inference_sketch(sketch)
-        images, image_labels = inference.get_closest(2)
-        attention = inference.get_attention(sketch)
+        self.inference.inference_sketch(sketch)
+        images, image_labels = self.inference.get_closest(2)
+        attention = self.inference.get_attention(sketch)
 
         data = prepare_images_data(images, image_labels, attention)
 
@@ -101,6 +102,11 @@ class Dataset(Resource):
 class Embeddings(Resource):
     """ Receives a sketch and returns its closest images. """
 
+    def __init__(self, inference, dim_red):
+        super().__init__()
+        self.inference = inference
+        self.dim_red = dim_red
+
     def post(self):
         json_data = request.get_json()
 
@@ -111,13 +117,13 @@ class Embeddings(Resource):
             return {"ERROR": "Reduction algorithm not provided"}, 400
 
         if "sketch" not in json_data.keys():
-            data = dim_red.get_projection(
+            data = self.dim_red.get_projection(
                 json_data["reduction_algo"], json_data["nb_dim"]
             )
         else:
             sketch = svg_to_png(json_data["sketch"])
-            sketch_embedding = inference.inference_sketch(sketch)
-            data = dim_red.get_projection(
+            sketch_embedding = self.inference.inference_sketch(sketch)
+            data = self.dim_red.get_projection(
                 json_data["reduction_algo"], json_data["nb_dim"], sketch_embedding
             )
 
@@ -126,6 +132,10 @@ class Embeddings(Resource):
 
 class ShowEmbeddingImage(Resource):
     """Return the custom sketch or the image selected on the embedding graph"""
+
+    def __init__(self, dim_red):
+        super().__init__()
+        self.dim_red = dim_red
 
     def post(self):
         json_data = request.get_json()
@@ -146,7 +156,7 @@ class ShowEmbeddingImage(Resource):
             if "x" not in json_data.keys() or "y" not in json_data.keys():
                 return {"ERROR": "Pointnumber not provided"}, 400
 
-            data = dim_red.get_closest_image(json_data)
+            data = self.dim_red.get_closest_image(json_data)
 
         return make_response(json.dumps(data), 200)
 
@@ -154,13 +164,21 @@ class ShowEmbeddingImage(Resource):
 class ScalarPerformance(Resource):
     """Return the scalar values (loss and metrics) of the model """
 
+    def __init__(self, performance):
+        super().__init__()
+        self.performance = performance
+
     def post(self):
-        data = performance.get_scalars()
+        data = self.performance.get_scalars()
         return make_response(json.dumps(data), 200)
 
 
 class ImagePerformance(Resource):
     """Return the custom sketch or the image selected on the embedding graph"""
+
+    def __init__(self, performance):
+        super().__init__()
+        self.performance = performance
 
     def post(self):
         json_data = request.get_json()
@@ -168,23 +186,17 @@ class ImagePerformance(Resource):
         if "image_type" not in json_data.keys():
             return {"ERROR": "Image Type not provided"}, 400
 
-        data = performance.get_image(json_data["image_type"])
+        data = self.performance.get_image(json_data["image_type"])
         return make_response(json.dumps(data), 200)
 
 
-api.add_resource(APIList, "/api_list")
-api.add_resource(Inferrence, "/find_images")
-api.add_resource(Embeddings, "/get_embeddings")
-api.add_resource(Dataset, "/get_dataset_images")
-api.add_resource(ShowEmbeddingImage, "/get_embedding_images")
-# api.add_resource(ScalarPerformance, "/scalar_perf")
-api.add_resource(ImagePerformance, "/image_perf")
+def create_app(args=None):
+    app = Flask(__name__)
+    api = Api(app)
+    if args is None:
+        args = ApiOptions().default
 
-
-if __name__ == "__main__":
-    args = ApiOptions().parse()
     args.cuda = args.ngpu > 0 and torch.cuda.is_available()
-
     args.save = MODELS_PATH + args.name + "/"
     args.dataset, args.emb_size, nb_embeddings = get_parameters(args.save)
     args.load = args.save + "checkpoint.pth"
@@ -195,4 +207,17 @@ if __name__ == "__main__":
     dim_red = DimensionalityReduction(args.save, nb_embeddings)
     print("Preparation done. You can launch the app!")
 
+    api.add_resource(APIList, "/api_list")
+    api.add_resource(Inference, "/find_images", resource_class_args=(inference,))
+    api.add_resource(Embeddings, "/get_embeddings", resource_class_args=(inference, dim_red))
+    api.add_resource(Dataset, "/get_dataset_images")
+    api.add_resource(ShowEmbeddingImage, "/get_embedding_images", resource_class_args=(dim_red,))
+    # api.add_resource(ScalarPerformance, "/scalar_perf", resource_class_args=(performance))
+    api.add_resource(ImagePerformance, "/image_perf", resource_class_args=(performance,))
+    return app
+
+
+if __name__ == "__main__":
+    args = ApiOptions().parse()
+    app = create_app(args)
     app.run(host="0.0.0.0", port=args.port, debug=True)

@@ -27,7 +27,7 @@ function ImagePerformance() {
     setImages([]);
     async function getRandomImage() {
       // Send to back end
-      const response = await fetch("/image_perf", {
+      const response = await fetch("/api/image_perf", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -27,7 +27,7 @@ function Dataset() {
 
   async function getImages(currentCategory, currentDataset) {
     // Send to back end
-    const response = await fetch("/get_dataset_images", {
+    const response = await fetch("/api/get_dataset_images", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

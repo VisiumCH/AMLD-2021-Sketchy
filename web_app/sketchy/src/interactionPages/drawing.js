@@ -65,7 +65,7 @@ function Drawing() {
     setAttention(progress);
 
     // Send to back end
-    const response = await fetch('/find_images', {
+    const response = await fetch('/api/find_images', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
