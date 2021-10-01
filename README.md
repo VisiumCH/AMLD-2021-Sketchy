@@ -4,9 +4,9 @@
 
 ### Open the notebook
 
-First notebook: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VisiumCH/AMLD-2021-Sketchy/blob/master/notebooks/workshop/AMLD-2021-Sketchy-Demo1_Training.ipynb)
+First notebook: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VisiumCH/AMLD-2021-Sketchy/blob/master/notebooks/workshop/AMLD-2021-Sketchy-Demo1_Training.ipynb) (Solution: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VisiumCH/AMLD-2021-Sketchy/blob/master/notebooks/workshop/AMLD-2021-Sketchy-Demo1_Training_Solution.ipynb))
 
-Second notebook: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VisiumCH/AMLD-2021-Sketchy/blob/master/notebooks/workshop/AMLD-2021-Sketchy-Demo2_Performance.ipynb)
+Second notebook: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VisiumCH/AMLD-2021-Sketchy/blob/master/notebooks/workshop/AMLD-2021-Sketchy-Demo2_Performance.ipynb) (Solution: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/VisiumCH/AMLD-2021-Sketchy/blob/master/notebooks/workshop/AMLD-2021-Sketchy-Demo2_Performance_Solution.ipynb))
 
 ## Run the codebase locally
 
